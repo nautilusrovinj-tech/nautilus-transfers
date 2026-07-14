@@ -23,7 +23,7 @@ export default function TransferForm({
 
   return (
     <div className="grid grid-cols-2 gap-4">
-
+      {/* Client */}
       <input
         className="border rounded-lg p-2"
         placeholder="Client Name"
@@ -45,6 +45,7 @@ export default function TransferForm({
         onChange={(e) => updateField("email", e.target.value)}
       />
 
+      {/* Date / Time */}
       <input
         className="border rounded-lg p-2"
         type="date"
@@ -59,6 +60,7 @@ export default function TransferForm({
         onChange={(e) => updateField("time", e.target.value)}
       />
 
+      {/* Route */}
       <input
         className="border rounded-lg p-2"
         placeholder="Pickup"
@@ -80,6 +82,7 @@ export default function TransferForm({
         onChange={(e) => updateField("flight", e.target.value)}
       />
 
+      {/* Passengers */}
       <input
         className="border rounded-lg p-2"
         type="number"
@@ -100,6 +103,7 @@ export default function TransferForm({
         }
       />
 
+      {/* Assignment */}
       <input
         className="border rounded-lg p-2"
         placeholder="Driver"
@@ -124,21 +128,38 @@ export default function TransferForm({
       <input
         className="border rounded-lg p-2"
         type="number"
-        placeholder="Price"
+        placeholder="Price (€)"
         value={transfer.price}
         onChange={(e) =>
           updateField("price", Number(e.target.value))
         }
       />
 
+      {/* Status */}
+      <select
+        className="border rounded-lg p-2"
+        value={transfer.status}
+        onChange={(e) =>
+          updateField("status", e.target.value as Transfer["status"])
+        }
+      >
+        <option value="New">New</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Assigned">Assigned</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+
+      <div />
+
+      {/* Notes */}
       <textarea
-        className="border rounded-lg p-2 col-span-2"
+        className="col-span-2 border rounded-lg p-2"
         rows={4}
         placeholder="Notes"
         value={transfer.notes}
         onChange={(e) => updateField("notes", e.target.value)}
       />
-
     </div>
   );
 }
