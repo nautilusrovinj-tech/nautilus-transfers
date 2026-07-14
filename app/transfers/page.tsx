@@ -7,11 +7,14 @@ import TransferDialog from "@/components/transfers/TransferDialog";
 import TransferTable from "@/components/transfers/TransferTable";
 
 import { Transfer } from "@/types/transfer";
+import { createEmptyTransfer } from "@/lib/transfer";
 
 export default function TransfersPage() {
   const [transfers, setTransfers] = useState<Transfer[]>([
     {
-      id: "TR-2026-0001",
+      ...createEmptyTransfer(),
+
+      transferNumber: "NT-2026-000001",
 
       clientName: "John Smith",
       phone: "+44 7700 900123",
@@ -26,8 +29,6 @@ export default function TransfersPage() {
 
       adults: 2,
       children: 0,
-      babySeats: 0,
-      boosterSeats: 0,
 
       driver: "Ivan",
       vehicle: "Mercedes V-Class",
@@ -41,12 +42,23 @@ export default function TransfersPage() {
     },
   ]);
 
+  const [selectedTransfer, setSelectedTransfer] =
+    useState<Transfer | null>(null);
+
   function handleSave(transfer: Transfer) {
     setTransfers((prev) => [...prev, transfer]);
   }
 
   function handleDelete(id: string) {
-    setTransfers((prev) => prev.filter((t) => t.id !== id));
+    setTransfers((prev) =>
+      prev.filter((t) => t.id !== id)
+    );
+  }
+
+  function handleEdit(transfer: Transfer) {
+    setSelectedTransfer(transfer);
+
+    console.log("Editing:", transfer);
   }
 
   return (
@@ -54,10 +66,12 @@ export default function TransfersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Transfers</h1>
+            <h1 className="text-3xl font-bold">
+              Bookings
+            </h1>
 
             <p className="text-slate-500">
-              Manage all airport transfers.
+              Manage all transfer bookings.
             </p>
           </div>
 
@@ -67,6 +81,7 @@ export default function TransfersPage() {
         <TransferTable
           transfers={transfers}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
       </div>
     </AppLayout>

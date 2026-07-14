@@ -1,11 +1,14 @@
 export type TransferStatus =
   | "New"
   | "Confirmed"
+  | "Assigned"
   | "Completed"
   | "Cancelled";
 
 export interface Transfer {
   id: string;
+
+  transferNumber: string;
 
   clientName: string;
   phone: string;
