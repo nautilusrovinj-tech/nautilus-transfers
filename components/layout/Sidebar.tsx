@@ -8,6 +8,7 @@ export default function Sidebar() {
 
   const menu = [
     { name: "Dashboard", href: "/" },
+    { name: "Dispatch", href: "/dispatch" },
     { name: "Transfers", href: "/transfers" },
     { name: "Drivers", href: "/drivers" },
     { name: "Vehicles", href: "/vehicles" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
 import TransferDialog from "@/components/transfers/TransferDialog";
@@ -8,64 +8,164 @@ import TransferTable from "@/components/transfers/TransferTable";
 import SearchBar from "@/components/transfers/SearchBar";
 
 import { Transfer } from "@/types/transfer";
-import { createEmptyTransfer } from "@/lib/transfer";
+import { supabase } from "@/lib/supabase";
 
 export default function TransfersPage() {
   const [search, setSearch] = useState("");
 
-  const [transfers, setTransfers] = useState<Transfer[]>([
-    {
-      ...createEmptyTransfer(),
-
-      transferNumber: "NT-2026-000001",
-
-      clientName: "John Smith",
-      phone: "+44 7700 900123",
-      email: "john@example.com",
-
-      date: "2026-07-11",
-      time: "14:30",
-
-      pickup: "Pula Airport",
-      destination: "Grand Park Hotel",
-      flight: "FR4587",
-
-      adults: 2,
-      children: 0,
-
-      driver: "Ivan",
-      vehicle: "Mercedes V-Class",
-      partner: "Direct",
-
-      price: 120,
-
-      status: "Confirmed",
-
-      notes: "",
-    },
-  ]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
 
   const [editingTransfer, setEditingTransfer] =
     useState<Transfer | null>(null);
 
-  function handleSave(transfer: Transfer) {
+  useEffect(() => {
+    loadTransfers();
+  }, []);
+
+  async function loadTransfers() {
+    const { data, error } = await supabase
+      .from("transfers")
+      .select("*")
+      .order("date")
+      .order("time");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (!data) return;
+
+    const mapped: Transfer[] = data.map((t: any) => ({
+      id: t.id,
+
+      transferNumber: t.transfer_number,
+
+      clientName: t.client_name,
+      phone: t.phone ?? "",
+      email: t.email ?? "",
+
+      date: t.date,
+      time: t.time,
+
+      pickup: t.pickup,
+      destination: t.destination,
+      flight: t.flight ?? "",
+
+      adults: t.adults,
+      children: t.children,
+      babySeats: t.baby_seats ?? 0,
+      boosterSeats: t.booster_seats ?? 0,
+
+      driver: t.driver ?? "",
+      vehicle: t.vehicle ?? "",
+      partner: t.partner ?? "",
+
+      price: Number(t.price),
+
+      status: t.status,
+
+      notes: t.notes ?? "",
+    }));
+
+    setTransfers(mapped);
+  }
+
+  async function handleSave(transfer: Transfer) {
     if (editingTransfer) {
-      setTransfers((prev) =>
-        prev.map((t) =>
-          t.id === transfer.id ? transfer : t
-        )
-      );
+      const { error } = await supabase
+        .from("transfers")
+        .update({
+          transfer_number: transfer.transferNumber,
+
+          client_name: transfer.clientName,
+          phone: transfer.phone,
+          email: transfer.email,
+
+          date: transfer.date,
+          time: transfer.time,
+
+          pickup: transfer.pickup,
+          destination: transfer.destination,
+          flight: transfer.flight,
+
+          adults: transfer.adults,
+          children: transfer.children,
+          baby_seats: transfer.babySeats,
+          booster_seats: transfer.boosterSeats,
+
+          driver: transfer.driver,
+          vehicle: transfer.vehicle,
+          partner: transfer.partner,
+
+          price: transfer.price,
+
+          status: transfer.status,
+
+          notes: transfer.notes,
+        })
+        .eq("id", transfer.id);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
 
       setEditingTransfer(null);
     } else {
-      setTransfers((prev) => [...prev, transfer]);
+      const { error } = await supabase
+        .from("transfers")
+        .insert({
+          transfer_number: transfer.transferNumber,
+
+          client_name: transfer.clientName,
+          phone: transfer.phone,
+          email: transfer.email,
+
+          date: transfer.date,
+          time: transfer.time,
+
+          pickup: transfer.pickup,
+          destination: transfer.destination,
+          flight: transfer.flight,
+
+          adults: transfer.adults,
+          children: transfer.children,
+          baby_seats: transfer.babySeats,
+          booster_seats: transfer.boosterSeats,
+
+          driver: transfer.driver,
+          vehicle: transfer.vehicle,
+          partner: transfer.partner,
+
+          price: transfer.price,
+
+          status: transfer.status,
+
+          notes: transfer.notes,
+        });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
     }
+
+    await loadTransfers();
   }
 
-  function handleDelete(id: string) {
-    setTransfers((prev) =>
-      prev.filter((t) => t.id !== id)
-    );
+  async function handleDelete(id: string) {
+    const { error } = await supabase
+      .from("transfers")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    await loadTransfers();
   }
 
   function handleEdit(transfer: Transfer) {
@@ -93,7 +193,6 @@ export default function TransfersPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">
@@ -121,7 +220,6 @@ export default function TransfersPage() {
           onDelete={handleDelete}
           onEdit={handleEdit}
         />
-
       </div>
     </AppLayout>
   );
