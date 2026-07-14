@@ -2,6 +2,7 @@
 
 import { drivers } from "@/data/drivers";
 import { vehicles } from "@/data/vehicles";
+import { partners } from "@/data/partners";
 import { Transfer } from "@/types/transfer";
 
 interface TransferFormProps {
@@ -25,6 +26,7 @@ export default function TransferForm({
 
   return (
     <div className="grid grid-cols-2 gap-4">
+      {/* Client */}
       <input
         className="border rounded-lg p-2"
         placeholder="Client Name"
@@ -46,6 +48,7 @@ export default function TransferForm({
         onChange={(e) => updateField("email", e.target.value)}
       />
 
+      {/* Date */}
       <input
         className="border rounded-lg p-2"
         type="date"
@@ -53,6 +56,7 @@ export default function TransferForm({
         onChange={(e) => updateField("date", e.target.value)}
       />
 
+      {/* Time */}
       <input
         className="border rounded-lg p-2"
         type="time"
@@ -60,6 +64,7 @@ export default function TransferForm({
         onChange={(e) => updateField("time", e.target.value)}
       />
 
+      {/* Pickup */}
       <input
         className="border rounded-lg p-2"
         placeholder="Pickup"
@@ -67,6 +72,7 @@ export default function TransferForm({
         onChange={(e) => updateField("pickup", e.target.value)}
       />
 
+      {/* Destination */}
       <input
         className="border rounded-lg p-2"
         placeholder="Destination"
@@ -74,6 +80,7 @@ export default function TransferForm({
         onChange={(e) => updateField("destination", e.target.value)}
       />
 
+      {/* Flight */}
       <input
         className="border rounded-lg p-2"
         placeholder="Flight Number"
@@ -81,6 +88,7 @@ export default function TransferForm({
         onChange={(e) => updateField("flight", e.target.value)}
       />
 
+      {/* Adults */}
       <input
         className="border rounded-lg p-2"
         type="number"
@@ -91,6 +99,7 @@ export default function TransferForm({
         }
       />
 
+      {/* Children */}
       <input
         className="border rounded-lg p-2"
         type="number"
@@ -101,6 +110,7 @@ export default function TransferForm({
         }
       />
 
+      {/* Driver */}
       <select
         className="border rounded-lg p-2"
         value={transfer.driver}
@@ -115,6 +125,7 @@ export default function TransferForm({
         ))}
       </select>
 
+      {/* Vehicle */}
       <select
         className="border rounded-lg p-2"
         value={transfer.vehicle}
@@ -129,13 +140,22 @@ export default function TransferForm({
         ))}
       </select>
 
-      <input
+      {/* Partner */}
+      <select
         className="border rounded-lg p-2"
-        placeholder="Partner"
         value={transfer.partner}
         onChange={(e) => updateField("partner", e.target.value)}
-      />
+      >
+        <option value="">Select Partner</option>
 
+        {partners.map((partner) => (
+          <option key={partner} value={partner}>
+            {partner}
+          </option>
+        ))}
+      </select>
+
+      {/* Price */}
       <input
         className="border rounded-lg p-2"
         type="number"
@@ -146,6 +166,7 @@ export default function TransferForm({
         }
       />
 
+      {/* Status */}
       <select
         className="border rounded-lg p-2"
         value={transfer.status}
@@ -162,6 +183,7 @@ export default function TransferForm({
 
       <div />
 
+      {/* Notes */}
       <textarea
         className="col-span-2 border rounded-lg p-2"
         rows={4}
