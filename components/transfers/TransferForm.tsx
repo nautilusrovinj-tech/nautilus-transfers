@@ -141,11 +141,16 @@ export default function TransferForm({
       >
         <option value="">Select Partner</option>
 
-        {partners.map((partner) => (
-          <option key={partner} value={partner}>
-            {partner}
-          </option>
-        ))}
+        {partners
+  .filter((partner) => partner.active)
+  .map((partner) => (
+    <option
+      key={partner.id}
+      value={partner.name}
+    >
+      {partner.name}
+    </option>
+  ))}
       </select>
 
       <input
