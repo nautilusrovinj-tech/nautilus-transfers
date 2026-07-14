@@ -13,8 +13,21 @@ export default function DriversPage() {
   const [drivers, setDrivers] =
     useState<Driver[]>(initialDrivers);
 
+  const [editingDriver, setEditingDriver] =
+    useState<Driver | null>(null);
+
   function handleSave(driver: Driver) {
-    setDrivers((prev) => [...prev, driver]);
+    if (editingDriver) {
+      setDrivers((prev) =>
+        prev.map((d) =>
+          d.id === driver.id ? driver : d
+        )
+      );
+
+      setEditingDriver(null);
+    } else {
+      setDrivers((prev) => [...prev, driver]);
+    }
   }
 
   function handleDelete(id: string) {
@@ -24,7 +37,7 @@ export default function DriversPage() {
   }
 
   function handleEdit(driver: Driver) {
-    console.log("Edit:", driver);
+    setEditingDriver(driver);
   }
 
   return (
@@ -41,7 +54,10 @@ export default function DriversPage() {
             </p>
           </div>
 
-          <DriverDialog onSave={handleSave} />
+          <DriverDialog
+            driver={editingDriver}
+            onSave={handleSave}
+          />
         </div>
 
         <DriverTable
