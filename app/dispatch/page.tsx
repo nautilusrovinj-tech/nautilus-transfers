@@ -1,11 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import AppLayout from "@/components/layout/AppLayout";
 import DispatchTable from "@/components/dispatch/DispatchTable";
 
-import { transfers } from "@/data/transfers";
+import { Transfer } from "@/types/transfer";
+import { getTodaysTransfers } from "@/lib/transferService";
 
 export default function DispatchPage() {
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+
+  useEffect(() => {
+    loadTransfers();
+  }, []);
+
+  async function loadTransfers() {
+    try {
+      const data = await getTodaysTransfers();
+      setTransfers(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">
