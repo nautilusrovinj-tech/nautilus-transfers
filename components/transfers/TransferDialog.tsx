@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,10 +17,12 @@ import { Transfer } from "@/types/transfer";
 import { createEmptyTransfer } from "@/lib/transfer";
 
 interface TransferDialogProps {
+  transfer?: Transfer | null;
   onSave: (transfer: Transfer) => void;
 }
 
 export default function TransferDialog({
+  transfer: editingTransfer,
   onSave,
 }: TransferDialogProps) {
   const [open, setOpen] = useState(false);
@@ -28,6 +30,13 @@ export default function TransferDialog({
   const [transfer, setTransfer] = useState<Transfer>(
     createEmptyTransfer()
   );
+
+  useEffect(() => {
+    if (editingTransfer) {
+      setTransfer(editingTransfer);
+      setOpen(true);
+    }
+  }, [editingTransfer]);
 
   function handleSave() {
     onSave(transfer);
@@ -37,15 +46,25 @@ export default function TransferDialog({
     setOpen(false);
   }
 
+  function handleOpenChange(value: boolean) {
+    setOpen(value);
+
+    if (!value) {
+      setTransfer(createEmptyTransfer());
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-        + New Transfer
-      </DialogTrigger>
+  + New Transfer
+</DialogTrigger>
 
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>New Transfer</DialogTitle>
+          <DialogTitle>
+            {editingTransfer ? "Edit Transfer" : "New Transfer"}
+          </DialogTitle>
         </DialogHeader>
 
         <TransferForm
@@ -57,7 +76,7 @@ export default function TransferDialog({
           className="mt-6 w-full"
           onClick={handleSave}
         >
-          Save Transfer
+          {editingTransfer ? "Update Transfer" : "Save Transfer"}
         </Button>
       </DialogContent>
     </Dialog>

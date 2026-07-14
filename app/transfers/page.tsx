@@ -45,16 +45,31 @@ export default function TransfersPage() {
     },
   ]);
 
+  const [editingTransfer, setEditingTransfer] =
+    useState<Transfer | null>(null);
+
   function handleSave(transfer: Transfer) {
-    setTransfers((prev) => [...prev, transfer]);
+    if (editingTransfer) {
+      setTransfers((prev) =>
+        prev.map((t) =>
+          t.id === transfer.id ? transfer : t
+        )
+      );
+
+      setEditingTransfer(null);
+    } else {
+      setTransfers((prev) => [...prev, transfer]);
+    }
   }
 
   function handleDelete(id: string) {
-    setTransfers((prev) => prev.filter((t) => t.id !== id));
+    setTransfers((prev) =>
+      prev.filter((t) => t.id !== id)
+    );
   }
 
   function handleEdit(transfer: Transfer) {
-    console.log("Edit:", transfer);
+    setEditingTransfer(transfer);
   }
 
   const filteredTransfers = useMemo(() => {
@@ -90,7 +105,10 @@ export default function TransfersPage() {
             </p>
           </div>
 
-          <TransferDialog onSave={handleSave} />
+          <TransferDialog
+            transfer={editingTransfer}
+            onSave={handleSave}
+          />
         </div>
 
         <SearchBar
