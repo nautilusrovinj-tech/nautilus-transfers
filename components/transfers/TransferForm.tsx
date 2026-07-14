@@ -1,5 +1,6 @@
 "use client";
 
+import { drivers } from "@/data/drivers";
 import { Transfer } from "@/types/transfer";
 
 interface TransferFormProps {
@@ -103,14 +104,22 @@ export default function TransferForm({
         }
       />
 
-      {/* Assignment */}
-      <input
+      {/* Driver */}
+      <select
         className="border rounded-lg p-2"
-        placeholder="Driver"
         value={transfer.driver}
         onChange={(e) => updateField("driver", e.target.value)}
-      />
+      >
+        <option value="">Select Driver</option>
 
+        {drivers.map((driver) => (
+          <option key={driver} value={driver}>
+            {driver}
+          </option>
+        ))}
+      </select>
+
+      {/* Vehicle */}
       <input
         className="border rounded-lg p-2"
         placeholder="Vehicle"
@@ -118,6 +127,7 @@ export default function TransferForm({
         onChange={(e) => updateField("vehicle", e.target.value)}
       />
 
+      {/* Partner */}
       <input
         className="border rounded-lg p-2"
         placeholder="Partner"
@@ -125,6 +135,7 @@ export default function TransferForm({
         onChange={(e) => updateField("partner", e.target.value)}
       />
 
+      {/* Price */}
       <input
         className="border rounded-lg p-2"
         type="number"
