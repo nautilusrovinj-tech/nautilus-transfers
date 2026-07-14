@@ -1,6 +1,7 @@
 "use client";
 
 import { drivers } from "@/data/drivers";
+import { vehicles } from "@/data/vehicles";
 import { Transfer } from "@/types/transfer";
 
 interface TransferFormProps {
@@ -24,7 +25,6 @@ export default function TransferForm({
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      {/* Client */}
       <input
         className="border rounded-lg p-2"
         placeholder="Client Name"
@@ -46,7 +46,6 @@ export default function TransferForm({
         onChange={(e) => updateField("email", e.target.value)}
       />
 
-      {/* Date / Time */}
       <input
         className="border rounded-lg p-2"
         type="date"
@@ -61,7 +60,6 @@ export default function TransferForm({
         onChange={(e) => updateField("time", e.target.value)}
       />
 
-      {/* Route */}
       <input
         className="border rounded-lg p-2"
         placeholder="Pickup"
@@ -83,7 +81,6 @@ export default function TransferForm({
         onChange={(e) => updateField("flight", e.target.value)}
       />
 
-      {/* Passengers */}
       <input
         className="border rounded-lg p-2"
         type="number"
@@ -104,7 +101,6 @@ export default function TransferForm({
         }
       />
 
-      {/* Driver */}
       <select
         className="border rounded-lg p-2"
         value={transfer.driver}
@@ -119,15 +115,20 @@ export default function TransferForm({
         ))}
       </select>
 
-      {/* Vehicle */}
-      <input
+      <select
         className="border rounded-lg p-2"
-        placeholder="Vehicle"
         value={transfer.vehicle}
         onChange={(e) => updateField("vehicle", e.target.value)}
-      />
+      >
+        <option value="">Select Vehicle</option>
 
-      {/* Partner */}
+        {vehicles.map((vehicle) => (
+          <option key={vehicle} value={vehicle}>
+            {vehicle}
+          </option>
+        ))}
+      </select>
+
       <input
         className="border rounded-lg p-2"
         placeholder="Partner"
@@ -135,7 +136,6 @@ export default function TransferForm({
         onChange={(e) => updateField("partner", e.target.value)}
       />
 
-      {/* Price */}
       <input
         className="border rounded-lg p-2"
         type="number"
@@ -146,7 +146,6 @@ export default function TransferForm({
         }
       />
 
-      {/* Status */}
       <select
         className="border rounded-lg p-2"
         value={transfer.status}
@@ -163,7 +162,6 @@ export default function TransferForm({
 
       <div />
 
-      {/* Notes */}
       <textarea
         className="col-span-2 border rounded-lg p-2"
         rows={4}
