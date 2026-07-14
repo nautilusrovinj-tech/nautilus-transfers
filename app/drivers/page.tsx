@@ -1,39 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
 import DriverDialog from "@/components/drivers/DriverDialog";
 import DriverTable from "@/components/drivers/DriverTable";
 
 import { Driver } from "@/types/driver";
-import { drivers as initialDrivers } from "@/data/drivers";
+import { getDrivers } from "@/lib/services/driverService";
 
 export default function DriversPage() {
-  const [drivers, setDrivers] =
-    useState<Driver[]>(initialDrivers);
-
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [editingDriver, setEditingDriver] =
     useState<Driver | null>(null);
 
-  function handleSave(driver: Driver) {
-    if (editingDriver) {
-      setDrivers((prev) =>
-        prev.map((d) =>
-          d.id === driver.id ? driver : d
-        )
-      );
+  useEffect(() => {
+    loadDrivers();
+  }, []);
 
-      setEditingDriver(null);
-    } else {
-      setDrivers((prev) => [...prev, driver]);
+  async function loadDrivers() {
+    try {
+      const data = await getDrivers();
+      setDrivers(data);
+    } catch (error) {
+      console.error(error);
     }
   }
 
-  function handleDelete(id: string) {
-    setDrivers((prev) =>
-      prev.filter((driver) => driver.id !== id)
-    );
+  async function handleSave(driver: Driver) {
+    // We will connect Save to Supabase next.
+    console.log(driver);
+
+    setEditingDriver(null);
+  }
+
+  async function handleDelete(id: string) {
+    // We will connect Delete to Supabase next.
+    console.log(id);
   }
 
   function handleEdit(driver: Driver) {
