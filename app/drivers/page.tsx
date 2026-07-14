@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
-import DriverTable from "@/components/drivers/DriverTable";
 import DriverDialog from "@/components/drivers/DriverDialog";
+import DriverTable from "@/components/drivers/DriverTable";
 
 import { Driver } from "@/types/driver";
 import { drivers as initialDrivers } from "@/data/drivers";
@@ -15,6 +15,16 @@ export default function DriversPage() {
 
   function handleSave(driver: Driver) {
     setDrivers((prev) => [...prev, driver]);
+  }
+
+  function handleDelete(id: string) {
+    setDrivers((prev) =>
+      prev.filter((driver) => driver.id !== id)
+    );
+  }
+
+  function handleEdit(driver: Driver) {
+    console.log("Edit:", driver);
   }
 
   return (
@@ -34,7 +44,11 @@ export default function DriversPage() {
           <DriverDialog onSave={handleSave} />
         </div>
 
-        <DriverTable drivers={drivers} />
+        <DriverTable
+          drivers={drivers}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
       </div>
     </AppLayout>
   );
