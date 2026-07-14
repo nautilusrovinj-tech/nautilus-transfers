@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
 import TransferDialog from "@/components/transfers/TransferDialog";
 import TransferTable from "@/components/transfers/TransferTable";
+import SearchBar from "@/components/transfers/SearchBar";
 
 import { Transfer } from "@/types/transfer";
 import { createEmptyTransfer } from "@/lib/transfer";
 
 export default function TransfersPage() {
+  const [search, setSearch] = useState("");
+
   const [transfers, setTransfers] = useState<Transfer[]>([
     {
       ...createEmptyTransfer(),
@@ -42,47 +45,65 @@ export default function TransfersPage() {
     },
   ]);
 
-  const [selectedTransfer, setSelectedTransfer] =
-    useState<Transfer | null>(null);
-
   function handleSave(transfer: Transfer) {
     setTransfers((prev) => [...prev, transfer]);
   }
 
   function handleDelete(id: string) {
-    setTransfers((prev) =>
-      prev.filter((t) => t.id !== id)
-    );
+    setTransfers((prev) => prev.filter((t) => t.id !== id));
   }
 
   function handleEdit(transfer: Transfer) {
-    setSelectedTransfer(transfer);
-
-    console.log("Editing:", transfer);
+    console.log("Edit:", transfer);
   }
+
+  const filteredTransfers = useMemo(() => {
+    const q = search.toLowerCase();
+
+    return transfers.filter((t) =>
+      [
+        t.transferNumber,
+        t.clientName,
+        t.phone,
+        t.flight,
+        t.pickup,
+        t.destination,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [search, transfers]);
 
   return (
     <AppLayout>
       <div className="space-y-6">
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">
-              Bookings
+              Transfers
             </h1>
 
             <p className="text-slate-500">
-              Manage all transfer bookings.
+              Manage all airport transfers.
             </p>
           </div>
 
           <TransferDialog onSave={handleSave} />
         </div>
 
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+        />
+
         <TransferTable
-          transfers={transfers}
+          transfers={filteredTransfers}
           onDelete={handleDelete}
           onEdit={handleEdit}
         />
+
       </div>
     </AppLayout>
   );
