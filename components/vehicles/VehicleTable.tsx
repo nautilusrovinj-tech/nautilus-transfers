@@ -1,10 +1,17 @@
+import { Button } from "@/components/ui/button";
 import { Vehicle } from "@/types/vehicle";
 
 interface Props {
   vehicles: Vehicle[];
+  onDelete?: (id: string) => void;
+  onEdit?: (vehicle: Vehicle) => void;
 }
 
-export default function VehicleTable({ vehicles }: Props) {
+export default function VehicleTable({
+  vehicles,
+  onDelete,
+  onEdit,
+}: Props) {
   return (
     <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
       <table className="w-full">
@@ -14,6 +21,7 @@ export default function VehicleTable({ vehicles }: Props) {
             <th className="p-4 text-left">Registration</th>
             <th className="p-4 text-left">Seats</th>
             <th className="p-4 text-left">Status</th>
+            <th className="p-4 text-center">Actions</th>
           </tr>
         </thead>
 
@@ -21,7 +29,7 @@ export default function VehicleTable({ vehicles }: Props) {
           {vehicles.length === 0 ? (
             <tr>
               <td
-                colSpan={4}
+                colSpan={5}
                 className="p-6 text-center text-slate-500"
               >
                 No vehicles found.
@@ -55,6 +63,25 @@ export default function VehicleTable({ vehicles }: Props) {
                   >
                     {vehicle.active ? "Active" : "Inactive"}
                   </span>
+                </td>
+
+                <td className="p-4">
+                  <div className="flex justify-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => onEdit?.(vehicle)}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => onDelete?.(vehicle.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))
