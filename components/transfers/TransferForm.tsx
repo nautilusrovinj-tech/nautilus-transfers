@@ -118,11 +118,13 @@ export default function TransferForm({
       >
         <option value="">Select Driver</option>
 
-        {drivers.map((driver) => (
-          <option key={driver} value={driver}>
-            {driver}
-          </option>
-        ))}
+        {drivers
+  .filter((driver) => driver.active)
+  .map((driver) => (
+    <option key={driver.id} value={driver.name}>
+      {driver.name}
+    </option>
+  ))}
       </select>
 
       {/* Vehicle */}
