@@ -1,55 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
 import DispatchStats from "@/components/dispatch/DispatchStats";
 import DispatchTable from "@/components/dispatch/DispatchTable";
 import NextPickupCard from "@/components/dispatch/NextPickupCard";
 import AttentionPanel from "@/components/dispatch/AttentionPanel";
+import DispatchSearch from "@/components/dispatch/DispatchSearch";
+import DispatchFilters from "@/components/dispatch/DispatchFilters";
 import TransferDialog from "@/components/transfers/TransferDialog";
 
-import { Transfer } from "@/types/transfer";
-import {
-  getTransfers,
-  updateTransfer,
-} from "@/lib/services/transferService";
-
 import { drivers } from "@/data/drivers";
+import { Transfer } from "@/types/transfer";
 
-type Filter = "today" | "tomorrow" | "all";
+import { useTransfers } from "@/hooks/useTransfers";
+
+type DayFilter = "today" | "tomorrow" | "all";
 
 export default function DispatchPage() {
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
-  const [filter, setFilter] = useState<Filter>("today");
+  const {
+    transfers,
+    saveTransfer,
+    updateDriver,
+    updateVehicle,
+  } = useTransfers();
+
   const [editingTransfer, setEditingTransfer] =
     useState<Transfer | null>(null);
 
-  useEffect(() => {
-    loadTransfers();
-  }, []);
+  const [dayFilter, setDayFilter] =
+    useState<DayFilter>("today");
 
-  async function loadTransfers() {
-    try {
-      const data = await getTransfers();
-      setTransfers(data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const [statusFilter, setStatusFilter] =
+    useState("All");
 
-  async function handleSave(transfer: Transfer) {
-    try {
-      await updateTransfer(transfer);
-
-      setEditingTransfer(null);
-
-      await loadTransfers();
-    } catch (error) {
-      console.error(error);
-      alert("Unable to save transfer.");
-    }
-  }
+  const [search, setSearch] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -62,11 +48,75 @@ export default function DispatchPage() {
 
   const filteredTransfers = useMemo(() => {
     return transfers.filter((t) => {
-      if (filter === "today") return t.date === today;
-      if (filter === "tomorrow") return t.date === tomorrow;
+      // Day filter
+
+      if (
+        dayFilter === "today" &&
+        t.date !== today
+      )
+        return false;
+
+      if (
+        dayFilter === "tomorrow" &&
+        t.date !== tomorrow
+      )
+        return false;
+
+      // Status filter
+
+      if (
+        statusFilter !== "All" &&
+        t.status !== statusFilter
+      )
+        return false;
+
+      // Search
+
+      if (search.trim() !== "") {
+        const value = search.toLowerCase();
+
+        const found =
+          t.transferNumber
+            .toLowerCase()
+            .includes(value) ||
+          t.clientName
+            .toLowerCase()
+            .includes(value) ||
+          t.phone
+            .toLowerCase()
+            .includes(value) ||
+          t.flight
+            .toLowerCase()
+            .includes(value) ||
+          t.pickup
+            .toLowerCase()
+            .includes(value) ||
+          t.destination
+            .toLowerCase()
+            .includes(value) ||
+          t.driver
+            .toLowerCase()
+            .includes(value) ||
+          t.vehicle
+            .toLowerCase()
+            .includes(value) ||
+          t.partner
+            .toLowerCase()
+            .includes(value);
+
+        if (!found) return false;
+      }
+
       return true;
     });
-  }, [transfers, filter, today, tomorrow]);
+  }, [
+    transfers,
+    dayFilter,
+    statusFilter,
+    search,
+    today,
+    tomorrow,
+  ]);
 
   const stats = useMemo(() => {
     return {
@@ -100,7 +150,7 @@ export default function DispatchPage() {
 
   function getDriverPhone(driverName: string) {
     return (
-      drivers.find((driver) => driver.name === driverName)
+      drivers.find((d) => d.name === driverName)
         ?.phone ?? ""
     );
   }
@@ -127,26 +177,34 @@ export default function DispatchPage() {
         />
 
         <div className="grid gap-6 lg:grid-cols-2">
-
           <NextPickupCard
             transfer={nextPickup}
-            onEdit={(transfer) =>
-              setEditingTransfer(transfer)
-            }
+            onEdit={setEditingTransfer}
           />
 
           <AttentionPanel
             transfers={filteredTransfers}
           />
-
         </div>
+
+        <DispatchSearch
+          value={search}
+          onChange={setSearch}
+        />
+
+        <DispatchFilters
+          filter={statusFilter}
+          onChange={setStatusFilter}
+        />
 
         <div className="flex gap-3">
 
           <button
-            onClick={() => setFilter("today")}
+            onClick={() =>
+              setDayFilter("today")
+            }
             className={`rounded-lg px-4 py-2 ${
-              filter === "today"
+              dayFilter === "today"
                 ? "bg-blue-600 text-white"
                 : "bg-slate-100"
             }`}
@@ -155,9 +213,11 @@ export default function DispatchPage() {
           </button>
 
           <button
-            onClick={() => setFilter("tomorrow")}
+            onClick={() =>
+              setDayFilter("tomorrow")
+            }
             className={`rounded-lg px-4 py-2 ${
-              filter === "tomorrow"
+              dayFilter === "tomorrow"
                 ? "bg-blue-600 text-white"
                 : "bg-slate-100"
             }`}
@@ -166,9 +226,11 @@ export default function DispatchPage() {
           </button>
 
           <button
-            onClick={() => setFilter("all")}
+            onClick={() =>
+              setDayFilter("all")
+            }
             className={`rounded-lg px-4 py-2 ${
-              filter === "all"
+              dayFilter === "all"
                 ? "bg-blue-600 text-white"
                 : "bg-slate-100"
             }`}
@@ -180,15 +242,15 @@ export default function DispatchPage() {
 
         <DispatchTable
           transfers={filteredTransfers}
-          onEdit={(transfer) =>
-            setEditingTransfer(transfer)
-          }
+          onEdit={setEditingTransfer}
           getDriverPhone={getDriverPhone}
+          onAssignDriver={updateDriver}
+          onAssignVehicle={updateVehicle}
         />
 
         <TransferDialog
           transfer={editingTransfer}
-          onSave={handleSave}
+          onSave={saveTransfer}
           hideTrigger
         />
 

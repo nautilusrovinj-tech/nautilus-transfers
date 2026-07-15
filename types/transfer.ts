@@ -34,9 +34,15 @@ export interface Transfer {
   babySeats: number;
   boosterSeats: number;
 
-  driver: string;
-  vehicle: string;
-  partner: string;
+  // Legacy fields (temporary during migration)
+driver: string;
+vehicle: string;
+partner: string;
+
+// New relational fields
+driverId: string;
+vehicleId: string;
+partnerId: string;
 
   price: number;
 

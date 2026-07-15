@@ -6,12 +6,10 @@ export async function getTransfers(): Promise<Transfer[]> {
   const { data, error } = await supabase
     .from("transfers")
     .select("*")
-    .order("date")
-    .order("time");
+    .order("date", { ascending: true })
+    .order("time", { ascending: true });
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   return (data ?? []).map(mapTransfer);
 }
@@ -23,11 +21,9 @@ export async function getTodaysTransfers(): Promise<Transfer[]> {
     .from("transfers")
     .select("*")
     .eq("date", today)
-    .order("time");
+    .order("time", { ascending: true });
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   return (data ?? []).map(mapTransfer);
 }
@@ -59,6 +55,10 @@ export async function createTransfer(transfer: Transfer) {
       vehicle: transfer.vehicle,
       partner: transfer.partner,
 
+      driver_id: transfer.driverId || null,
+      vehicle_id: transfer.vehicleId || null,
+      partner_id: transfer.partnerId || null,
+
       price: transfer.price,
 
       status: transfer.status,
@@ -66,12 +66,12 @@ export async function createTransfer(transfer: Transfer) {
       notes: transfer.notes,
     });
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 }
 
-export async function updateTransfer(transfer: Transfer) {
+export async function updateTransfer(
+  transfer: Transfer
+) {
   const { error } = await supabase
     .from("transfers")
     .update({
@@ -98,6 +98,10 @@ export async function updateTransfer(transfer: Transfer) {
       vehicle: transfer.vehicle,
       partner: transfer.partner,
 
+      driver_id: transfer.driverId || null,
+      vehicle_id: transfer.vehicleId || null,
+      partner_id: transfer.partnerId || null,
+
       price: transfer.price,
 
       status: transfer.status,
@@ -106,9 +110,7 @@ export async function updateTransfer(transfer: Transfer) {
     })
     .eq("id", transfer.id);
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 }
 
 export async function deleteTransfer(id: string) {
@@ -117,7 +119,34 @@ export async function deleteTransfer(id: string) {
     .delete()
     .eq("id", id);
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
+}
+
+export async function assignDriver(
+  transferId: string,
+  driver: string
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update({
+      driver,
+      status: "Assigned",
+    })
+    .eq("id", transferId);
+
+  if (error) throw error;
+}
+
+export async function assignVehicle(
+  transferId: string,
+  vehicle: string
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update({
+      vehicle,
+    })
+    .eq("id", transferId);
+
+  if (error) throw error;
 }

@@ -14,8 +14,6 @@ export function createEmptyTransfer(): Transfer {
 
     transferNumber: generateTransferNumber(),
 
-    transferType: "Arrival",
-
     clientName: "",
     phone: "",
     email: "",
@@ -32,14 +30,23 @@ export function createEmptyTransfer(): Transfer {
     babySeats: 0,
     boosterSeats: 0,
 
+    // Legacy fields (kept during migration)
     driver: "",
     vehicle: "",
     partner: "",
+
+    // New relational fields
+    driverId: "",
+    vehicleId: "",
+    partnerId: "",
 
     price: 0,
 
     status: "New",
 
     notes: "",
+
+    // Keep this if your project already uses it
+    transferType: "Arrival",
   };
 }

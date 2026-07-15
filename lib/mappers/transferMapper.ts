@@ -17,19 +17,28 @@ export function mapTransfer(row: any): Transfer {
     destination: row.destination,
     flight: row.flight ?? "",
 
-    adults: row.adults,
-    children: row.children,
+    adults: row.adults ?? 1,
+    children: row.children ?? 0,
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
+    // Legacy fields (temporary)
     driver: row.driver ?? "",
     vehicle: row.vehicle ?? "",
     partner: row.partner ?? "",
 
-    price: Number(row.price),
+    // New relational fields
+    driverId: row.driver_id ?? "",
+    vehicleId: row.vehicle_id ?? "",
+    partnerId: row.partner_id ?? "",
+
+    price: Number(row.price ?? 0),
 
     status: row.status,
 
     notes: row.notes ?? "",
+
+    // Temporary default until we migrate transfer type
+    transferType: row.transfer_type ?? "Arrival",
   };
 }

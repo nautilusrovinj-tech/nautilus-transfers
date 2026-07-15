@@ -1,4 +1,7 @@
 "use client";
+import { googleMapsUrl } from "@/lib/helpers/maps";
+import DriverSelect from "./DriverSelect";
+import VehicleSelect from "./VehicleSelect";
 
 import { Transfer } from "@/types/transfer";
 import {
@@ -8,14 +11,28 @@ import {
 
 interface Props {
   transfers: Transfer[];
+
   onEdit?: (transfer: Transfer) => void;
+
   getDriverPhone?: (driver: string) => string;
+
+  onAssignDriver?: (
+    transferId: string,
+    driver: string
+  ) => Promise<void>;
+
+  onAssignVehicle?: (
+    transferId: string,
+    vehicle: string
+  ) => Promise<void>;
 }
 
 export default function DispatchTable({
   transfers,
   onEdit,
   getDriverPhone,
+  onAssignDriver,
+  onAssignVehicle,
 }: Props) {
   function statusColor(status: Transfer["status"]) {
     switch (status) {
@@ -98,13 +115,28 @@ export default function DispatchTable({
                     <div>{transfer.destination}</div>
                   </td>
 
-                  <td className="p-4">
-                    {transfer.driver || "-"}
-                  </td>
+                  <td className="p-4 min-w-[180px]">
+  <DriverSelect
+    transferId={transfer.id}
+    value={transfer.driver}
+    onAssigned={(driver) =>
+      onAssignDriver?.(transfer.id, driver) ??
+      Promise.resolve()
+    }
+  />
+</td>
 
-                  <td className="p-4">
-                    {transfer.vehicle || "-"}
-                  </td>
+<td className="p-4 min-w-[180px]">
+  <VehicleSelect
+    value={transfer.vehicle}
+    onChange={(vehicle) =>
+      onAssignVehicle?.(
+        transfer.id,
+        vehicle
+      ) ?? Promise.resolve()
+    }
+  />
+</td>
 
                   <td className="p-4">
                     <span
@@ -165,7 +197,21 @@ export default function DispatchTable({
                       >
                         💬
                       </button>
-
+                      <button
+  onClick={() =>
+    window.open(
+      googleMapsUrl(
+        transfer.pickup,
+        transfer.destination
+      ),
+      "_blank"
+    )
+  }
+  className="rounded-md bg-orange-100 px-2 py-1 hover:bg-orange-200"
+  title="Navigate"
+>
+  🧭
+</button>
                     </div>
                   </td>
 

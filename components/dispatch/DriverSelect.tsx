@@ -1,0 +1,77 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { getDrivers } from "@/lib/services/driverService";
+import { Driver } from "@/types/driver";
+
+interface Props {
+  transferId: string;
+  value: string;
+  onAssigned: (driver: string) => Promise<void>;
+}
+
+export default function DriverSelect({
+  transferId,
+  value,
+  onAssigned,
+}: Props) {
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [selected, setSelected] = useState(value);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadDrivers();
+  }, []);
+
+  useEffect(() => {
+    setSelected(value);
+  }, [value]);
+
+  async function loadDrivers() {
+    try {
+      const data = await getDrivers();
+      setDrivers(data.filter((d) => d.active));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleChange(
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) {
+    const driver = e.target.value;
+
+    setSelected(driver);
+    setSaving(true);
+
+    try {
+      await onAssigned(driver);
+    } catch (err) {
+      console.error(err);
+      alert("Unable to assign driver.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <select
+      className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+      disabled={saving}
+      value={selected}
+      onChange={handleChange}
+    >
+      <option value="">Unassigned</option>
+
+      {drivers.map((driver) => (
+        <option
+          key={driver.id}
+          value={driver.name}
+        >
+          {driver.name}
+        </option>
+      ))}
+    </select>
+  );
+}
