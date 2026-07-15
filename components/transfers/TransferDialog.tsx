@@ -19,11 +19,13 @@ import { createEmptyTransfer } from "@/lib/transfer";
 interface TransferDialogProps {
   transfer?: Transfer | null;
   onSave: (transfer: Transfer) => void;
+  hideTrigger?: boolean;
 }
 
 export default function TransferDialog({
   transfer: editingTransfer,
   onSave,
+  hideTrigger = false,
 }: TransferDialogProps) {
   const [open, setOpen] = useState(false);
 
@@ -56,14 +58,21 @@ export default function TransferDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-  + New Transfer
-</DialogTrigger>
+
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button>
+            + New Transfer
+          </Button>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {editingTransfer ? "Edit Transfer" : "New Transfer"}
+            {editingTransfer
+              ? "Edit Transfer"
+              : "New Transfer"}
           </DialogTitle>
         </DialogHeader>
 
@@ -76,9 +85,12 @@ export default function TransferDialog({
           className="mt-6 w-full"
           onClick={handleSave}
         >
-          {editingTransfer ? "Update Transfer" : "Save Transfer"}
+          {editingTransfer
+            ? "Update Transfer"
+            : "Save Transfer"}
         </Button>
       </DialogContent>
+
     </Dialog>
   );
 }

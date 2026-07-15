@@ -5,10 +5,18 @@ export type TransferStatus =
   | "Completed"
   | "Cancelled";
 
+export type TransferType =
+  | "Arrival"
+  | "Departure"
+  | "Tour"
+  | "Local";
+
 export interface Transfer {
   id: string;
 
   transferNumber: string;
+
+  transferType: TransferType;
 
   clientName: string;
   phone: string;

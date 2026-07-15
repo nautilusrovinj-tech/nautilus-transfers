@@ -14,6 +14,8 @@ export function createEmptyTransfer(): Transfer {
 
     transferNumber: generateTransferNumber(),
 
+    transferType: "Arrival",
+
     clientName: "",
     phone: "",
     email: "",
