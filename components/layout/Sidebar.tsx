@@ -7,14 +7,12 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menu = [
-    { name: "Dashboard", href: "/" },
-    { name: "Dispatch", href: "/dispatch" },
+    { name: "Dashboard", href: "/dispatch" },
     { name: "Transfers", href: "/transfers" },
     { name: "Drivers", href: "/drivers" },
     { name: "Vehicles", href: "/vehicles" },
     { name: "Partners", href: "/partners" },
     { name: "Reports", href: "/reports" },
-    { name: "Settings", href: "/settings" },
   ];
 
   return (
