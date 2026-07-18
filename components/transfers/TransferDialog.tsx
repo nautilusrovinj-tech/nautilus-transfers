@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,7 +10,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 import {
@@ -31,7 +31,7 @@ import {
   generateTransferNumber,
 } from "@/lib/transfer";
 
-interface TransferDialogProps {
+interface Props {
   transfer?: Transfer | null;
   onSave: (transfer: Transfer) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
@@ -39,53 +39,49 @@ interface TransferDialogProps {
 }
 
 export default function TransferDialog({
-  transfer: editingTransfer,
+  transfer,
   onSave,
   onDelete,
   hideTrigger = false,
-}: TransferDialogProps) {
+}: Props) {
   const [open, setOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const [transfer, setTransfer] =
+  const [currentTransfer, setCurrentTransfer] =
     useState<Transfer>(createEmptyTransfer());
 
-  const isEditing =
-    editingTransfer !== null &&
-    editingTransfer !== undefined;
+  const editing =
+    transfer !== null &&
+    transfer !== undefined;
 
   useEffect(() => {
-    if (editingTransfer) {
-      setTransfer(editingTransfer);
+    if (transfer) {
+      setCurrentTransfer(transfer);
       setOpen(true);
     }
-  }, [editingTransfer]);
+  }, [transfer]);
+
+  function handleOpenChange(value: boolean) {
+    setOpen(value);
+
+    if (!value) {
+      setCurrentTransfer(createEmptyTransfer());
+    }
+  }
 
   async function handleSave() {
     try {
       setSaving(true);
 
-      await onSave(transfer);
+      await onSave(currentTransfer);
 
       setOpen(false);
 
-      setTransfer(createEmptyTransfer());
+      setCurrentTransfer(createEmptyTransfer());
     } finally {
       setSaving(false);
     }
-  }
-
-  function handleDuplicate() {
-    setTransfer({
-      ...transfer,
-
-      id: crypto.randomUUID(),
-
-      transferNumber: generateTransferNumber(),
-
-      status: "New",
-    });
   }
 
   async function handleDelete() {
@@ -94,66 +90,61 @@ export default function TransferDialog({
     try {
       setSaving(true);
 
-      await onDelete(transfer.id);
+      await onDelete(currentTransfer.id);
 
       setConfirmDelete(false);
 
       setOpen(false);
 
-      setTransfer(createEmptyTransfer());
+      setCurrentTransfer(createEmptyTransfer());
     } finally {
       setSaving(false);
     }
   }
 
-  function handleOpenChange(value: boolean) {
-    setOpen(value);
-
-    if (!value) {
-      setTransfer(createEmptyTransfer());
-    }
+  function handleDuplicate() {
+    setCurrentTransfer({
+      ...currentTransfer,
+      id: crypto.randomUUID(),
+      transferNumber: generateTransferNumber(),
+      status: "New",
+    });
   }
 
   return (
     <>
+      {!hideTrigger && (
+        <Button
+          onClick={() => {
+            setCurrentTransfer(createEmptyTransfer());
+            setOpen(true);
+          }}
+        >
+          New Transfer
+        </Button>
+      )}
+
       <Dialog
         open={open}
         onOpenChange={handleOpenChange}
       >
-        {!hideTrigger && (
-  <DialogTrigger
-    render={
-      <Button>
-        + New Transfer
-      </Button>
-    }
-  />
-)}
-
-        <DialogContent className="max-w-5xl">
-
+        <DialogContent className="max-h-[92vh] w-[96vw] max-w-7xl overflow-y-auto">
           <DialogHeader>
-
             <DialogTitle>
-
-              {isEditing
+              {editing
                 ? "Edit Transfer"
                 : "New Transfer"}
-
             </DialogTitle>
-
           </DialogHeader>
 
           <TransferForm
-            transfer={transfer}
-            setTransfer={setTransfer}
+            transfer={currentTransfer}
+            setTransfer={setCurrentTransfer}
           />
 
           <div className="mt-8 flex justify-between">
-
-            <div className="flex gap-3">
-
-              {isEditing && (
+            <div className="flex gap-2">
+              {editing && (
                 <>
                   <Button
                     variant="secondary"
@@ -172,7 +163,6 @@ export default function TransferDialog({
                   </Button>
                 </>
               )}
-
             </div>
 
             <Button
@@ -181,15 +171,12 @@ export default function TransferDialog({
             >
               {saving
                 ? "Saving..."
-                : isEditing
+                : editing
                 ? "Update Transfer"
                 : "Save Transfer"}
             </Button>
-
           </div>
-
         </DialogContent>
-
       </Dialog>
 
       <AlertDialog
@@ -197,48 +184,19 @@ export default function TransferDialog({
         onOpenChange={setConfirmDelete}
       >
         <AlertDialogContent>
-
           <AlertDialogHeader>
-
             <AlertDialogTitle>
-
               Delete Transfer?
-
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-
               This action cannot be undone.
-
-              <br />
-              <br />
-
-              <strong>
-                {transfer.clientName}
-              </strong>
-
-              <br />
-
-              {transfer.pickup}
-
-              <br />
-
-              ↓
-
-              <br />
-
-              {transfer.destination}
-
             </AlertDialogDescription>
-
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-
             <AlertDialogCancel>
-
               Cancel
-
             </AlertDialogCancel>
 
             <AlertDialogAction
@@ -246,11 +204,8 @@ export default function TransferDialog({
             >
               Delete
             </AlertDialogAction>
-
           </AlertDialogFooter>
-
         </AlertDialogContent>
-
       </AlertDialog>
     </>
   );

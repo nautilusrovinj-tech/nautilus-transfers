@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({
+export async function updateSession(
+  request: NextRequest
+) {
+  const response = NextResponse.next({
     request,
   });
 
@@ -14,18 +16,27 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
 
-            response.cookies.set(name, value, options);
-          });
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              request.cookies.set(
+                name,
+                value
+              );
+
+              response.cookies.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
         },
       },
     }
   );
 
-  // Refresh the auth session if needed
   await supabase.auth.getUser();
 
   return response;

@@ -1,3 +1,5 @@
+import PageCard from "@/components/ui/PageCard";
+import { useLookups } from "@/hooks/useLookups";
 import { Transfer } from "@/types/transfer";
 
 interface Props {
@@ -9,29 +11,33 @@ export default function NextPickupCard({
   transfer,
   onEdit,
 }: Props) {
+  const {
+    getDriverName,
+    getVehicleName,
+    getPartnerName,
+  } = useLookups();
+
   if (!transfer) {
     return (
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-bold">
-          ✈️ Next Pickup
+      <PageCard className="p-6">
+        <h2 className="text-xl font-semibold">
+          Next Pickup
         </h2>
 
-        <p className="text-slate-500">
+        <p className="mt-4 text-slate-500">
           No upcoming transfers.
         </p>
-      </div>
+      </PageCard>
     );
   }
 
   return (
-    <div className="rounded-xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
-
-      <h2 className="mb-5 text-xl font-bold">
-        ✈️ Next Pickup
+    <PageCard className="border-blue-200 bg-blue-50 p-6">
+      <h2 className="mb-5 text-xl font-semibold">
+        Next Pickup
       </h2>
 
       <div className="space-y-3">
-
         <div className="text-4xl font-bold text-blue-700">
           {transfer.time}
         </div>
@@ -41,71 +47,100 @@ export default function NextPickupCard({
         </div>
 
         <div>
-          ✈️ <strong>{transfer.flight || "-"}</strong>
+          <span className="font-medium">
+            Flight:
+          </span>{" "}
+          {transfer.flight || "-"}
         </div>
 
         <div>
-          📍 {transfer.pickup}
+          <span className="font-medium">
+            From:
+          </span>{" "}
+          {transfer.pickup}
         </div>
 
-        <div className="text-center text-slate-500 text-xl">
+        <div className="text-center text-slate-400">
           ↓
         </div>
 
         <div>
-          🏨 {transfer.destination}
+          <span className="font-medium">
+            To:
+          </span>{" "}
+          {transfer.destination}
         </div>
 
         <hr className="my-4" />
 
         <div>
-          👥{" "}
-          <strong>
-            {transfer.adults} Adult{transfer.adults !== 1 ? "s" : ""}
-            {transfer.children > 0 &&
-              ` • ${transfer.children} Child${transfer.children !== 1 ? "ren" : ""}`}
-          </strong>
+          <span className="font-medium">
+            Passengers:
+          </span>{" "}
+          {transfer.adults} Adult
+          {transfer.adults !== 1 ? "s" : ""}
+          {transfer.children > 0 &&
+            ` • ${transfer.children} Child${
+              transfer.children !== 1
+                ? "ren"
+                : ""
+            }`}
         </div>
 
         <div>
-          👤 <strong>{transfer.driver || "Not Assigned"}</strong>
+          <span className="font-medium">
+            Driver:
+          </span>{" "}
+          {getDriverName(
+            transfer.driverId
+          ) || "-"}
         </div>
 
         <div>
-          🚐 <strong>{transfer.vehicle || "Not Assigned"}</strong>
+          <span className="font-medium">
+            Vehicle:
+          </span>{" "}
+          {getVehicleName(
+            transfer.vehicleId
+          ) || "-"}
         </div>
 
         <div>
-          🤝 <strong>{transfer.partner || "Direct"}</strong>
+          <span className="font-medium">
+            Partner:
+          </span>{" "}
+          {getPartnerName(
+            transfer.partnerId
+          ) || "Direct"}
         </div>
 
         <div>
-          💶 <strong>€{transfer.price.toFixed(2)}</strong>
+          <span className="font-medium">
+            Price:
+          </span>{" "}
+          €{transfer.price.toFixed(2)}
         </div>
 
         <div>
-          📞 <strong>{transfer.phone || "-"}</strong>
+          <span className="font-medium">
+            Phone:
+          </span>{" "}
+          {transfer.phone || "-"}
         </div>
-
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3">
-
         <button
           onClick={() => onEdit?.(transfer)}
-          className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+          className="rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800"
         >
-          ✏️ Edit
+          Edit
         </button>
 
-        <button
-          className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700"
-        >
-          ✅ Complete
+        <button className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
+          Complete
         </button>
-
       </div>
-
-    </div>
+    </PageCard>
   );
 }

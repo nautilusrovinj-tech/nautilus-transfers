@@ -3,95 +3,114 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 import DriverForm from "./DriverForm";
 
 import { Driver } from "@/types/driver";
+import { createEmptyDriver } from "@/lib/driver";
 
 interface Props {
   driver?: Driver | null;
-  onSave: (driver: Driver) => void;
+  onSave: (driver: Driver) => Promise<void>;
+  hideTrigger?: boolean;
 }
 
-const emptyDriver: Driver = {
-  id: "",
-  name: "",
-  phone: "",
-  email: "",
-  languages: "",
-  active: true,
-};
-
 export default function DriverDialog({
-  driver: editingDriver,
+  driver,
   onSave,
+  hideTrigger = false,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [driver, setDriver] =
-    useState<Driver>(emptyDriver);
+  const [currentDriver, setCurrentDriver] =
+    useState<Driver>(createEmptyDriver());
+
+  const editing = !!driver;
 
   useEffect(() => {
-    if (editingDriver) {
-      setDriver(editingDriver);
+    if (driver) {
+      setCurrentDriver(driver);
       setOpen(true);
+    } else {
+      setCurrentDriver(createEmptyDriver());
     }
-  }, [editingDriver]);
-
-  function handleSave() {
-    onSave(
-      driver.id
-        ? driver
-        : {
-            ...driver,
-            id: crypto.randomUUID(),
-          }
-    );
-
-    setDriver(emptyDriver);
-    setOpen(false);
-  }
+  }, [driver]);
 
   function handleOpenChange(value: boolean) {
     setOpen(value);
 
     if (!value) {
-      setDriver(emptyDriver);
+      setCurrentDriver(createEmptyDriver());
+    }
+  }
+
+  async function handleSave() {
+    try {
+      setSaving(true);
+
+      await onSave(currentDriver);
+
+      setOpen(false);
+
+      setCurrentDriver(createEmptyDriver());
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-        + New Driver
-      </DialogTrigger>
-
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {editingDriver ? "Edit Driver" : "New Driver"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <DriverForm
-          driver={driver}
-          setDriver={setDriver}
-        />
-
+    <>
+      {!hideTrigger && (
         <Button
-          className="mt-6 w-full"
-          onClick={handleSave}
+          onClick={() => {
+            setCurrentDriver(createEmptyDriver());
+            setOpen(true);
+          }}
         >
-          {editingDriver ? "Update Driver" : "Save Driver"}
+          New Driver
         </Button>
-      </DialogContent>
-    </Dialog>
+      )}
+
+      <Dialog
+        open={open}
+        onOpenChange={handleOpenChange}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editing
+                ? "Edit Driver"
+                : "New Driver"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <DriverForm
+            driver={currentDriver}
+            setDriver={setCurrentDriver}
+          />
+
+          <div className="mt-6 flex justify-end">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving
+                ? "Saving..."
+                : editing
+                ? "Update Driver"
+                : "Save Driver"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

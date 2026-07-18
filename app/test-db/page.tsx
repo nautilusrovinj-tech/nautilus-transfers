@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export default function TestDbPage() {
   const [result, setResult] = useState("Connecting...");

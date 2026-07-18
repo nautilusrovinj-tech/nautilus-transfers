@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
+import PageHeader from "@/components/ui/PageHeader";
+
 import DispatchStats from "@/components/dispatch/DispatchStats";
 import DispatchTable from "@/components/dispatch/DispatchTable";
 import NextPickupCard from "@/components/dispatch/NextPickupCard";
@@ -11,10 +13,10 @@ import DispatchSearch from "@/components/dispatch/DispatchSearch";
 import DispatchFilters from "@/components/dispatch/DispatchFilters";
 import TransferDialog from "@/components/transfers/TransferDialog";
 
-import { drivers } from "@/data/drivers";
-import { Transfer } from "@/types/transfer";
-
 import { useTransfers } from "@/hooks/useTransfers";
+import { useLookups } from "@/hooks/useLookups";
+
+import { Transfer } from "@/types/transfer";
 
 type DayFilter = "today" | "tomorrow" | "all";
 
@@ -25,6 +27,13 @@ export default function DispatchPage() {
     updateDriver,
     updateVehicle,
   } = useTransfers();
+
+  const {
+    getDriverPhone,
+    getDriverName,
+    getVehicleName,
+    getPartnerName,
+  } = useLookups();
 
   const [editingTransfer, setEditingTransfer] =
     useState<Transfer | null>(null);
@@ -48,8 +57,6 @@ export default function DispatchPage() {
 
   const filteredTransfers = useMemo(() => {
     return transfers.filter((t) => {
-      // Day filter
-
       if (
         dayFilter === "today" &&
         t.date !== today
@@ -62,47 +69,29 @@ export default function DispatchPage() {
       )
         return false;
 
-      // Status filter
-
       if (
         statusFilter !== "All" &&
         t.status !== statusFilter
       )
         return false;
 
-      // Search
-
       if (search.trim() !== "") {
         const value = search.toLowerCase();
 
-        const found =
-          t.transferNumber
-            .toLowerCase()
-            .includes(value) ||
-          t.clientName
-            .toLowerCase()
-            .includes(value) ||
-          t.phone
-            .toLowerCase()
-            .includes(value) ||
-          t.flight
-            .toLowerCase()
-            .includes(value) ||
-          t.pickup
-            .toLowerCase()
-            .includes(value) ||
-          t.destination
-            .toLowerCase()
-            .includes(value) ||
-          t.driver
-            .toLowerCase()
-            .includes(value) ||
-          t.vehicle
-            .toLowerCase()
-            .includes(value) ||
-          t.partner
-            .toLowerCase()
-            .includes(value);
+        const found = [
+          t.transferNumber,
+          t.clientName,
+          t.phone,
+          t.flight,
+          t.pickup,
+          t.destination,
+          getDriverName(t.driverId),
+          getVehicleName(t.vehicleId),
+          getPartnerName(t.partnerId),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(value);
 
         if (!found) return false;
       }
@@ -116,6 +105,9 @@ export default function DispatchPage() {
     search,
     today,
     tomorrow,
+    getDriverName,
+    getVehicleName,
+    getPartnerName,
   ]);
 
   const stats = useMemo(() => {
@@ -138,36 +130,28 @@ export default function DispatchPage() {
   }, [filteredTransfers]);
 
   const nextPickup = useMemo(() => {
-    if (!filteredTransfers.length) return undefined;
+    if (!filteredTransfers.length)
+      return undefined;
 
-    return [...filteredTransfers].sort((a, b) => {
-      return (
-        new Date(`${a.date}T${a.time}`).getTime() -
-        new Date(`${b.date}T${b.time}`).getTime()
-      );
-    })[0];
+    return [...filteredTransfers].sort(
+      (a, b) =>
+        new Date(
+          `${a.date}T${a.time}`
+        ).getTime() -
+        new Date(
+          `${b.date}T${b.time}`
+        ).getTime()
+    )[0];
   }, [filteredTransfers]);
-
-  function getDriverPhone(driverName: string) {
-    return (
-      drivers.find((d) => d.name === driverName)
-        ?.phone ?? ""
-    );
-  }
 
   return (
     <AppLayout>
       <div className="space-y-6">
 
-        <div>
-          <h1 className="text-3xl font-bold">
-            Dispatch Board
-          </h1>
-
-          <p className="text-slate-500">
-            Daily Operations Center
-          </p>
-        </div>
+        <PageHeader
+          title="Dispatch Board"
+          subtitle="Daily Operations Center"
+        />
 
         <DispatchStats
           total={stats.total}
@@ -198,7 +182,6 @@ export default function DispatchPage() {
         />
 
         <div className="flex gap-3">
-
           <button
             onClick={() =>
               setDayFilter("today")
@@ -237,7 +220,6 @@ export default function DispatchPage() {
           >
             All
           </button>
-
         </div>
 
         <DispatchTable

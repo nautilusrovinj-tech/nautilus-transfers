@@ -1,16 +1,19 @@
+import PageCard from "@/components/ui/PageCard";
 import { Transfer } from "@/types/transfer";
 
 interface Props {
   transfers: Transfer[];
 }
 
-export default function AttentionPanel({ transfers }: Props) {
+export default function AttentionPanel({
+  transfers,
+}: Props) {
   const noDriver = transfers.filter(
-    (t) => !t.driver
+    (t) => !t.driverId
   ).length;
 
   const noVehicle = transfers.filter(
-    (t) => !t.vehicle
+    (t) => !t.vehicleId
   ).length;
 
   const noPhone = transfers.filter(
@@ -20,11 +23,15 @@ export default function AttentionPanel({ transfers }: Props) {
   const upcoming = transfers.filter((t) => {
     if (!t.date || !t.time) return false;
 
-    const transferTime = new Date(`${t.date}T${t.time}`);
+    const transferTime = new Date(
+      `${t.date}T${t.time}`
+    );
+
     const now = new Date();
 
     const diff =
-      (transferTime.getTime() - now.getTime()) /
+      (transferTime.getTime() -
+        now.getTime()) /
       1000 /
       60;
 
@@ -33,49 +40,51 @@ export default function AttentionPanel({ transfers }: Props) {
 
   const items = [
     {
-      label: "Transfers without driver",
+      label: "Without driver",
       value: noDriver,
       color: "text-red-600",
     },
     {
-      label: "Transfers without vehicle",
+      label: "Without vehicle",
       value: noVehicle,
       color: "text-orange-600",
     },
     {
-      label: "Transfers starting within 30 min",
+      label: "Starting within 30 min",
       value: upcoming,
       color: "text-blue-600",
     },
     {
-      label: "Guests without phone",
+      label: "Missing guest phone",
       value: noPhone,
       color: "text-yellow-600",
     },
   ];
 
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-bold">
-        ⚠️ Needs Attention
+    <PageCard className="p-6">
+      <h2 className="mb-5 text-xl font-semibold">
+        Needs Attention
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between"
+            className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0 last:pb-0"
           >
-            <span>{item.label}</span>
+            <span className="text-slate-600">
+              {item.label}
+            </span>
 
             <span
-              className={`font-bold ${item.color}`}
+              className={`text-lg font-semibold ${item.color}`}
             >
               {item.value}
             </span>
           </div>
         ))}
       </div>
-    </div>
+    </PageCard>
   );
 }

@@ -1,3 +1,5 @@
+import Card from "@/components/ui/Card";
+
 interface Props {
   title: string;
   value: string | number;
@@ -8,14 +10,18 @@ export default function StatsCard({
   value,
 }: Props) {
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
-      <div className="text-sm text-slate-500">
-        {title}
-      </div>
+    <Card className="h-full">
+      <div className="space-y-2">
 
-      <div className="mt-2 text-4xl font-bold">
-        {value}
+        <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
+          {title}
+        </p>
+
+        <h2 className="text-4xl font-bold text-slate-900">
+          {value}
+        </h2>
+
       </div>
-    </div>
+    </Card>
   );
 }

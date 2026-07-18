@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-import { getDrivers } from "@/lib/services/driverService";
+import { getDrivers } from "@/services/drivers";
 import { Driver } from "@/types/driver";
 
 interface Props {
   transferId: string;
   value: string;
-  onAssigned: (driver: string) => Promise<void>;
+  onAssigned: (driverId: string) => Promise<void>;
 }
 
 export default function DriverSelect({
@@ -40,13 +40,13 @@ export default function DriverSelect({
   async function handleChange(
     e: React.ChangeEvent<HTMLSelectElement>
   ) {
-    const driver = e.target.value;
+    const driverId = e.target.value;
 
-    setSelected(driver);
+    setSelected(driverId);
     setSaving(true);
 
     try {
-      await onAssigned(driver);
+      await onAssigned(driverId);
     } catch (err) {
       console.error(err);
       alert("Unable to assign driver.");
@@ -67,7 +67,7 @@ export default function DriverSelect({
       {drivers.map((driver) => (
         <option
           key={driver.id}
-          value={driver.name}
+          value={driver.id}
         >
           {driver.name}
         </option>

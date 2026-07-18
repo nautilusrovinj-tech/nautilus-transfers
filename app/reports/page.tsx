@@ -1,17 +1,24 @@
 "use client";
 
 import AppLayout from "@/components/layout/AppLayout";
-import ExportExcelButton from "@/components/reports/ExportExcelButton";
-import { useReports } from "@/hooks/useReports";
+import PageHeader from "@/components/ui/PageHeader";
+
+import RevenueSummaryCard from "@/components/reports/RevenueSummaryCard";
+import PartnerStatsTable from "@/components/reports/PartnerStatsTable";
+import MonthlyStatsTable from "@/components/reports/MonthlyStatsTable";
+import VehicleStatsTable from "@/components/reports/VehicleStatsTable";
+
+import { useTransfers } from "@/hooks/useTransfers";
 
 export default function ReportsPage() {
-  const { loading, report } = useReports();
+  const { transfers, loading } =
+    useTransfers();
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="p-6">
-          Loading reports...
+        <div className="p-8">
+          Loading...
         </div>
       </AppLayout>
     );
@@ -21,65 +28,30 @@ export default function ReportsPage() {
     <AppLayout>
       <div className="space-y-6">
 
-        <div className="flex items-center justify-between">
+        <PageHeader
+          title="Reports"
+          subtitle="Business analytics and revenue overview"
+        />
 
-          <div>
-            <h1 className="text-3xl font-bold">
-              Reports
-            </h1>
+        <RevenueSummaryCard
+          transfers={transfers}
+        />
 
-            <p className="text-slate-500">
-              Business overview and analytics
-            </p>
-          </div>
+        <div className="grid gap-6 xl:grid-cols-2">
 
-          <ExportExcelButton />
+          <PartnerStatsTable
+            transfers={transfers}
+          />
 
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">
-              Today's Revenue
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold text-green-600">
-              €{report.todayRevenue.toFixed(2)}
-            </h2>
-          </div>
-
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">
-              Today's Transfers
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold">
-              {report.todayTransfers}
-            </h2>
-          </div>
-
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">
-              This Month Revenue
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold text-blue-600">
-              €{report.monthRevenue.toFixed(2)}
-            </h2>
-          </div>
-
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">
-              Average Transfer
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold">
-              €{report.averageTransfer.toFixed(2)}
-            </h2>
-          </div>
+          <VehicleStatsTable
+            transfers={transfers}
+          />
 
         </div>
+
+        <MonthlyStatsTable
+          transfers={transfers}
+        />
 
       </div>
     </AppLayout>

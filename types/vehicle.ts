@@ -1,7 +1,15 @@
 export interface Vehicle {
-    id: string;
-    name: string;
-    registration: string;
-    seats: number;
-    active: boolean;
-  }
+  id: string;
+
+  name: string;
+
+  brand: string;
+
+  model: string;
+
+  plate: string;
+
+  seats: number;
+
+  active: boolean;
+}

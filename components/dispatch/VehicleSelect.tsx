@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-import { getVehicles } from "@/lib/services/vehicleService";
+import { getVehicles } from "@/services/vehicles";
 import { Vehicle } from "@/types/vehicle";
 
 interface Props {
   value: string;
-  onChange: (vehicleName: string) => void;
+  onChange: (vehicleId: string) => void;
 }
 
 export default function VehicleSelect({
@@ -40,7 +40,7 @@ export default function VehicleSelect({
       {vehicles.map((vehicle) => (
         <option
           key={vehicle.id}
-          value={vehicle.name}
+          value={vehicle.id}
         >
           {vehicle.name}
         </option>

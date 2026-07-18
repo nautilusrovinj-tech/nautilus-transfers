@@ -14,7 +14,7 @@ interface Props {
 
   onEdit?: (transfer: Transfer) => void;
 
-  getDriverPhone?: (driver: string) => string;
+  getDriverPhone?: (driverId: string) => string;
 
   onAssignDriver?: (
     transferId: string,
@@ -54,7 +54,7 @@ export default function DispatchTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full">
         <thead className="border-b bg-slate-50">
           <tr>
@@ -82,7 +82,7 @@ export default function DispatchTable({
           ) : (
             transfers.map((transfer) => {
               const driverPhone =
-                getDriverPhone?.(transfer.driver) ?? "";
+  getDriverPhone?.(transfer.driverId) ?? "";
 
               return (
                 <tr
@@ -116,26 +116,26 @@ export default function DispatchTable({
                   </td>
 
                   <td className="p-4 min-w-[180px]">
-  <DriverSelect
-    transferId={transfer.id}
-    value={transfer.driver}
-    onAssigned={(driver) =>
-      onAssignDriver?.(transfer.id, driver) ??
-      Promise.resolve()
-    }
-  />
+                  <DriverSelect
+  transferId={transfer.id}
+  value={transfer.driverId}
+  onAssigned={(driverId) =>
+    onAssignDriver?.(transfer.id, driverId) ??
+    Promise.resolve()
+  }
+/>
 </td>
 
 <td className="p-4 min-w-[180px]">
-  <VehicleSelect
-    value={transfer.vehicle}
-    onChange={(vehicle) =>
-      onAssignVehicle?.(
-        transfer.id,
-        vehicle
-      ) ?? Promise.resolve()
-    }
-  />
+<VehicleSelect
+  value={transfer.vehicleId}
+  onChange={(vehicleId) =>
+    onAssignVehicle?.(
+      transfer.id,
+      vehicleId
+    ) ?? Promise.resolve()
+  }
+/>
 </td>
 
                   <td className="p-4">

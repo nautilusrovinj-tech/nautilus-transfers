@@ -1,23 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+
+import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   children: React.ReactNode;
 }
 
-export default function AuthGuard({ children }: Props) {
+export default function AuthGuard({
+  children,
+}: Props) {
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
+  const supabase = useMemo(
+    () => createClient(),
+    []
+  );
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
     async function checkUser() {
       const {
         data: { session },
+        error,
       } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error(
+          "AuthGuard session error:",
+          error
+        );
+
+        router.replace("/login");
+        return;
+      }
 
       if (!session) {
         router.replace("/login");
@@ -27,8 +47,8 @@ export default function AuthGuard({ children }: Props) {
       setLoading(false);
     }
 
-    checkUser();
-  }, [router]);
+    void checkUser();
+  }, [router, supabase]);
 
   if (loading) {
     return (

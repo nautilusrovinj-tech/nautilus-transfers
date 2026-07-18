@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 import {
@@ -7,7 +9,9 @@ import {
   deleteTransfer,
   getTransfers,
   updateTransfer,
-} from "@/lib/services/transferService";
+} from "@/services/transfers";
+
+import { checkDriverConflict } from "@/lib/dispatch/conflicts";
 
 import { Transfer } from "@/types/transfer";
 
@@ -41,7 +45,10 @@ export function useTransfers() {
     );
 
     if (exists) {
-      await updateTransfer(transfer);
+      await updateTransfer(
+        transfer.id,
+        transfer
+      );
     } else {
       await createTransfer(transfer);
     }
@@ -57,11 +64,39 @@ export function useTransfers() {
 
   async function updateDriver(
     transferId: string,
-    driver: string
+    driverId: string
   ) {
+    const transfer = transfers.find(
+      (t) => t.id === transferId
+    );
+
+    if (!transfer) return;
+
+    const conflict = checkDriverConflict(
+      transfers,
+      transfer.id,
+      driverId,
+      transfer.date,
+      transfer.time
+    );
+
+    if (conflict) {
+      alert(
+        [
+          "Driver is already assigned.",
+          "",
+          `Transfer: ${conflict.transferNumber}`,
+          `Time: ${conflict.time}`,
+          `Client: ${conflict.clientName}`,
+        ].join("\n")
+      );
+
+      return;
+    }
+
     await assignDriver(
       transferId,
-      driver
+      driverId
     );
 
     await loadTransfers();
@@ -69,11 +104,11 @@ export function useTransfers() {
 
   async function updateVehicle(
     transferId: string,
-    vehicle: string
+    vehicleId: string
   ) {
     await assignVehicle(
       transferId,
-      vehicle
+      vehicleId
     );
 
     await loadTransfers();

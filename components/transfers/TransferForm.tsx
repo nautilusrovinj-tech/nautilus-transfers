@@ -1,19 +1,63 @@
 "use client";
 
-import { drivers } from "@/data/drivers";
-import { vehicles } from "@/data/vehicles";
-import { partners } from "@/data/partners";
+import { useEffect, useState } from "react";
+
+import { Driver } from "@/types/driver";
+import { Vehicle } from "@/types/vehicle";
+import { Partner } from "@/types/partner";
 import { Transfer } from "@/types/transfer";
 
-interface TransferFormProps {
+import { getDrivers } from "@/services/drivers";
+import { getVehicles } from "@/services/vehicles";
+import { getPartners } from "@/services/partners";
+
+import { useTransfers } from "@/hooks/useTransfers";
+
+import TransferDetails from "./TransferDetails";
+import RouteSection from "./RouteSection";
+import ClientSection from "./ClientSection";
+import PassengerSection from "./PassengerSection";
+import AssignmentSection from "./AssignmentSection";
+import PricingSection from "./PricingSection";
+import NotesSection from "./NotesSection";
+
+interface Props {
   transfer: Transfer;
-  setTransfer: React.Dispatch<React.SetStateAction<Transfer>>;
+  setTransfer: React.Dispatch<
+    React.SetStateAction<Transfer>
+  >;
 }
 
 export default function TransferForm({
   transfer,
   setTransfer,
-}: TransferFormProps) {
+}: Props) {
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
+
+  const { transfers } = useTransfers();
+
+  useEffect(() => {
+    async function load() {
+      const [
+        driversData,
+        vehiclesData,
+        partnersData,
+      ] = await Promise.all([
+        getDrivers(),
+        getVehicles(),
+        getPartners(),
+      ]);
+
+      setDrivers(driversData);
+      setVehicles(vehiclesData);
+      setPartners(partnersData);
+    }
+
+    load();
+  }, []);
+
   function updateField<K extends keyof Transfer>(
     field: K,
     value: Transfer[K]
@@ -24,240 +68,55 @@ export default function TransferForm({
     }));
   }
 
-  const fromLabel =
-    transfer.transferType === "Departure"
-      ? "From (Hotel / Villa)"
-      : "From (Airport)";
-
-  const toLabel =
-    transfer.transferType === "Departure"
-      ? "To (Airport)"
-      : "To (Hotel / Villa)";
-
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid gap-6 lg:grid-cols-2">
 
-      {/* Transfer Type */}
+      <div className="space-y-6">
 
-      <select
-        className="col-span-2 border rounded-lg p-2"
-        value={transfer.transferType}
-        onChange={(e) =>
-          updateField(
-            "transferType",
-            e.target.value as Transfer["transferType"]
-          )
-        }
-      >
-        <option value="Arrival">🛬 Arrival</option>
-        <option value="Departure">🛫 Departure</option>
-        <option value="Tour">🌿 Tour</option>
-        <option value="Local">🚖 Local Transfer</option>
-      </select>
+        <TransferDetails
+          transfer={transfer}
+          updateField={updateField}
+        />
 
-      {/* Date / Time */}
+        <RouteSection
+          transfer={transfer}
+          updateField={updateField}
+        />
 
-      <input
-        className="border rounded-lg p-2"
-        type="date"
-        value={transfer.date}
-        onChange={(e) => updateField("date", e.target.value)}
-      />
+        <ClientSection
+          transfer={transfer}
+          updateField={updateField}
+        />
 
-      <input
-        className="border rounded-lg p-2"
-        type="time"
-        value={transfer.time}
-        onChange={(e) => updateField("time", e.target.value)}
-      />
+        <PassengerSection
+          transfer={transfer}
+          updateField={updateField}
+        />
 
-      {/* Flight */}
+      </div>
 
-      <input
-        className="col-span-2 border rounded-lg p-2"
-        placeholder="Flight Number"
-        value={transfer.flight}
-        onChange={(e) => updateField("flight", e.target.value)}
-      />
+      <div className="space-y-6">
 
-      {/* Route */}
+        <AssignmentSection
+          transfer={transfer}
+          transfers={transfers}
+          drivers={drivers}
+          vehicles={vehicles}
+          partners={partners}
+          updateField={updateField}
+        />
 
-      <input
-        className="border rounded-lg p-2"
-        placeholder={fromLabel}
-        value={transfer.pickup}
-        onChange={(e) => updateField("pickup", e.target.value)}
-      />
+        <PricingSection
+          transfer={transfer}
+          updateField={updateField}
+        />
 
-      <input
-        className="border rounded-lg p-2"
-        placeholder={toLabel}
-        value={transfer.destination}
-        onChange={(e) => updateField("destination", e.target.value)}
-      />
+        <NotesSection
+          transfer={transfer}
+          updateField={updateField}
+        />
 
-      {/* Client */}
-
-      <input
-        className="border rounded-lg p-2"
-        placeholder="Client Name"
-        value={transfer.clientName}
-        onChange={(e) =>
-          updateField("clientName", e.target.value)
-        }
-      />
-
-      <input
-        className="border rounded-lg p-2"
-        placeholder="Phone"
-        value={transfer.phone}
-        onChange={(e) =>
-          updateField("phone", e.target.value)
-        }
-      />
-
-      <input
-        className="col-span-2 border rounded-lg p-2"
-        placeholder="Email"
-        value={transfer.email}
-        onChange={(e) =>
-          updateField("email", e.target.value)
-        }
-      />
-
-      {/* Passengers */}
-
-      <input
-        className="border rounded-lg p-2"
-        type="number"
-        placeholder="Adults"
-        value={transfer.adults}
-        onChange={(e) =>
-          updateField("adults", Number(e.target.value))
-        }
-      />
-
-      <input
-        className="border rounded-lg p-2"
-        type="number"
-        placeholder="Children"
-        value={transfer.children}
-        onChange={(e) =>
-          updateField("children", Number(e.target.value))
-        }
-      />
-
-      {/* Driver */}
-
-      <select
-        className="border rounded-lg p-2"
-        value={transfer.driver}
-        onChange={(e) =>
-          updateField("driver", e.target.value)
-        }
-      >
-        <option value="">Select Driver</option>
-
-        {drivers
-          .filter((d) => d.active)
-          .map((driver) => (
-            <option
-              key={driver.id}
-              value={driver.name}
-            >
-              {driver.name}
-            </option>
-          ))}
-      </select>
-
-      {/* Vehicle */}
-
-      <select
-        className="border rounded-lg p-2"
-        value={transfer.vehicle}
-        onChange={(e) =>
-          updateField("vehicle", e.target.value)
-        }
-      >
-        <option value="">Select Vehicle</option>
-
-        {vehicles
-          .filter((v) => v.active)
-          .map((vehicle) => (
-            <option
-              key={vehicle.id}
-              value={vehicle.name}
-            >
-              {vehicle.name}
-            </option>
-          ))}
-      </select>
-
-      {/* Partner */}
-
-      <select
-        className="border rounded-lg p-2"
-        value={transfer.partner}
-        onChange={(e) =>
-          updateField("partner", e.target.value)
-        }
-      >
-        <option value="">Select Partner</option>
-
-        {partners
-          .filter((p) => p.active)
-          .map((partner) => (
-            <option
-              key={partner.id}
-              value={partner.name}
-            >
-              {partner.name}
-            </option>
-          ))}
-      </select>
-
-      {/* Status */}
-
-      <select
-        className="border rounded-lg p-2"
-        value={transfer.status}
-        onChange={(e) =>
-          updateField(
-            "status",
-            e.target.value as Transfer["status"]
-          )
-        }
-      >
-        <option value="New">New</option>
-        <option value="Confirmed">Confirmed</option>
-        <option value="Assigned">Assigned</option>
-        <option value="Completed">Completed</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-
-      {/* Price */}
-
-      <input
-        className="col-span-2 border rounded-lg p-2"
-        type="number"
-        placeholder="Price (€)"
-        value={transfer.price}
-        onChange={(e) =>
-          updateField("price", Number(e.target.value))
-        }
-      />
-
-      {/* Notes */}
-
-      <textarea
-        className="col-span-2 border rounded-lg p-2"
-        rows={4}
-        placeholder="Notes"
-        value={transfer.notes}
-        onChange={(e) =>
-          updateField("notes", e.target.value)
-        }
-      />
+      </div>
 
     </div>
   );

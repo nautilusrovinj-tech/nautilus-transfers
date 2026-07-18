@@ -7,7 +7,8 @@ export function mapPartner(row: any): Partner {
     contactPerson: row.contact_person ?? "",
     phone: row.phone ?? "",
     email: row.email ?? "",
-    commission: Number(row.commission),
-    active: row.active,
+    commission: row.commission ?? 0,
+    notes: row.notes ?? "",
+    active: row.active ?? true,
   };
 }

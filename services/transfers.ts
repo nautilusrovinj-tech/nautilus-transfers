@@ -11,34 +11,77 @@ function mapTransfer(row: any): Transfer {
     transferType: row.transfer_type,
 
     clientName: row.client_name,
-    phone: row.phone,
-    email: row.email,
+    phone: row.phone ?? "",
+    email: row.email ?? "",
 
     date: row.date,
     time: row.time,
 
     pickup: row.pickup,
     destination: row.destination,
-    flight: row.flight,
+    flight: row.flight ?? "",
 
-    adults: row.adults,
-    children: row.children,
-    babySeats: row.baby_seats,
-    boosterSeats: row.booster_seats,
+    adults: row.adults ?? 0,
+    children: row.children ?? 0,
+    babySeats: row.baby_seats ?? 0,
+    boosterSeats: row.booster_seats ?? 0,
 
-    driver: row.driver,
-    vehicle: row.vehicle,
-    partner: row.partner,
+    // Legacy fields (temporary)
+    driver: row.driver ?? "",
+    vehicle: row.vehicle ?? "",
+    partner: row.partner ?? "",
 
-    driverId: row.driver_id,
-    vehicleId: row.vehicle_id,
-    partnerId: row.partner_id,
+    // Relational fields
+    driverId: row.driver_id ?? "",
+    vehicleId: row.vehicle_id ?? "",
+    partnerId: row.partner_id ?? "",
 
-    price: row.price,
+    price: Number(row.price ?? 0),
 
     status: row.status,
 
-    notes: row.notes,
+    notes: row.notes ?? "",
+  };
+}
+
+function mapToDatabase(
+  transfer: Partial<Transfer>
+) {
+  return {
+    transfer_number: transfer.transferNumber,
+    transfer_type: transfer.transferType,
+
+    client_name: transfer.clientName,
+    phone: transfer.phone,
+    email: transfer.email,
+
+    date: transfer.date,
+    time: transfer.time,
+
+    pickup: transfer.pickup,
+    destination: transfer.destination,
+    flight: transfer.flight,
+
+    adults: transfer.adults,
+    children: transfer.children,
+    baby_seats: transfer.babySeats,
+    booster_seats: transfer.boosterSeats,
+
+    // Legacy fields (temporary)
+    driver: transfer.driver,
+    vehicle: transfer.vehicle,
+    partner: transfer.partner,
+
+    // Relational fields
+    driver_id: transfer.driverId,
+    vehicle_id: transfer.vehicleId,
+    partner_id: transfer.partnerId,
+
+    price: transfer.price,
+
+    status: transfer.status,
+
+    notes: transfer.notes,
   };
 }
 
@@ -46,7 +89,88 @@ export async function getTransfers(): Promise<Transfer[]> {
   const { data, error } = await supabase
     .from("transfers")
     .select("*")
-    .order("date", { ascending: true });
+    .order("date", { ascending: true })
+    .order("time", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map(mapTransfer);
+}
+
+export async function createTransfer(
+  transfer: Partial<Transfer>
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .insert(mapToDatabase(transfer));
+
+  if (error) throw error;
+}
+
+export async function updateTransfer(
+  id: string,
+  transfer: Partial<Transfer>
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update(mapToDatabase(transfer))
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function deleteTransfer(
+  id: string
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function assignDriver(
+  transferId: string,
+  driverId: string
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update({
+      driver_id: driverId,
+      status: "Assigned",
+    })
+    .eq("id", transferId);
+
+  if (error) throw error;
+}
+
+export async function assignVehicle(
+  transferId: string,
+  vehicleId: string
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update({
+      vehicle_id: vehicleId,
+    })
+    .eq("id", transferId);
+
+  if (error) throw error;
+}
+
+export async function getDriverTransfers(
+  driverId: string,
+  date: string
+): Promise<Transfer[]> {
+  const { data, error } = await supabase
+    .from("transfers")
+    .select("*")
+    .eq("driver_id", driverId)
+    .eq("date", date)
+    .order("time", {
+      ascending: true,
+    });
 
   if (error) throw error;
 

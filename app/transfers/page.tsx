@@ -1,54 +1,163 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getTransfers } from "@/services/transfers";
+import { useEffect, useMemo, useState } from "react";
+
+import AppLayout from "@/components/layout/AppLayout";
+import PageHeader from "@/components/ui/PageHeader";
+
+import TransferTable from "@/components/transfers/TransferTable";
+import TransferDialog from "@/components/transfers/TransferDialog";
+import TransferSearchBar from "@/components/transfers/TransferSearchBar";
+
+import {
+  getTransfers,
+  createTransfer,
+  updateTransfer,
+  deleteTransfer,
+} from "@/services/transfers";
+
+import { Transfer } from "@/types/transfer";
 
 export default function TransfersPage() {
-  const [transfers, setTransfers] = useState<any[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadTransfers() {
-      try {
-        const data = await getTransfers();
-        setTransfers(data ?? []);
-      } catch (err) {
-        console.error(err);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [date, setDate] = useState("");
 
-        if (err instanceof Error) {
-          alert(err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
+  const [selectedTransfer, setSelectedTransfer] =
+    useState<Transfer | null>(null);
+
+  async function loadTransfers() {
+    try {
+      const data = await getTransfers();
+      setTransfers(data);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to load transfers.");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadTransfers();
   }, []);
 
+  const filteredTransfers = useMemo(() => {
+    const q = search.toLowerCase();
+
+    return transfers.filter((t) => {
+      const matchesSearch = [
+        t.transferNumber,
+        t.clientName,
+        t.phone,
+        t.pickup,
+        t.destination,
+        t.flight,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+
+      const matchesStatus =
+        status === "" || t.status === status;
+
+      const matchesDate =
+        date === "" || t.date === date;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesDate
+      );
+    });
+  }, [search, status, date, transfers]);
+
+  async function handleSave(transfer: Transfer) {
+    try {
+      const exists = transfers.some(
+        (t) => t.id === transfer.id
+      );
+
+      if (exists) {
+        await updateTransfer(
+          transfer.id,
+          transfer
+        );
+      } else {
+        await createTransfer(transfer);
+      }
+
+      setSelectedTransfer(null);
+
+      await loadTransfers();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save transfer.");
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm("Delete transfer?"))
+      return;
+
+    try {
+      await deleteTransfer(id);
+
+      setSelectedTransfer(null);
+
+      await loadTransfers();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete transfer.");
+    }
+  }
+
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Transfers</h1>
+    <AppLayout>
+      <div className="space-y-6">
 
-        <button className="rounded-lg bg-blue-600 px-4 py-2 text-white">
-          New Transfer
-        </button>
+        <PageHeader
+          title="Transfers"
+          subtitle={`${filteredTransfers.length} transfer(s)`}
+          action={
+            <TransferDialog
+              onSave={handleSave}
+            />
+          }
+        />
+
+        <TransferSearchBar
+          value={search}
+          status={status}
+          date={date}
+          onChange={setSearch}
+          onStatusChange={setStatus}
+          onDateChange={setDate}
+        />
+
+        {loading ? (
+          <div className="rounded-xl border bg-white p-10 text-center">
+            Loading...
+          </div>
+        ) : (
+          <TransferTable
+            transfers={filteredTransfers}
+            onEdit={setSelectedTransfer}
+            onDelete={handleDelete}
+          />
+        )}
+
+        <TransferDialog
+          hideTrigger
+          transfer={selectedTransfer}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
+
       </div>
-
-      {loading ? (
-        <p>Loading transfers...</p>
-      ) : (
-        <>
-          <p className="mb-4">
-            Found <strong>{transfers.length}</strong> transfer(s)
-          </p>
-
-          <pre className="overflow-auto rounded-lg bg-slate-100 p-4 text-xs">
-            {JSON.stringify(transfers, null, 2)}
-          </pre>
-        </>
-      )}
-    </div>
+    </AppLayout>
   );
 }

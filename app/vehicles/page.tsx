@@ -1,70 +1,126 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
-import VehicleDialog from "@/components/vehicles/VehicleDialog";
+import PageHeader from "@/components/ui/PageHeader";
+
 import VehicleTable from "@/components/vehicles/VehicleTable";
+import VehicleDialog from "@/components/vehicles/VehicleDialog";
+import SearchInput from "@/components/common/SearchInput";
+
+import {
+  getVehicles,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+} from "@/services/vehicles";
 
 import { Vehicle } from "@/types/vehicle";
-import { vehicles as initialVehicles } from "@/data/vehicles";
 
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] =
-    useState<Vehicle[]>(initialVehicles);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [editingVehicle, setEditingVehicle] =
+  const [search, setSearch] = useState("");
+
+  const [selectedVehicle, setSelectedVehicle] =
     useState<Vehicle | null>(null);
 
-  function handleSave(vehicle: Vehicle) {
-    if (editingVehicle) {
-      setVehicles((prev) =>
-        prev.map((v) =>
-          v.id === vehicle.id ? vehicle : v
-        )
-      );
-
-      setEditingVehicle(null);
-    } else {
-      setVehicles((prev) => [...prev, vehicle]);
+  async function loadVehicles() {
+    try {
+      const data = await getVehicles();
+      setVehicles(data);
+    } finally {
+      setLoading(false);
     }
   }
 
-  function handleDelete(id: string) {
-    setVehicles((prev) =>
-      prev.filter((vehicle) => vehicle.id !== id)
+  useEffect(() => {
+    loadVehicles();
+  }, []);
+
+  const filteredVehicles = useMemo(() => {
+    const q = search.toLowerCase();
+
+    return vehicles.filter((vehicle) =>
+      [
+        vehicle.name,
+        vehicle.brand,
+        vehicle.model,
+        vehicle.plate,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
     );
+  }, [vehicles, search]);
+
+  async function handleSave(vehicle: Vehicle) {
+    const exists = vehicles.some(
+      (v) => v.id === vehicle.id
+    );
+
+    if (exists) {
+      await updateVehicle(vehicle.id, vehicle);
+    } else {
+      await createVehicle(vehicle);
+    }
+
+    setSelectedVehicle(null);
+
+    await loadVehicles();
   }
 
-  function handleEdit(vehicle: Vehicle) {
-    setEditingVehicle(vehicle);
+  async function handleDelete(id: string) {
+    if (!window.confirm("Delete vehicle?")) return;
+
+    await deleteVehicle(id);
+
+    setSelectedVehicle(null);
+
+    await loadVehicles();
   }
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Vehicles
-            </h1>
 
-            <p className="text-slate-500">
-              Manage your vehicles.
-            </p>
-          </div>
-
-          <VehicleDialog
-            vehicle={editingVehicle}
-            onSave={handleSave}
-          />
-        </div>
-
-        <VehicleTable
-          vehicles={vehicles}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
+        <PageHeader
+          title="Vehicles"
+          subtitle={`${filteredVehicles.length} vehicle(s)`}
+          action={
+            <VehicleDialog
+              onSave={handleSave}
+            />
+          }
         />
+
+        {loading ? (
+          <div className="rounded-xl border bg-white p-10 text-center">
+            Loading...
+          </div>
+        ) : (
+          <>
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+            />
+
+            <VehicleTable
+              vehicles={filteredVehicles}
+              onEdit={setSelectedVehicle}
+              onDelete={handleDelete}
+            />
+          </>
+        )}
+
+        <VehicleDialog
+          hideTrigger
+          vehicle={selectedVehicle}
+          onSave={handleSave}
+        />
+
       </div>
     </AppLayout>
   );

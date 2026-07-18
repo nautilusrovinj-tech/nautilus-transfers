@@ -7,51 +7,93 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menu = [
-    { name: "Dashboard", href: "/dispatch" },
-    { name: "Transfers", href: "/transfers" },
-    { name: "Drivers", href: "/drivers" },
-    { name: "Vehicles", href: "/vehicles" },
-    { name: "Partners", href: "/partners" },
-    { name: "Reports", href: "/reports" },
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+    },
+    {
+      name: "Dispatch",
+      href: "/dispatch",
+    },
+    {
+      name: "Calendar",
+      href: "/calendar",
+    },
+    {
+      name: "Transfers",
+      href: "/transfers",
+    },
+    {
+      name: "Drivers",
+      href: "/drivers",
+    },
+    {
+      name: "Vehicles",
+      href: "/vehicles",
+    },
+    {
+      name: "Partners",
+      href: "/partners",
+    },
+    {
+      name: "Reports",
+      href: "/reports",
+    },
   ];
 
   return (
-    <aside className="flex min-h-screen w-64 flex-col border-r border-slate-800 bg-slate-950">
-      <div className="border-b border-slate-800 px-8 py-8">
-        <h1 className="text-2xl font-semibold tracking-wide text-white">
+    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
+
+      <div className="border-b border-slate-200 px-8 py-8">
+        <h1 className="text-2xl font-bold text-slate-900">
           Nautilus
         </h1>
 
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-slate-500">
           Operations
         </p>
       </div>
 
-      <nav className="flex-1 space-y-2 px-4 py-6">
-        {menu.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`block rounded-lg px-4 py-3 transition ${
-              pathname === item.href
-                ? "bg-blue-600 font-medium text-white"
-                : "text-slate-300 hover:bg-slate-800 hover:text-white"
-            }`}
-          >
-            {item.name}
-          </Link>
-        ))}
+      <nav className="flex-1 overflow-y-auto p-4">
+
+        <div className="space-y-1">
+
+          {menu.map((item) => {
+            const active =
+              pathname === item.href ||
+              pathname.startsWith(
+                item.href + "/"
+              );
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-all ${
+                  active
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+
+        </div>
+
       </nav>
 
-      <div className="border-t border-slate-800 p-6">
-        <div className="text-sm text-slate-500">
+      <div className="border-t border-slate-200 px-6 py-5">
+        <p className="text-sm font-semibold text-slate-700">
           Nautilus Operations
-        </div>
+        </p>
 
-        <div className="mt-1 text-xs text-slate-600">
+        <p className="mt-1 text-xs text-slate-400">
           Version 1.0
-        </div>
+        </p>
       </div>
+
     </aside>
   );
 }

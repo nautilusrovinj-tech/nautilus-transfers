@@ -1,96 +1,124 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 import VehicleForm from "./VehicleForm";
 
 import { Vehicle } from "@/types/vehicle";
+import { createEmptyVehicle } from "@/lib/vehicle";
 
 interface Props {
   vehicle?: Vehicle | null;
-  onSave: (vehicle: Vehicle) => void;
+  onSave: (vehicle: Vehicle) => Promise<void>;
+  hideTrigger?: boolean;
 }
 
-const emptyVehicle: Vehicle = {
-  id: "",
-  name: "",
-  registration: "",
-  seats: 0,
-  active: true,
-};
-
 export default function VehicleDialog({
-  vehicle: editingVehicle,
+  vehicle,
   onSave,
+  hideTrigger = false,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [vehicle, setVehicle] =
-    useState<Vehicle>(emptyVehicle);
+  const [currentVehicle, setCurrentVehicle] =
+    useState<Vehicle>(createEmptyVehicle());
+
+  const editing = !!vehicle;
 
   useEffect(() => {
-    if (editingVehicle) {
-      setVehicle(editingVehicle);
+    if (vehicle) {
+      setCurrentVehicle(vehicle);
       setOpen(true);
+    } else {
+      setCurrentVehicle(createEmptyVehicle());
     }
-  }, [editingVehicle]);
-
-  function handleSave() {
-    onSave(
-      vehicle.id
-        ? vehicle
-        : {
-            ...vehicle,
-            id: crypto.randomUUID(),
-          }
-    );
-
-    setVehicle(emptyVehicle);
-    setOpen(false);
-  }
+  }, [vehicle]);
 
   function handleOpenChange(value: boolean) {
     setOpen(value);
 
     if (!value) {
-      setVehicle(emptyVehicle);
+      setCurrentVehicle(createEmptyVehicle());
+    }
+  }
+
+  async function handleSave() {
+    try {
+      setSaving(true);
+
+      await onSave(currentVehicle);
+
+      setOpen(false);
+
+      setCurrentVehicle(createEmptyVehicle());
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-        + New Vehicle
-      </DialogTrigger>
-
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {editingVehicle ? "Edit Vehicle" : "New Vehicle"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <VehicleForm
-          vehicle={vehicle}
-          setVehicle={setVehicle}
-        />
-
+    <>
+      {!hideTrigger && (
         <Button
-          className="mt-6 w-full"
-          onClick={handleSave}
+          onClick={() => {
+            setCurrentVehicle(createEmptyVehicle());
+            setOpen(true);
+          }}
         >
-          {editingVehicle ? "Update Vehicle" : "Save Vehicle"}
+          New Vehicle
         </Button>
-      </DialogContent>
-    </Dialog>
+      )}
+
+      <Dialog
+        open={open}
+        onOpenChange={handleOpenChange}
+      >
+        <DialogContent className="max-w-xl">
+
+          <DialogHeader>
+
+            <DialogTitle>
+              {editing
+                ? "Edit Vehicle"
+                : "New Vehicle"}
+            </DialogTitle>
+
+          </DialogHeader>
+
+          <VehicleForm
+            vehicle={currentVehicle}
+            setVehicle={setCurrentVehicle}
+          />
+
+          <div className="mt-6 flex justify-end">
+
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving
+                ? "Saving..."
+                : editing
+                ? "Update Vehicle"
+                : "Save Vehicle"}
+            </Button>
+
+          </div>
+
+        </DialogContent>
+
+      </Dialog>
+    </>
   );
 }

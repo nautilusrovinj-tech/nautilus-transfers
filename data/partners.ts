@@ -8,6 +8,7 @@ export const partners: Partner[] = [
     phone: "",
     email: "",
     commission: 0,
+    notes: "",
     active: true,
   },
   {
@@ -17,6 +18,7 @@ export const partners: Partner[] = [
     phone: "",
     email: "",
     commission: 15,
+    notes: "",
     active: true,
   },
   {
@@ -26,6 +28,7 @@ export const partners: Partner[] = [
     phone: "",
     email: "",
     commission: 15,
+    notes: "",
     active: true,
   },
 ];

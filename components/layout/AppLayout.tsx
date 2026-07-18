@@ -14,16 +14,20 @@ export default function AppLayout({
 }: AppLayoutProps) {
   return (
     <AuthGuard>
-      <div className="flex min-h-screen bg-slate-100">
+      <div className="flex h-screen overflow-hidden bg-slate-100">
+
         <Sidebar />
 
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
+
           <Header />
 
-          <main className="flex-1 p-8">
+          <main className="flex-1 overflow-auto p-8">
             {children}
           </main>
+
         </div>
+
       </div>
     </AuthGuard>
   );
