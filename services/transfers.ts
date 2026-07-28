@@ -106,9 +106,17 @@ export async function getTransfers(): Promise<
 export async function createTransfer(
   transfer: Partial<Transfer>
 ) {
-  const { error } = await supabase
+  const payload = mapToDatabase(transfer);
+
+  console.log("INSERT PAYLOAD:", payload);
+
+  const { data, error } = await supabase
     .from("transfers")
-    .insert(mapToDatabase(transfer));
+    .insert(payload)
+    .select();
+
+  console.log("INSERT DATA:", data);
+  console.log("INSERT ERROR:", error);
 
   if (error) throw error;
 }
