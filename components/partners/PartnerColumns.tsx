@@ -16,34 +16,56 @@ export function getPartnerColumns({
   return [
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Partner",
     },
     {
       accessorKey: "phone",
       header: "Phone",
+      cell: ({ row }) =>
+        row.original.phone || "-",
     },
     {
       accessorKey: "email",
       header: "Email",
+      cell: ({ row }) =>
+        row.original.email || "-",
     },
     {
       accessorKey: "commission",
       header: "Commission",
+      cell: ({ row }) =>
+        `${row.original.commission}%`,
     },
     {
       accessorKey: "active",
       header: "Status",
+      cell: ({ row }) => (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            row.original.active
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          {row.original.active
+            ? "Active"
+            : "Inactive"}
+        </span>
+      ),
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
+      enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex gap-2 justify-center">
+        <div className="flex justify-end gap-2">
 
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onEdit(row.original)}
+            onClick={() =>
+              onEdit(row.original)
+            }
           >
             Edit
           </Button>

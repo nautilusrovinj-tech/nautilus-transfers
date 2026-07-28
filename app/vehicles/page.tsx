@@ -29,7 +29,10 @@ export default function VehiclesPage() {
 
   async function loadVehicles() {
     try {
+      setLoading(true);
+
       const data = await getVehicles();
+
       setVehicles(data);
     } finally {
       setLoading(false);
@@ -37,7 +40,7 @@ export default function VehiclesPage() {
   }
 
   useEffect(() => {
-    loadVehicles();
+    void loadVehicles();
   }, []);
 
   const filteredVehicles = useMemo(() => {
@@ -62,7 +65,10 @@ export default function VehiclesPage() {
     );
 
     if (exists) {
-      await updateVehicle(vehicle.id, vehicle);
+      await updateVehicle(
+        vehicle.id,
+        vehicle
+      );
     } else {
       await createVehicle(vehicle);
     }
@@ -73,7 +79,8 @@ export default function VehiclesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete vehicle?")) return;
+    if (!window.confirm("Delete vehicle?"))
+      return;
 
     await deleteVehicle(id);
 
@@ -96,23 +103,21 @@ export default function VehiclesPage() {
           }
         />
 
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+        />
+
         {loading ? (
-          <div className="rounded-xl border bg-white p-10 text-center">
-            Loading...
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            Loading vehicles...
           </div>
         ) : (
-          <>
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-            />
-
-            <VehicleTable
-              vehicles={filteredVehicles}
-              onEdit={setSelectedVehicle}
-              onDelete={handleDelete}
-            />
-          </>
+          <VehicleTable
+            vehicles={filteredVehicles}
+            onEdit={setSelectedVehicle}
+            onDelete={handleDelete}
+          />
         )}
 
         <VehicleDialog

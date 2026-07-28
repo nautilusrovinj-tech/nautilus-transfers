@@ -2,6 +2,7 @@ export type TransferStatus =
   | "New"
   | "Confirmed"
   | "Assigned"
+  | "In Progress"
   | "Completed"
   | "Cancelled";
 
@@ -35,14 +36,14 @@ export interface Transfer {
   boosterSeats: number;
 
   // Legacy fields (temporary during migration)
-driver: string;
-vehicle: string;
-partner: string;
+  driver: string;
+  vehicle: string;
+  partner: string;
 
-// New relational fields
-driverId: string;
-vehicleId: string;
-partnerId: string;
+  // Relational fields
+  driverId: string;
+  vehicleId: string;
+  partnerId: string;
 
   price: number;
 

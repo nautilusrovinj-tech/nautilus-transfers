@@ -26,6 +26,7 @@ import {
 import TransferForm from "./TransferForm";
 
 import { Transfer } from "@/types/transfer";
+
 import {
   createEmptyTransfer,
   generateTransferNumber,
@@ -46,14 +47,13 @@ export default function TransferDialog({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDelete, setConfirmDelete] =
+    useState(false);
 
   const [currentTransfer, setCurrentTransfer] =
     useState<Transfer>(createEmptyTransfer());
 
-  const editing =
-    transfer !== null &&
-    transfer !== undefined;
+  const editing = !!transfer;
 
   useEffect(() => {
     if (transfer) {
@@ -83,20 +83,31 @@ export default function TransferDialog({
       setSaving(false);
     }
   }
-
   async function handleDelete() {
-    if (!onDelete) return;
-
+    console.log("DELETE BUTTON CLICKED");
+    console.log("Transfer ID:", currentTransfer.id);
+    console.log("onDelete:", onDelete);
+  
+    if (!onDelete) {
+      console.log("❌ onDelete is undefined");
+      return;
+    }
+  
     try {
       setSaving(true);
-
+  
+      console.log("Calling onDelete...");
+  
       await onDelete(currentTransfer.id);
-
+  
+      console.log("✅ Delete finished");
+  
       setConfirmDelete(false);
-
       setOpen(false);
-
+  
       setCurrentTransfer(createEmptyTransfer());
+    } catch (error) {
+      console.error("DELETE ERROR:", error);
     } finally {
       setSaving(false);
     }
@@ -106,7 +117,8 @@ export default function TransferDialog({
     setCurrentTransfer({
       ...currentTransfer,
       id: crypto.randomUUID(),
-      transferNumber: generateTransferNumber(),
+      transferNumber:
+        generateTransferNumber(),
       status: "New",
     });
   }
@@ -116,7 +128,9 @@ export default function TransferDialog({
       {!hideTrigger && (
         <Button
           onClick={() => {
-            setCurrentTransfer(createEmptyTransfer());
+            setCurrentTransfer(
+              createEmptyTransfer()
+            );
             setOpen(true);
           }}
         >
@@ -128,73 +142,121 @@ export default function TransferDialog({
         open={open}
         onOpenChange={handleOpenChange}
       >
-        <DialogContent className="max-h-[92vh] w-[96vw] max-w-7xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editing
-                ? "Edit Transfer"
-                : "New Transfer"}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent
+          style={{
+            width: "95vw",
+            maxWidth: "1600px",
+            height: "94vh",
+          }}
+          className="overflow-hidden rounded-2xl bg-white p-0"
+        >
+          <div className="flex h-full flex-col">
 
-          <TransferForm
-            transfer={currentTransfer}
-            setTransfer={setCurrentTransfer}
-          />
+            <DialogHeader className="border-b px-8 py-6">
+              <DialogTitle className="text-3xl font-bold">
+                {editing
+                  ? "Edit Transfer"
+                  : "New Transfer"}
+              </DialogTitle>
 
-          <div className="mt-8 flex justify-between">
-            <div className="flex gap-2">
-              {editing && (
-                <>
-                  <Button
-                    variant="secondary"
-                    onClick={handleDuplicate}
-                  >
-                    Duplicate
-                  </Button>
+              <p className="text-slate-500">
+                Manage transfer details,
+                assignment and pricing.
+              </p>
+            </DialogHeader>
 
-                  <Button
-                    variant="destructive"
-                    onClick={() =>
-                      setConfirmDelete(true)
-                    }
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
+            <div className="flex-1 overflow-y-auto px-8 py-8">
+              <TransferForm
+                transfer={currentTransfer}
+                setTransfer={
+                  setCurrentTransfer
+                }
+              />
             </div>
 
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving
-                ? "Saving..."
-                : editing
-                ? "Update Transfer"
-                : "Save Transfer"}
-            </Button>
+            <div className="flex items-center justify-between border-t bg-slate-50 px-8 py-5">
+
+              <div className="flex gap-3">
+
+                {editing && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={
+                        handleDuplicate
+                      }
+                    >
+                      Duplicate
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      onClick={() =>
+                        setConfirmDelete(
+                          true
+                        )
+                      }
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
+
+              </div>
+
+              <div className="flex gap-3">
+
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setOpen(false)
+                  }
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Saving..."
+                    : editing
+                    ? "Update Transfer"
+                    : "Save Transfer"}
+                </Button>
+
+              </div>
+
+            </div>
+
           </div>
         </DialogContent>
       </Dialog>
 
       <AlertDialog
         open={confirmDelete}
-        onOpenChange={setConfirmDelete}
+        onOpenChange={
+          setConfirmDelete
+        }
       >
         <AlertDialogContent>
+
           <AlertDialogHeader>
+
             <AlertDialogTitle>
               Delete Transfer?
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              This action cannot be undone.
+              This action cannot be
+              undone.
             </AlertDialogDescription>
+
           </AlertDialogHeader>
 
           <AlertDialogFooter>
+
             <AlertDialogCancel>
               Cancel
             </AlertDialogCancel>
@@ -204,7 +266,9 @@ export default function TransferDialog({
             >
               Delete
             </AlertDialogAction>
+
           </AlertDialogFooter>
+
         </AlertDialogContent>
       </AlertDialog>
     </>

@@ -13,46 +13,56 @@ export default function DispatchStats({
   departures,
   revenue,
 }: Props) {
-  const cards = [
-    {
-      title: "Today's Transfers",
-      value: total,
-    },
-    {
-      title: "Arrivals",
-      value: arrivals,
-    },
-    {
-      title: "Departures",
-      value: departures,
-    },
-    {
-      title: "Revenue",
-      value: `€${revenue.toFixed(2)}`,
-    },
-  ];
-
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-      {cards.map((card) => (
-        <Card
-          key={card.title}
-          className="h-full"
-        >
-          <div className="space-y-2">
+      <Card>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-slate-500">
+            Today's Transfers
+          </p>
 
-            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
-              {card.title}
-            </p>
+          <h2 className="text-5xl font-bold text-slate-900">
+            {total}
+          </h2>
+        </div>
+      </Card>
 
-            <h2 className="text-4xl font-bold text-slate-900">
-              {card.value}
-            </h2>
+      <Card>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-slate-500">
+            Arrivals
+          </p>
 
-          </div>
-        </Card>
-      ))}
+          <h2 className="text-5xl font-bold text-blue-600">
+            {arrivals}
+          </h2>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-slate-500">
+            Departures
+          </p>
+
+          <h2 className="text-5xl font-bold text-indigo-600">
+            {departures}
+          </h2>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-slate-500">
+            Revenue
+          </p>
+
+          <h2 className="text-5xl font-bold text-green-600">
+            €{revenue.toFixed(2)}
+          </h2>
+        </div>
+      </Card>
 
     </div>
   );

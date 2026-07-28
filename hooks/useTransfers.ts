@@ -20,18 +20,31 @@ export function useTransfers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadTransfers();
+    void loadTransfers();
   }, []);
 
   async function loadTransfers() {
     try {
       setLoading(true);
 
+      console.log("Loading transfers...");
+
       const data = await getTransfers();
+
+      console.log("Transfers loaded:", data);
 
       setTransfers(data);
     } catch (error) {
-      console.error(error);
+      console.error(
+        "LOAD TRANSFERS ERROR:",
+        error
+      );
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error)
+      );
     } finally {
       setLoading(false);
     }
@@ -40,26 +53,46 @@ export function useTransfers() {
   async function saveTransfer(
     transfer: Transfer
   ) {
-    const exists = transfers.some(
-      (t) => t.id === transfer.id
-    );
-
-    if (exists) {
-      await updateTransfer(
-        transfer.id,
-        transfer
+    try {
+      const exists = transfers.some(
+        (t) => t.id === transfer.id
       );
-    } else {
-      await createTransfer(transfer);
-    }
 
-    await loadTransfers();
+      if (exists) {
+        await updateTransfer(
+          transfer.id,
+          transfer
+        );
+      } else {
+        await createTransfer(transfer);
+      }
+
+      await loadTransfers();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error)
+      );
+    }
   }
 
   async function removeTransfer(id: string) {
-    await deleteTransfer(id);
+    try {
+      await deleteTransfer(id);
 
-    await loadTransfers();
+      await loadTransfers();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error)
+      );
+    }
   }
 
   async function updateDriver(
@@ -94,35 +127,52 @@ export function useTransfers() {
       return;
     }
 
-    await assignDriver(
-      transferId,
-      driverId
-    );
+    try {
+      await assignDriver(
+        transferId,
+        driverId
+      );
 
-    await loadTransfers();
+      await loadTransfers();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error)
+      );
+    }
   }
 
   async function updateVehicle(
     transferId: string,
     vehicleId: string
   ) {
-    await assignVehicle(
-      transferId,
-      vehicleId
-    );
+    try {
+      await assignVehicle(
+        transferId,
+        vehicleId
+      );
 
-    await loadTransfers();
+      await loadTransfers();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error)
+      );
+    }
   }
 
   return {
     loading,
     transfers,
-
     loadTransfers,
-
     saveTransfer,
     removeTransfer,
-
     updateDriver,
     updateVehicle,
   };

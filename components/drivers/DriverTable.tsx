@@ -12,7 +12,7 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-export default function DriverTable({
+export default function DriversTable({
   drivers,
   onEdit,
   onDelete,
@@ -21,18 +21,20 @@ export default function DriverTable({
     return (
       <EmptyState
         title="No drivers found"
-        description="Create your first driver or adjust your search."
+        description="Create your first driver."
       />
     );
   }
 
   return (
-    <DataTable
-      columns={getDriverColumns({
-        onEdit,
-        onDelete,
-      })}
-      data={drivers}
-    />
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <DataTable
+        columns={getDriverColumns({
+          onEdit,
+          onDelete,
+        })}
+        data={drivers}
+      />
+    </div>
   );
 }

@@ -29,7 +29,10 @@ export default function DriversPage() {
 
   async function loadDrivers() {
     try {
+      setLoading(true);
+
       const data = await getDrivers();
+
       setDrivers(data);
     } finally {
       setLoading(false);
@@ -37,7 +40,7 @@ export default function DriversPage() {
   }
 
   useEffect(() => {
-    loadDrivers();
+    void loadDrivers();
   }, []);
 
   const filteredDrivers = useMemo(() => {
@@ -73,7 +76,8 @@ export default function DriversPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete driver?")) return;
+    if (!window.confirm("Delete driver?"))
+      return;
 
     await deleteDriver(id);
 
@@ -96,23 +100,21 @@ export default function DriversPage() {
           }
         />
 
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+        />
+
         {loading ? (
-          <div className="rounded-xl border bg-white p-10 text-center">
-            Loading...
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            Loading drivers...
           </div>
         ) : (
-          <>
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-            />
-
-            <DriverTable
-              drivers={filteredDrivers}
-              onEdit={setSelectedDriver}
-              onDelete={handleDelete}
-            />
-          </>
+          <DriverTable
+            drivers={filteredDrivers}
+            onEdit={setSelectedDriver}
+            onDelete={handleDelete}
+          />
         )}
 
         <DriverDialog

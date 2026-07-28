@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import AppLayout from "@/components/layout/AppLayout";
 import PageHeader from "@/components/ui/PageHeader";
@@ -19,12 +20,17 @@ import UnassignedTransfers from "@/components/calendar/UnassignedTransfers";
 
 import { useTransfers } from "@/hooks/useTransfers";
 
-export default function CalendarPage() {
+function CalendarContent() {
   const { transfers } = useTransfers();
 
-  const [date, setDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const searchParams = useSearchParams();
+
+  const initialDate =
+    searchParams.get("date") ??
+    new Date().toISOString().split("T")[0];
+
+  const [date, setDate] =
+    useState(initialDate);
 
   const [status, setStatus] =
     useState("All");
@@ -41,8 +47,9 @@ export default function CalendarPage() {
         if (
           status !== "All" &&
           t.status !== status
-        )
+        ) {
           return false;
+        }
 
         return true;
       })
@@ -56,16 +63,18 @@ export default function CalendarPage() {
       transfers: dayTransfers.length,
 
       arrivals: dayTransfers.filter(
-        (t) => t.transferType === "Arrival"
+        (t) =>
+          t.transferType === "Arrival"
       ).length,
 
       departures: dayTransfers.filter(
-        (t) => t.transferType === "Departure"
+        (t) =>
+          t.transferType === "Departure"
       ).length,
 
       revenue: dayTransfers.reduce(
         (sum, t) => sum + t.price,
-        0
+        0,
       ),
     };
   }, [dayTransfers]);
@@ -75,7 +84,7 @@ export default function CalendarPage() {
       <div className="space-y-6">
 
         <PageHeader
-          title="Dispatch Calendar"
+          title="Daily Planner"
           subtitle="Daily planning and driver allocation"
         />
 
@@ -139,5 +148,21 @@ export default function CalendarPage() {
 
       </div>
     </AppLayout>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="p-8">
+            Loading...
+          </div>
+        </AppLayout>
+      }
+    >
+      <CalendarContent />
+    </Suspense>
   );
 }

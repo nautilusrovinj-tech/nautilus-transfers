@@ -25,28 +25,38 @@ export default function RouteSection({
 
   return (
     <TransferSection title="Route">
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Pickup
+        </label>
 
-      <input
-        className="rounded-lg border p-2"
-        placeholder={fromLabel}
-        value={transfer.pickup}
-        onChange={(e) =>
-          updateField("pickup", e.target.value)
-        }
-      />
+        <input
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          placeholder={fromLabel}
+          value={transfer.pickup}
+          onChange={(e) =>
+            updateField("pickup", e.target.value)
+          }
+        />
+      </div>
 
-      <input
-        className="rounded-lg border p-2"
-        placeholder={toLabel}
-        value={transfer.destination}
-        onChange={(e) =>
-          updateField(
-            "destination",
-            e.target.value
-          )
-        }
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Destination
+        </label>
 
+        <input
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          placeholder={toLabel}
+          value={transfer.destination}
+          onChange={(e) =>
+            updateField(
+              "destination",
+              e.target.value
+            )
+          }
+        />
+      </div>
     </TransferSection>
   );
 }

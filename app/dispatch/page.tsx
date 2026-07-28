@@ -5,10 +5,7 @@ import { useMemo, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import PageHeader from "@/components/ui/PageHeader";
 
-import DispatchStats from "@/components/dispatch/DispatchStats";
-import DispatchTable from "@/components/dispatch/DispatchTable";
-import NextPickupCard from "@/components/dispatch/NextPickupCard";
-import AttentionPanel from "@/components/dispatch/AttentionPanel";
+import DispatchBoard from "@/components/dispatch/DispatchBoard";
 import DispatchSearch from "@/components/dispatch/DispatchSearch";
 import DispatchFilters from "@/components/dispatch/DispatchFilters";
 import TransferDialog from "@/components/transfers/TransferDialog";
@@ -18,12 +15,11 @@ import { useLookups } from "@/hooks/useLookups";
 
 import { Transfer } from "@/types/transfer";
 
-type DayFilter = "today" | "tomorrow" | "all";
-
 export default function DispatchPage() {
   const {
     transfers,
     saveTransfer,
+    removeTransfer,
     updateDriver,
     updateVehicle,
   } = useTransfers();
@@ -38,35 +34,21 @@ export default function DispatchPage() {
   const [editingTransfer, setEditingTransfer] =
     useState<Transfer | null>(null);
 
-  const [dayFilter, setDayFilter] =
-    useState<DayFilter>("today");
-
   const [statusFilter, setStatusFilter] =
     useState("All");
 
   const [search, setSearch] = useState("");
 
-  const today = new Date().toISOString().split("T")[0];
-
-  const tomorrowDate = new Date();
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-
-  const tomorrow = tomorrowDate
-    .toISOString()
-    .split("T")[0];
+  const [selectedDate, setSelectedDate] =
+    useState(
+      new Date()
+        .toISOString()
+        .split("T")[0]
+    );
 
   const filteredTransfers = useMemo(() => {
     return transfers.filter((t) => {
-      if (
-        dayFilter === "today" &&
-        t.date !== today
-      )
-        return false;
-
-      if (
-        dayFilter === "tomorrow" &&
-        t.date !== tomorrow
-      )
+      if (t.date !== selectedDate)
         return false;
 
       if (
@@ -75,8 +57,9 @@ export default function DispatchPage() {
       )
         return false;
 
-      if (search.trim() !== "") {
-        const value = search.toLowerCase();
+      if (search.trim()) {
+        const value =
+          search.toLowerCase();
 
         const found = [
           t.transferNumber,
@@ -85,9 +68,15 @@ export default function DispatchPage() {
           t.flight,
           t.pickup,
           t.destination,
-          getDriverName(t.driverId),
-          getVehicleName(t.vehicleId),
-          getPartnerName(t.partnerId),
+          getDriverName(
+            t.driverId
+          ),
+          getVehicleName(
+            t.vehicleId
+          ),
+          getPartnerName(
+            t.partnerId
+          ),
         ]
           .join(" ")
           .toLowerCase()
@@ -100,76 +89,40 @@ export default function DispatchPage() {
     });
   }, [
     transfers,
-    dayFilter,
     statusFilter,
     search,
-    today,
-    tomorrow,
+    selectedDate,
     getDriverName,
     getVehicleName,
     getPartnerName,
   ]);
 
-  const stats = useMemo(() => {
-    return {
-      total: filteredTransfers.length,
+  function today() {
+    setSelectedDate(
+      new Date()
+        .toISOString()
+        .split("T")[0]
+    );
+  }
 
-      arrivals: filteredTransfers.filter(
-        (t) => t.transferType === "Arrival"
-      ).length,
+  function tomorrow() {
+    const d = new Date();
 
-      departures: filteredTransfers.filter(
-        (t) => t.transferType === "Departure"
-      ).length,
+    d.setDate(d.getDate() + 1);
 
-      revenue: filteredTransfers.reduce(
-        (sum, t) => sum + t.price,
-        0
-      ),
-    };
-  }, [filteredTransfers]);
-
-  const nextPickup = useMemo(() => {
-    if (!filteredTransfers.length)
-      return undefined;
-
-    return [...filteredTransfers].sort(
-      (a, b) =>
-        new Date(
-          `${a.date}T${a.time}`
-        ).getTime() -
-        new Date(
-          `${b.date}T${b.time}`
-        ).getTime()
-    )[0];
-  }, [filteredTransfers]);
+    setSelectedDate(
+      d.toISOString().split("T")[0]
+    );
+  }
 
   return (
     <AppLayout>
       <div className="space-y-6">
 
         <PageHeader
-          title="Dispatch Board"
-          subtitle="Daily Operations Center"
+          title="Dispatch"
+          subtitle={selectedDate}
         />
-
-        <DispatchStats
-          total={stats.total}
-          arrivals={stats.arrivals}
-          departures={stats.departures}
-          revenue={stats.revenue}
-        />
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <NextPickupCard
-            transfer={nextPickup}
-            onEdit={setEditingTransfer}
-          />
-
-          <AttentionPanel
-            transfers={filteredTransfers}
-          />
-        </div>
 
         <DispatchSearch
           value={search}
@@ -181,58 +134,53 @@ export default function DispatchPage() {
           onChange={setStatusFilter}
         />
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+
           <button
-            onClick={() =>
-              setDayFilter("today")
-            }
-            className={`rounded-lg px-4 py-2 ${
-              dayFilter === "today"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-100"
-            }`}
+            onClick={today}
+            className="rounded-xl bg-slate-900 px-5 py-2.5 text-white"
           >
             Today
           </button>
 
           <button
-            onClick={() =>
-              setDayFilter("tomorrow")
-            }
-            className={`rounded-lg px-4 py-2 ${
-              dayFilter === "tomorrow"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-100"
-            }`}
+            onClick={tomorrow}
+            className="rounded-xl bg-slate-200 px-5 py-2.5"
           >
             Tomorrow
           </button>
 
-          <button
-            onClick={() =>
-              setDayFilter("all")
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) =>
+              setSelectedDate(
+                e.target.value
+              )
             }
-            className={`rounded-lg px-4 py-2 ${
-              dayFilter === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-100"
-            }`}
-          >
-            All
-          </button>
+            className="rounded-xl border border-slate-300 px-4 py-2.5"
+          />
+
         </div>
 
-        <DispatchTable
+        <DispatchBoard
           transfers={filteredTransfers}
           onEdit={setEditingTransfer}
-          getDriverPhone={getDriverPhone}
-          onAssignDriver={updateDriver}
-          onAssignVehicle={updateVehicle}
+          getDriverPhone={
+            getDriverPhone
+          }
+          onAssignDriver={
+            updateDriver
+          }
+          onAssignVehicle={
+            updateVehicle
+          }
         />
 
         <TransferDialog
           transfer={editingTransfer}
           onSave={saveTransfer}
+          onDelete={removeTransfer}
           hideTrigger
         />
 

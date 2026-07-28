@@ -10,15 +10,15 @@ export default function AttentionPanel({
 }: Props) {
   const noDriver = transfers.filter(
     (t) => !t.driverId
-  ).length;
+  );
 
   const noVehicle = transfers.filter(
     (t) => !t.vehicleId
-  ).length;
+  );
 
   const noPhone = transfers.filter(
     (t) => !t.phone
-  ).length;
+  );
 
   const upcoming = transfers.filter((t) => {
     if (!t.date || !t.time) return false;
@@ -36,55 +36,83 @@ export default function AttentionPanel({
       60;
 
     return diff >= 0 && diff <= 30;
-  }).length;
-
-  const items = [
-    {
-      label: "Without driver",
-      value: noDriver,
-      color: "text-red-600",
-    },
-    {
-      label: "Without vehicle",
-      value: noVehicle,
-      color: "text-orange-600",
-    },
-    {
-      label: "Starting within 30 min",
-      value: upcoming,
-      color: "text-blue-600",
-    },
-    {
-      label: "Missing guest phone",
-      value: noPhone,
-      color: "text-yellow-600",
-    },
-  ];
+  });
 
   return (
     <PageCard className="p-6">
-      <h2 className="mb-5 text-xl font-semibold">
+
+      <h2 className="mb-6 text-xl font-semibold">
         Needs Attention
       </h2>
 
       <div className="space-y-4">
-        {items.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0 last:pb-0"
-          >
-            <span className="text-slate-600">
-              {item.label}
-            </span>
 
-            <span
-              className={`text-lg font-semibold ${item.color}`}
-            >
-              {item.value}
-            </span>
+        <div className="flex items-center justify-between rounded-xl bg-red-50 p-4">
+          <div>
+            <p className="font-semibold text-slate-900">
+              Unassigned Drivers
+            </p>
+
+            <p className="text-sm text-slate-500">
+              Transfers waiting for driver
+            </p>
           </div>
-        ))}
+
+          <div className="text-3xl font-bold text-red-600">
+            {noDriver.length}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl bg-orange-50 p-4">
+          <div>
+            <p className="font-semibold text-slate-900">
+              Unassigned Vehicles
+            </p>
+
+            <p className="text-sm text-slate-500">
+              Transfers waiting for vehicle
+            </p>
+          </div>
+
+          <div className="text-3xl font-bold text-orange-600">
+            {noVehicle.length}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl bg-blue-50 p-4">
+          <div>
+            <p className="font-semibold text-slate-900">
+              Starting Soon
+            </p>
+
+            <p className="text-sm text-slate-500">
+              Within next 30 minutes
+            </p>
+          </div>
+
+          <div className="text-3xl font-bold text-blue-600">
+            {upcoming.length}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl bg-yellow-50 p-4">
+          <div>
+            <p className="font-semibold text-slate-900">
+              Missing Phone
+            </p>
+
+            <p className="text-sm text-slate-500">
+              Guest phone missing
+            </p>
+          </div>
+
+          <div className="text-3xl font-bold text-yellow-600">
+            {noPhone.length}
+          </div>
+        </div>
+
       </div>
+
     </PageCard>
   );
 }

@@ -21,18 +21,20 @@ export default function VehicleTable({
     return (
       <EmptyState
         title="No vehicles found"
-        description="Create your first vehicle or adjust your search."
+        description="Create your first vehicle."
       />
     );
   }
 
   return (
-    <DataTable
-      columns={getVehicleColumns({
-        onEdit,
-        onDelete,
-      })}
-      data={vehicles}
-    />
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <DataTable
+        columns={getVehicleColumns({
+          onEdit,
+          onDelete,
+        })}
+        data={vehicles}
+      />
+    </div>
   );
 }

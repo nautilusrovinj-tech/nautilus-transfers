@@ -15,34 +15,51 @@ export default function ClientSection({
 }: Props) {
   return (
     <TransferSection title="Client">
+      <div className="space-y-2 md:col-span-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Client Name
+        </label>
 
-      <input
-        className="col-span-2 rounded-lg border p-2"
-        placeholder="Client Name"
-        value={transfer.clientName}
-        onChange={(e) =>
-          updateField("clientName", e.target.value)
-        }
-      />
+        <input
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          placeholder="Client Name"
+          value={transfer.clientName}
+          onChange={(e) =>
+            updateField("clientName", e.target.value)
+          }
+        />
+      </div>
 
-      <input
-        className="rounded-lg border p-2"
-        placeholder="Phone"
-        value={transfer.phone}
-        onChange={(e) =>
-          updateField("phone", e.target.value)
-        }
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Phone
+        </label>
 
-      <input
-        className="rounded-lg border p-2"
-        placeholder="Email"
-        value={transfer.email}
-        onChange={(e) =>
-          updateField("email", e.target.value)
-        }
-      />
+        <input
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          placeholder="+385..."
+          value={transfer.phone}
+          onChange={(e) =>
+            updateField("phone", e.target.value)
+          }
+        />
+      </div>
 
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Email
+        </label>
+
+        <input
+          type="email"
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          placeholder="guest@email.com"
+          value={transfer.email}
+          onChange={(e) =>
+            updateField("email", e.target.value)
+          }
+        />
+      </div>
     </TransferSection>
   );
 }

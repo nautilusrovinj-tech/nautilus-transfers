@@ -14,18 +14,25 @@ export default function NotesSection({
   updateField,
 }: Props) {
   return (
-    <TransferSection title="Notes">
+    <TransferSection
+      title="Notes"
+      columns={1}
+    >
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Internal Notes
+        </label>
 
-      <textarea
-        rows={5}
-        className="col-span-2 rounded-lg border p-2"
-        placeholder="Internal notes..."
-        value={transfer.notes}
-        onChange={(e) =>
-          updateField("notes", e.target.value)
-        }
-      />
-
+        <textarea
+          rows={6}
+          className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          placeholder="Add internal notes for drivers or dispatch..."
+          value={transfer.notes}
+          onChange={(e) =>
+            updateField("notes", e.target.value)
+          }
+        />
+      </div>
     </TransferSection>
   );
 }

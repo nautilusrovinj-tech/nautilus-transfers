@@ -26,7 +26,7 @@ function mapTransfer(row: any): Transfer {
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
-    // Legacy fields (temporary)
+    // Legacy fields
     driver: row.driver ?? "",
     vehicle: row.vehicle ?? "",
     partner: row.partner ?? "",
@@ -67,7 +67,7 @@ function mapToDatabase(
     baby_seats: transfer.babySeats,
     booster_seats: transfer.boosterSeats,
 
-    // Legacy fields (temporary)
+    // Legacy fields
     driver: transfer.driver,
     vehicle: transfer.vehicle,
     partner: transfer.partner,
@@ -85,12 +85,18 @@ function mapToDatabase(
   };
 }
 
-export async function getTransfers(): Promise<Transfer[]> {
+export async function getTransfers(): Promise<
+  Transfer[]
+> {
   const { data, error } = await supabase
     .from("transfers")
     .select("*")
-    .order("date", { ascending: true })
-    .order("time", { ascending: true });
+    .order("date", {
+      ascending: true,
+    })
+    .order("time", {
+      ascending: true,
+    });
 
   if (error) throw error;
 
@@ -159,6 +165,20 @@ export async function assignVehicle(
   if (error) throw error;
 }
 
+export async function updateTransferStatus(
+  id: string,
+  status: Transfer["status"]
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update({
+      status,
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
 export async function getDriverTransfers(
   driverId: string,
   date: string
@@ -168,6 +188,11 @@ export async function getDriverTransfers(
     .select("*")
     .eq("driver_id", driverId)
     .eq("date", date)
+    .in("status", [
+      "Confirmed",
+      "Assigned",
+      "In Progress",
+    ])
     .order("time", {
       ascending: true,
     });

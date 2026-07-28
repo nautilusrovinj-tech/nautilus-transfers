@@ -5,26 +5,30 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
-interface AppLayoutProps {
+interface Props {
   children: React.ReactNode;
 }
 
 export default function AppLayout({
   children,
-}: AppLayoutProps) {
+}: Props) {
   return (
     <AuthGuard>
-      <div className="flex h-screen overflow-hidden bg-slate-100">
+      <div className="min-h-screen bg-slate-100">
 
-        <Sidebar />
+        <div className="flex min-h-screen">
 
-        <div className="flex min-w-0 flex-1 flex-col">
+          <Sidebar />
 
-          <Header />
+          <div className="flex min-w-0 flex-1 flex-col">
 
-          <main className="flex-1 overflow-auto p-8">
-            {children}
-          </main>
+            <Header />
+
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+              {children}
+            </main>
+
+          </div>
 
         </div>
 

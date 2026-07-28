@@ -20,8 +20,6 @@ import {
   getAvailableVehicles,
 } from "@/lib/dispatch/suggestions";
 
-import { autoAssign } from "@/lib/dispatch/autoAssign";
-
 interface Props {
   transfer: Transfer;
   transfers: Transfer[];
@@ -72,170 +70,183 @@ export default function AssignmentSection({
       vehicles
     );
 
-  const suggestion = autoAssign(
-    transfers,
-    transfer,
-    drivers,
-    vehicles
-  );
-
   return (
     <TransferSection title="Assignment">
+      <div className="space-y-5">
 
-      <div className="col-span-2">
+        <ConflictAlert
+          show={!driverAvailable}
+          message="Selected driver already has another transfer within 90 minutes."
+        />
 
-        <button
-          type="button"
-          onClick={() => {
-            if (suggestion.driverId) {
+        <ConflictAlert
+          show={!vehicleAvailable}
+          message="Selected vehicle is already assigned within 90 minutes."
+        />
+
+        {/* Driver */}
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Driver
+          </label>
+
+          <select
+            className="w-full rounded-xl border bg-white px-3 py-3"
+            value={transfer.driverId}
+            onChange={(e) =>
               updateField(
                 "driverId",
-                suggestion.driverId
-              );
+                e.target.value
+              )
             }
+          >
+            <option value="">
+              Select Driver
+            </option>
 
-            if (suggestion.vehicleId) {
+            {drivers
+              .filter((d) => d.active)
+              .map((driver) => (
+                <option
+                  key={driver.id}
+                  value={driver.id}
+                >
+                  {driver.name}
+                </option>
+              ))}
+          </select>
+
+          <AvailabilityBadge
+            available={driverAvailable}
+            text="Driver unavailable"
+          />
+        </div>
+
+        {/* Vehicle */}
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Vehicle
+          </label>
+
+          <select
+            className="w-full rounded-xl border bg-white px-3 py-3"
+            value={transfer.vehicleId}
+            onChange={(e) =>
               updateField(
                 "vehicleId",
-                suggestion.vehicleId
-              );
+                e.target.value
+              )
             }
-          }}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-        >
-          Auto Assign Driver & Vehicle
-        </button>
-
-      </div>
-
-      <ConflictAlert
-        show={!driverAvailable}
-        message="Selected driver already has another transfer within 90 minutes."
-      />
-
-      <ConflictAlert
-        show={!vehicleAvailable}
-        message="Selected vehicle is already assigned within 90 minutes."
-      />
-
-      <AssignmentSuggestions
-        drivers={availableDrivers}
-        vehicles={availableVehicles}
-      />
-
-      <div>
-
-        <select
-          className="w-full rounded-lg border p-2"
-          value={transfer.driverId}
-          onChange={(e) =>
-            updateField(
-              "driverId",
-              e.target.value
-            )
-          }
-        >
-          <option value="">
-            Select Driver
-          </option>
-
-          {drivers
-            .filter((d) => d.active)
-            .map((driver) => (
-              <option
-                key={driver.id}
-                value={driver.id}
-              >
-                {driver.name}
-              </option>
-            ))}
-        </select>
-
-        <AvailabilityBadge
-          available={driverAvailable}
-          text="Driver unavailable"
-        />
-
-      </div>
-
-      <div>
-
-        <select
-          className="w-full rounded-lg border p-2"
-          value={transfer.vehicleId}
-          onChange={(e) =>
-            updateField(
-              "vehicleId",
-              e.target.value
-            )
-          }
-        >
-          <option value="">
-            Select Vehicle
-          </option>
-
-          {vehicles
-            .filter((v) => v.active)
-            .map((vehicle) => (
-              <option
-                key={vehicle.id}
-                value={vehicle.id}
-              >
-                {vehicle.name}
-              </option>
-            ))}
-        </select>
-
-        <AvailabilityBadge
-          available={vehicleAvailable}
-          text="Vehicle unavailable"
-        />
-
-      </div>
-
-      <select
-        className="rounded-lg border p-2"
-        value={transfer.partnerId}
-        onChange={(e) =>
-          updateField(
-            "partnerId",
-            e.target.value
-          )
-        }
-      >
-        <option value="">
-          Select Partner
-        </option>
-
-        {partners
-          .filter((p) => p.active)
-          .map((partner) => (
-            <option
-              key={partner.id}
-              value={partner.id}
-            >
-              {partner.name}
+          >
+            <option value="">
+              Select Vehicle
             </option>
-          ))}
-      </select>
 
-      <select
-        className="rounded-lg border p-2"
-        value={transfer.status}
-        onChange={(e) =>
-          updateField(
-            "status",
-            e.target.value as Transfer["status"]
-          )
-        }
-      >
-        <option value="New">New</option>
-        <option value="Confirmed">Confirmed</option>
-        <option value="Assigned">Assigned</option>
-        <option value="Completed">Completed</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
+            {vehicles
+              .filter((v) => v.active)
+              .map((vehicle) => (
+                <option
+                  key={vehicle.id}
+                  value={vehicle.id}
+                >
+                  {vehicle.name}
+                </option>
+              ))}
+          </select>
 
+          <AvailabilityBadge
+            available={vehicleAvailable}
+            text="Vehicle unavailable"
+          />
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+
+          {/* Partner */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">
+              Partner
+            </label>
+
+            <select
+              className="w-full rounded-xl border bg-white px-3 py-3"
+              value={transfer.partnerId}
+              onChange={(e) =>
+                updateField(
+                  "partnerId",
+                  e.target.value
+                )
+              }
+            >
+              <option value="">
+                Select Partner
+              </option>
+
+              {partners
+                .filter((p) => p.active)
+                .map((partner) => (
+                  <option
+                    key={partner.id}
+                    value={partner.id}
+                  >
+                    {partner.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {/* Status */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">
+              Status
+            </label>
+
+            <select
+              className="w-full rounded-xl border bg-white px-3 py-3"
+              value={transfer.status}
+              onChange={(e) =>
+                updateField(
+                  "status",
+                  e.target.value as Transfer["status"]
+                )
+              }
+            >
+              <option value="New">
+                New
+              </option>
+
+              <option value="Confirmed">
+                Confirmed
+              </option>
+
+              <option value="Assigned">
+                Assigned
+              </option>
+
+              <option value="In Progress">
+                In Progress
+              </option>
+
+              <option value="Completed">
+                Completed
+              </option>
+
+              <option value="Cancelled">
+                Cancelled
+              </option>
+            </select>
+          </div>
+
+        </div>
+
+        <div className="border-t pt-5">
+          <AssignmentSuggestions
+            drivers={availableDrivers}
+            vehicles={availableVehicles}
+          />
+        </div>
+
+      </div>
     </TransferSection>
   );
 }

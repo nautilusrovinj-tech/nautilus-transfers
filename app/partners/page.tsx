@@ -29,7 +29,10 @@ export default function PartnersPage() {
 
   async function loadPartners() {
     try {
+      setLoading(true);
+
       const data = await getPartners();
+
       setPartners(data);
     } finally {
       setLoading(false);
@@ -37,7 +40,7 @@ export default function PartnersPage() {
   }
 
   useEffect(() => {
-    loadPartners();
+    void loadPartners();
   }, []);
 
   const filteredPartners = useMemo(() => {
@@ -61,7 +64,10 @@ export default function PartnersPage() {
     );
 
     if (exists) {
-      await updatePartner(partner.id, partner);
+      await updatePartner(
+        partner.id,
+        partner
+      );
     } else {
       await createPartner(partner);
     }
@@ -72,7 +78,8 @@ export default function PartnersPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete partner?")) return;
+    if (!window.confirm("Delete partner?"))
+      return;
 
     await deletePartner(id);
 
@@ -95,23 +102,21 @@ export default function PartnersPage() {
           }
         />
 
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+        />
+
         {loading ? (
-          <div className="rounded-xl border bg-white p-10 text-center">
-            Loading...
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            Loading partners...
           </div>
         ) : (
-          <>
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-            />
-
-            <PartnerTable
-              partners={filteredPartners}
-              onEdit={setSelectedPartner}
-              onDelete={handleDelete}
-            />
-          </>
+          <PartnerTable
+            partners={filteredPartners}
+            onEdit={setSelectedPartner}
+            onDelete={handleDelete}
+          />
         )}
 
         <PartnerDialog

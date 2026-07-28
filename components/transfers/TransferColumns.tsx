@@ -21,13 +21,15 @@ function StatusBadge({
     New: "bg-slate-100 text-slate-700",
     Confirmed: "bg-blue-100 text-blue-700",
     Assigned: "bg-purple-100 text-purple-700",
+    "In Progress":
+      "bg-amber-100 text-amber-700",
     Completed: "bg-green-100 text-green-700",
     Cancelled: "bg-red-100 text-red-700",
   };
 
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${colors[status]}`}
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[status]}`}
     >
       {status}
     </span>
@@ -42,11 +44,6 @@ export function getTransferColumns({
 }: Actions): ColumnDef<Transfer>[] {
   return [
     {
-      accessorKey: "transferNumber",
-      header: "Transfer",
-      size: 120,
-    },
-    {
       accessorKey: "date",
       header: "Date",
       size: 110,
@@ -57,9 +54,21 @@ export function getTransferColumns({
       size: 90,
     },
     {
+      accessorKey: "transferType",
+      header: "Type",
+      size: 110,
+    },
+    {
       accessorKey: "clientName",
       header: "Client",
-      size: 180,
+      size: 200,
+    },
+    {
+      accessorKey: "flight",
+      header: "Flight",
+      size: 120,
+      cell: ({ row }) =>
+        row.original.flight || "-",
     },
     {
       accessorKey: "pickup",
@@ -74,16 +83,20 @@ export function getTransferColumns({
     {
       id: "driver",
       header: "Driver",
-      size: 160,
+      size: 170,
       cell: ({ row }) =>
-        getDriverName(row.original.driverId),
+        getDriverName(
+          row.original.driverId
+        ) || "Unassigned",
     },
     {
       id: "vehicle",
       header: "Vehicle",
-      size: 160,
+      size: 170,
       cell: ({ row }) =>
-        getVehicleName(row.original.vehicleId),
+        getVehicleName(
+          row.original.vehicleId
+        ) || "Unassigned",
     },
     {
       accessorKey: "price",
@@ -95,7 +108,7 @@ export function getTransferColumns({
     {
       accessorKey: "status",
       header: "Status",
-      size: 130,
+      size: 140,
       cell: ({ row }) => (
         <StatusBadge
           status={row.original.status}
@@ -105,13 +118,14 @@ export function getTransferColumns({
     {
       id: "actions",
       header: "",
-      size: 180,
       enableSorting: false,
+      size: 170,
       cell: ({ row }) => (
         <div className="flex justify-end gap-2">
+
           <Button
-            variant="outline"
             size="sm"
+            variant="outline"
             onClick={() =>
               onEdit(row.original)
             }
@@ -120,14 +134,17 @@ export function getTransferColumns({
           </Button>
 
           <Button
-            variant="destructive"
             size="sm"
+            variant="destructive"
             onClick={() =>
-              onDelete(row.original.id)
+              onDelete(
+                row.original.id
+              )
             }
           >
             Delete
           </Button>
+
         </div>
       ),
     },

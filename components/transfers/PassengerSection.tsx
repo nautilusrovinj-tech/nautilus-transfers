@@ -15,63 +15,81 @@ export default function PassengerSection({
 }: Props) {
   return (
     <TransferSection title="Passengers">
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Adults
+        </label>
 
-      <input
-        type="number"
-        min={0}
-        className="rounded-lg border p-2"
-        placeholder="Adults"
-        value={transfer.adults}
-        onChange={(e) =>
-          updateField(
-            "adults",
-            Number(e.target.value)
-          )
-        }
-      />
+        <input
+          type="number"
+          min={0}
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          value={transfer.adults}
+          onChange={(e) =>
+            updateField(
+              "adults",
+              Number(e.target.value)
+            )
+          }
+        />
+      </div>
 
-      <input
-        type="number"
-        min={0}
-        className="rounded-lg border p-2"
-        placeholder="Children"
-        value={transfer.children}
-        onChange={(e) =>
-          updateField(
-            "children",
-            Number(e.target.value)
-          )
-        }
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Children
+        </label>
 
-      <input
-        type="number"
-        min={0}
-        className="rounded-lg border p-2"
-        placeholder="Baby Seats"
-        value={transfer.babySeats}
-        onChange={(e) =>
-          updateField(
-            "babySeats",
-            Number(e.target.value)
-          )
-        }
-      />
+        <input
+          type="number"
+          min={0}
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          value={transfer.children}
+          onChange={(e) =>
+            updateField(
+              "children",
+              Number(e.target.value)
+            )
+          }
+        />
+      </div>
 
-      <input
-        type="number"
-        min={0}
-        className="rounded-lg border p-2"
-        placeholder="Booster Seats"
-        value={transfer.boosterSeats}
-        onChange={(e) =>
-          updateField(
-            "boosterSeats",
-            Number(e.target.value)
-          )
-        }
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Baby Seats
+        </label>
 
+        <input
+          type="number"
+          min={0}
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          value={transfer.babySeats}
+          onChange={(e) =>
+            updateField(
+              "babySeats",
+              Number(e.target.value)
+            )
+          }
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">
+          Booster Seats
+        </label>
+
+        <input
+          type="number"
+          min={0}
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          value={transfer.boosterSeats}
+          onChange={(e) =>
+            updateField(
+              "boosterSeats",
+              Number(e.target.value)
+            )
+          }
+        />
+      </div>
     </TransferSection>
   );
 }

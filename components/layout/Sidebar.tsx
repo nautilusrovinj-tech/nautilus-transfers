@@ -35,63 +35,59 @@ export default function Sidebar() {
       name: "Partners",
       href: "/partners",
     },
-    {
-      name: "Reports",
-      href: "/reports",
-    },
   ];
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
 
-      <div className="border-b border-slate-200 px-8 py-8">
+      <div className="border-b border-slate-200 px-6 py-6">
+
         <h1 className="text-2xl font-bold text-slate-900">
           Nautilus
         </h1>
 
         <p className="mt-1 text-sm text-slate-500">
-          Operations
+          Transfer Management
         </p>
+
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4">
+      <nav className="flex-1 space-y-2 overflow-y-auto p-4">
 
-        <div className="space-y-1">
-
-          {menu.map((item) => {
-            const active =
-              pathname === item.href ||
-              pathname.startsWith(
-                item.href + "/"
-              );
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-all ${
-                  active
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                {item.name}
-              </Link>
+        {menu.map((item) => {
+          const active =
+            pathname === item.href ||
+            pathname.startsWith(
+              item.href + "/"
             );
-          })}
 
-        </div>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`block rounded-xl px-4 py-3 text-sm font-medium transition ${
+                active
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              {item.name}
+            </Link>
+          );
+        })}
 
       </nav>
 
-      <div className="border-t border-slate-200 px-6 py-5">
-        <p className="text-sm font-semibold text-slate-700">
-          Nautilus Operations
-        </p>
+      <div className="border-t border-slate-200 p-6">
 
-        <p className="mt-1 text-xs text-slate-400">
+        <div className="text-sm font-semibold text-slate-800">
+          Nautilus
+        </div>
+
+        <div className="text-xs text-slate-500">
           Version 1.0
-        </p>
+        </div>
+
       </div>
 
     </aside>

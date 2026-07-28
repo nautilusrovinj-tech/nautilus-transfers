@@ -3,7 +3,7 @@ import { Driver } from "@/types/driver";
 
 const supabase = createClient();
 
-export async function getDrivers() {
+export async function getDrivers(): Promise<Driver[]> {
   const { data, error } = await supabase
     .from("drivers")
     .select("*")
@@ -11,7 +11,21 @@ export async function getDrivers() {
 
   if (error) throw error;
 
-  return data ?? [];
+  return (data ?? []) as Driver[];
+}
+
+export async function getDriverByEmail(
+  email: string
+) {
+  const { data, error } = await supabase
+    .from("drivers")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  if (error) throw error;
+
+  return data;
 }
 
 export async function createDriver(driver: Driver) {

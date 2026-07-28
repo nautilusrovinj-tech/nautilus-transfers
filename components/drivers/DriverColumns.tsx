@@ -16,7 +16,7 @@ export function getDriverColumns({
   return [
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Driver",
     },
     {
       accessorKey: "phone",
@@ -25,35 +25,45 @@ export function getDriverColumns({
     {
       accessorKey: "email",
       header: "Email",
+      cell: ({ row }) =>
+        row.original.email || "-",
     },
     {
       accessorKey: "languages",
       header: "Languages",
+      cell: ({ row }) =>
+        row.original.languages || "-",
     },
     {
       accessorKey: "active",
       header: "Status",
       cell: ({ row }) => (
         <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
             row.original.active
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-700"
           }`}
         >
-          {row.original.active ? "Active" : "Inactive"}
+          {row.original.active
+            ? "Active"
+            : "Inactive"}
         </span>
       ),
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
+      enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-end gap-2">
+
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onEdit(row.original)}
+            onClick={() =>
+              onEdit(row.original)
+            }
           >
             Edit
           </Button>
@@ -61,10 +71,13 @@ export function getDriverColumns({
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => onDelete(row.original.id)}
+            onClick={() =>
+              onDelete(row.original.id)
+            }
           >
             Delete
           </Button>
+
         </div>
       ),
     },

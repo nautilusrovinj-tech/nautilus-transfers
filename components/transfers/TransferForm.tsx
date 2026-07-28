@@ -55,7 +55,7 @@ export default function TransferForm({
       setPartners(partnersData);
     }
 
-    load();
+    void load();
   }, []);
 
   function updateField<K extends keyof Transfer>(
@@ -69,8 +69,9 @@ export default function TransferForm({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-8 xl:grid-cols-[1.6fr_1fr]">
 
+      {/* LEFT COLUMN */}
       <div className="space-y-6">
 
         <TransferDetails
@@ -95,6 +96,7 @@ export default function TransferForm({
 
       </div>
 
+      {/* RIGHT COLUMN */}
       <div className="space-y-6">
 
         <AssignmentSection

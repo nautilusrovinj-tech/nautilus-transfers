@@ -21,18 +21,20 @@ export default function PartnerTable({
     return (
       <EmptyState
         title="No partners found"
-        description="Create your first partner or adjust your search."
+        description="Create your first partner."
       />
     );
   }
 
   return (
-    <DataTable
-      columns={getPartnerColumns({
-        onEdit,
-        onDelete,
-      })}
-      data={partners}
-    />
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <DataTable
+        columns={getPartnerColumns({
+          onEdit,
+          onDelete,
+        })}
+        data={partners}
+      />
+    </div>
   );
 }

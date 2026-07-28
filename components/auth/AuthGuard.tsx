@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
+import { getDriverByEmail } from "@/services/drivers";
 
 interface Props {
   children: React.ReactNode;
@@ -13,6 +17,7 @@ export default function AuthGuard({
   children,
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const supabase = useMemo(
     () => createClient(),
@@ -25,30 +30,59 @@ export default function AuthGuard({
   useEffect(() => {
     async function checkUser() {
       const {
-        data: { session },
+        data: { user },
         error,
-      } = await supabase.auth.getSession();
+      } = await supabase.auth.getUser();
 
-      if (error) {
-        console.error(
-          "AuthGuard session error:",
-          error
+      if (error || !user) {
+        router.replace("/login");
+        return;
+      }
+
+      try {
+        const driver =
+          await getDriverByEmail(
+            user.email!
+          );
+
+        const role =
+          driver?.role ?? "driver";
+
+        localStorage.setItem(
+          "role",
+          role
         );
 
-        router.replace("/login");
-        return;
-      }
+        if (
+          role === "driver" &&
+          !pathname.startsWith("/driver")
+        ) {
+          router.replace("/driver");
+          return;
+        }
 
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
+        if (
+          role === "dispatcher" &&
+          (pathname === "/" ||
+            pathname === "/login")
+        ) {
+          router.replace("/dashboard");
+          return;
+        }
 
-      setLoading(false);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        router.replace("/login");
+      }
     }
 
     void checkUser();
-  }, [router, supabase]);
+  }, [
+    pathname,
+    router,
+    supabase,
+  ]);
 
   if (loading) {
     return (
