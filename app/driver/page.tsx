@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import DriverLayout from "@/components/layout/DriverLayout";
 import DriverHeader from "@/components/driver/DriverHeader";
@@ -17,10 +17,52 @@ export default function DriverPage() {
   const [driverName, setDriverName] = useState("");
   const [transfers, setTransfers] = useState<Transfer[]>([]);
 
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
+  const loadTransfers = useCallback(
+    async (date: string = selectedDate) => {
+      try {
+        setLoading(true);
+
+        const supabase = createClient();
+
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user?.email) return;
+
+        const driver = await getDriverByEmail(user.email);
+
+        if (!driver) return;
+
+        setDriverName(driver.name);
+
+        const data = await getDriverTransfers(
+          driver.id,
+          date
+        );
+
+        data.sort((a, b) =>
+          a.time.localeCompare(b.time)
+        );
+
+        setTransfers(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [selectedDate]
+  );
+
   useEffect(() => {
     const supabase = createClient();
 
-    loadTransfers();
+    void loadTransfers(selectedDate);
 
     const channel = supabase
       .channel("driver-transfers")
@@ -32,7 +74,7 @@ export default function DriverPage() {
           table: "transfers",
         },
         () => {
-          loadTransfers();
+          void loadTransfers(selectedDate);
         }
       )
       .subscribe();
@@ -40,41 +82,28 @@ export default function DriverPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [loadTransfers, selectedDate]);
 
-  async function loadTransfers() {
-    try {
-      setLoading(true);
+  function goToday() {
+    const date =
+      new Date().toISOString().split("T")[0];
 
-      const supabase = createClient();
+    setSelectedDate(date);
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    void loadTransfers(date);
+  }
 
-      if (!user?.email) return;
+  function goTomorrow() {
+    const d = new Date();
 
-      const driver = await getDriverByEmail(user.email);
+    d.setDate(d.getDate() + 1);
 
-      if (!driver) return;
+    const date =
+      d.toISOString().split("T")[0];
 
-      setDriverName(driver.name);
+    setSelectedDate(date);
 
-      const today = new Date().toISOString().split("T")[0];
-
-      const data = await getDriverTransfers(
-        driver.id,
-        today
-      );
-
-      data.sort((a, b) => a.time.localeCompare(b.time));
-
-      setTransfers(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    void loadTransfers(date);
   }
 
   const currentTransfer = useMemo(() => {
@@ -126,6 +155,34 @@ export default function DriverPage() {
           count={transfers.length}
         />
 
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4 shadow">
+
+          <button
+            onClick={goToday}
+            className="rounded-xl bg-slate-900 px-5 py-2.5 text-white"
+          >
+            Today
+          </button>
+
+          <button
+            onClick={goTomorrow}
+            className="rounded-xl bg-slate-200 px-5 py-2.5"
+          >
+            Tomorrow
+          </button>
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => {
+              setSelectedDate(e.target.value);
+              void loadTransfers(e.target.value);
+            }}
+            className="rounded-xl border border-slate-300 px-4 py-2.5"
+          />
+
+        </div>
+
         {/* Daily Summary */}
 
         <div className="grid grid-cols-2 gap-4">
@@ -167,11 +224,11 @@ export default function DriverPage() {
             <div className="rounded-3xl bg-white p-10 text-center shadow">
 
               <h2 className="text-3xl font-bold">
-                All Transfers Completed
+                No Transfers
               </h2>
 
               <p className="mt-3 text-slate-500">
-                Excellent work today.
+                No transfers scheduled for this date.
               </p>
 
             </div>
@@ -186,7 +243,9 @@ export default function DriverPage() {
 
             <DriverTransferCard
               transfer={currentTransfer}
-              onComplete={loadTransfers}
+              onComplete={() =>
+                loadTransfers(selectedDate)
+              }
             />
 
           </div>
@@ -201,7 +260,9 @@ export default function DriverPage() {
 
               <DriverTransferCard
                 transfer={nextTransfer}
-                onComplete={loadTransfers}
+                onComplete={() =>
+                  loadTransfers(selectedDate)
+                }
               />
             </>
           )}
