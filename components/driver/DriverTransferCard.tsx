@@ -89,13 +89,57 @@ export default function DriverTransferCard({
 
         {/* Client */}
 
-        <div>
+        {/* Client */}
 
-          <h2 className="text-3xl font-bold">
-            {transfer.clientName}
-          </h2>
+<div className="space-y-4">
 
-        </div>
+<div>
+<h2 className="text-3xl font-bold">
+  {transfer.clientName}
+</h2>
+
+  {transfer.phone && (
+    <p className="mt-2 text-slate-500">
+      📞 {transfer.phone}
+    </p>
+  )}
+</div>
+
+<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+
+<div className="rounded-2xl bg-slate-100 p-4">
+  <div className="text-xs font-semibold uppercase text-slate-500">
+    Vehicle
+  </div>
+
+  <div className="mt-2 text-lg font-bold">
+    🚐 {transfer.vehicle}
+  </div>
+</div>
+
+  <div className="rounded-2xl bg-slate-100 p-4">
+    <div className="text-xs font-semibold uppercase text-slate-500">
+      Partner
+    </div>
+
+    <div className="mt-2 text-lg font-bold">
+      🤝 {transfer.partner || "Direct Booking"}
+    </div>
+  </div>
+
+  <div className="rounded-2xl bg-green-100 p-4">
+    <div className="text-xs font-semibold uppercase text-green-700">
+      Price
+    </div>
+
+    <div className="mt-2 text-2xl font-bold text-green-700">
+      £{transfer.price}
+    </div>
+  </div>
+
+</div>
+
+</div>
 
         {/* Flight */}
 

@@ -99,12 +99,19 @@ export function useTransfers() {
     transferId: string,
     driverId: string
   ) {
+    console.log("========== updateDriver ==========");
+    console.log("transferId:", transferId);
+    console.log("driverId:", driverId);
+  
     const transfer = transfers.find(
       (t) => t.id === transferId
     );
-
-    if (!transfer) return;
-
+  
+    if (!transfer) {
+      console.log("Transfer not found");
+      return;
+    }
+  
     const conflict = checkDriverConflict(
       transfers,
       transfer.id,
@@ -112,7 +119,7 @@ export function useTransfers() {
       transfer.date,
       transfer.time
     );
-
+  
     if (conflict) {
       alert(
         [
@@ -123,20 +130,22 @@ export function useTransfers() {
           `Client: ${conflict.clientName}`,
         ].join("\n")
       );
-
+  
       return;
     }
-
+  
     try {
       await assignDriver(
         transferId,
         driverId
       );
-
+  
+      console.log("Driver assigned successfully");
+  
       await loadTransfers();
     } catch (error) {
       console.error(error);
-
+  
       alert(
         error instanceof Error
           ? error.message

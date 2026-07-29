@@ -36,17 +36,22 @@ export default function DriverSelect({
       console.error(err);
     }
   }
-
   async function handleChange(
     e: React.ChangeEvent<HTMLSelectElement>
   ) {
     const driverId = e.target.value;
-
+  
+    console.log("========== DriverSelect ==========");
+    console.log("Transfer ID:", transferId);
+    console.log("Selected Driver:", driverId);
+  
     setSelected(driverId);
     setSaving(true);
-
+  
     try {
       await onAssigned(driverId);
+  
+      console.log("✅ onAssigned finished");
     } catch (err) {
       console.error(err);
       alert("Unable to assign driver.");

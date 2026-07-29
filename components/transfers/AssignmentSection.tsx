@@ -56,19 +56,37 @@ export default function AssignmentSection({
       )
     : true;
 
-  const availableDrivers =
-    getAvailableDrivers(
-      transfers,
-      transfer,
-      drivers
-    );
+  const availableDrivers = getAvailableDrivers(
+    transfers,
+    transfer,
+    drivers
+  );
 
-  const availableVehicles =
-    getAvailableVehicles(
-      transfers,
-      transfer,
-      vehicles
-    );
+  const availableVehicles = getAvailableVehicles(
+    transfers,
+    transfer,
+    vehicles
+  );
+
+  function updateDriver(driverId: string) {
+    updateField("driverId", driverId);
+
+    if (driverId && transfer.vehicleId) {
+      updateField("status", "Assigned");
+    } else {
+      updateField("status", "New");
+    }
+  }
+
+  function updateVehicle(vehicleId: string) {
+    updateField("vehicleId", vehicleId);
+
+    if (vehicleId && transfer.driverId) {
+      updateField("status", "Assigned");
+    } else {
+      updateField("status", "New");
+    }
+  }
 
   return (
     <TransferSection title="Assignment">
@@ -93,12 +111,7 @@ export default function AssignmentSection({
           <select
             className="w-full rounded-xl border bg-white px-3 py-3"
             value={transfer.driverId}
-            onChange={(e) =>
-              updateField(
-                "driverId",
-                e.target.value
-              )
-            }
+            onChange={(e) => updateDriver(e.target.value)}
           >
             <option value="">
               Select Driver
@@ -131,12 +144,7 @@ export default function AssignmentSection({
           <select
             className="w-full rounded-xl border bg-white px-3 py-3"
             value={transfer.vehicleId}
-            onChange={(e) =>
-              updateField(
-                "vehicleId",
-                e.target.value
-              )
-            }
+            onChange={(e) => updateVehicle(e.target.value)}
           >
             <option value="">
               Select Vehicle
@@ -211,29 +219,12 @@ export default function AssignmentSection({
                 )
               }
             >
-              <option value="New">
-                New
-              </option>
-
-              <option value="Confirmed">
-                Confirmed
-              </option>
-
-              <option value="Assigned">
-                Assigned
-              </option>
-
-              <option value="In Progress">
-                In Progress
-              </option>
-
-              <option value="Completed">
-                Completed
-              </option>
-
-              <option value="Cancelled">
-                Cancelled
-              </option>
+              <option value="New">New</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Assigned">Assigned</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
             </select>
           </div>
 

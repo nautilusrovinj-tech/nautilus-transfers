@@ -26,10 +26,10 @@ function mapTransfer(row: any): Transfer {
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
-    // Legacy fields
+    // Legacy fields (now populated from relations if available)
     driver: row.driver ?? "",
-    vehicle: row.vehicle ?? "",
-    partner: row.partner ?? "",
+    vehicle: row.vehicles?.name ?? row.vehicle ?? "",
+    partner: row.partners?.name ?? row.partner ?? "",
 
     // Relational fields
     driverId: row.driver_id ?? "",
@@ -85,18 +85,12 @@ function mapToDatabase(
   };
 }
 
-export async function getTransfers(): Promise<
-  Transfer[]
-> {
+export async function getTransfers(): Promise<Transfer[]> {
   const { data, error } = await supabase
     .from("transfers")
     .select("*")
-    .order("date", {
-      ascending: true,
-    })
-    .order("time", {
-      ascending: true,
-    });
+    .order("date", { ascending: true })
+    .order("time", { ascending: true });
 
   if (error) throw error;
 
@@ -148,13 +142,19 @@ export async function assignDriver(
   transferId: string,
   driverId: string
 ) {
-  const { error } = await supabase
+  console.log("Assigning:", transferId, driverId);
+
+  const { data, error } = await supabase
     .from("transfers")
     .update({
       driver_id: driverId,
       status: "Assigned",
     })
-    .eq("id", transferId);
+    .eq("id", transferId)
+    .select();
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
 
   if (error) throw error;
 }
@@ -163,12 +163,16 @@ export async function assignVehicle(
   transferId: string,
   vehicleId: string
 ) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("transfers")
     .update({
       vehicle_id: vehicleId,
     })
-    .eq("id", transferId);
+    .eq("id", transferId)
+    .select();
+
+  console.log("VEHICLE DATA:", data);
+  console.log("VEHICLE ERROR:", error);
 
   if (error) throw error;
 }
@@ -193,7 +197,15 @@ export async function getDriverTransfers(
 ): Promise<Transfer[]> {
   const { data, error } = await supabase
     .from("transfers")
-    .select("*")
+    .select(`
+      *,
+      vehicles:vehicle_id (
+        name
+      ),
+      partners:partner_id (
+        name
+      )
+    `)
     .eq("driver_id", driverId)
     .eq("date", date)
     .in("status", [

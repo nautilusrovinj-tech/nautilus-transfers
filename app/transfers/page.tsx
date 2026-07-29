@@ -77,17 +77,27 @@ export default function TransfersPage() {
 
   async function handleSave(transfer: Transfer) {
     try {
+      const transferToSave: Transfer = {
+        ...transfer,
+        status:
+          transfer.driverId && transfer.vehicleId
+            ? "Assigned"
+            : "New",
+      };
+
+      console.log("TRANSFER TO SAVE:", transferToSave);
+
       const exists = transfers.some(
-        (t) => t.id === transfer.id
+        (t) => t.id === transferToSave.id
       );
 
       if (exists) {
         await updateTransfer(
-          transfer.id,
-          transfer
+          transferToSave.id,
+          transferToSave
         );
       } else {
-        await createTransfer(transfer);
+        await createTransfer(transferToSave);
       }
 
       setSelectedTransfer(null);
@@ -100,8 +110,7 @@ export default function TransfersPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete transfer?"))
-      return;
+    if (!window.confirm("Delete transfer?")) return;
 
     try {
       await deleteTransfer(id);
@@ -118,15 +127,10 @@ export default function TransfersPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-
         <PageHeader
           title="Transfers"
           subtitle={`${filteredTransfers.length} transfer(s)`}
-          action={
-            <TransferDialog
-              onSave={handleSave}
-            />
-          }
+          action={<TransferDialog onSave={handleSave} />}
         />
 
         <TransferSearchBar
@@ -156,7 +160,6 @@ export default function TransfersPage() {
           onSave={handleSave}
           onDelete={handleDelete}
         />
-
       </div>
     </AppLayout>
   );

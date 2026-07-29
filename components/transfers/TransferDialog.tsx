@@ -73,12 +73,24 @@ export default function TransferDialog({
   async function handleSave() {
     try {
       setSaving(true);
-
-      await onSave(currentTransfer);
-
+  
+      const transferToSave: Transfer = {
+        ...currentTransfer,
+        status:
+          currentTransfer.driverId &&
+          currentTransfer.vehicleId
+            ? "Assigned"
+            : "New",
+      };
+  
+      console.log("TRANSFER TO SAVE:", transferToSave);
+  
+      await onSave(transferToSave);
+  
       setOpen(false);
-
       setCurrentTransfer(createEmptyTransfer());
+    } catch (error) {
+      console.error("SAVE ERROR:", error);
     } finally {
       setSaving(false);
     }
