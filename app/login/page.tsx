@@ -19,8 +19,6 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    alert("handleLogin called");
-
     setLoading(true);
     setError("");
 
