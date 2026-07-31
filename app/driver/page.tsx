@@ -114,15 +114,6 @@ export default function DriverPage() {
     );
   }, [transfers]);
 
-  const nextTransfer = useMemo(() => {
-    return (
-      transfers.find(
-        (t) =>
-          t.status === "Assigned" ||
-          t.status === "Confirmed"
-      ) ?? null
-    );
-  }, [transfers]);
 
   const completed = useMemo(() => {
     return transfers.filter(
@@ -141,13 +132,14 @@ export default function DriverPage() {
   const upcoming = useMemo(() => {
     return transfers.filter(
       (t) =>
-        t.status === "Assigned" ||
-        t.status === "Confirmed"
+        (t.status === "Assigned" ||
+          t.status === "Confirmed") &&
+        t.id !== currentTransfer?.id
     );
-  }, [transfers]);
+  }, [transfers, currentTransfer]);
 
   return (
-    <DriverLayout>
+        <DriverLayout>
       <div className="space-y-6">
 
         <DriverHeader
@@ -234,81 +226,62 @@ export default function DriverPage() {
             </div>
           )}
 
-        {currentTransfer && (
-          <div className="sticky top-4 z-20">
+{currentTransfer && (
+  <div className="rounded-3xl border-2 border-blue-600 bg-blue-50/40 p-4 shadow-lg">
 
-            <div className="mb-3 rounded-xl bg-blue-600 py-2 text-center text-sm font-bold tracking-wide text-white">
-              CURRENT TRANSFER
-            </div>
+    <div className="mb-4 rounded-xl bg-blue-700 py-3 text-center text-base font-bold tracking-wider text-white">
+      CURRENT TRANSFER
+    </div>
 
-            <DriverTransferCard
-              transfer={currentTransfer}
-              onComplete={() =>
-                loadTransfers(selectedDate)
-              }
-            />
+    <DriverTransferCard
+      transfer={currentTransfer}
+      onComplete={loadTransfers}
+    />
 
-          </div>
-        )}
+  </div>
+)}
 
-        {!currentTransfer &&
-          nextTransfer && (
-            <>
-              <div className="rounded-xl bg-slate-900 py-2 text-center text-sm font-bold tracking-wide text-white">
-                NEXT TRANSFER
-              </div>
 
-              <DriverTransferCard
-                transfer={nextTransfer}
-                onComplete={() =>
-                  loadTransfers(selectedDate)
-                }
-              />
-            </>
-          )}
+{upcoming.length > 0 && (
+  <div className="space-y-4">
 
-        {upcoming.length > 1 && (
-          <div className="rounded-3xl bg-white p-6 shadow">
+    <div className="rounded-xl bg-slate-900 py-2 text-center text-sm font-bold tracking-wide text-white">
+      UPCOMING TRANSFERS
+    </div>
 
-            <h2 className="mb-5 text-xl font-bold">
-              Upcoming Transfers
-            </h2>
+    {upcoming.map((transfer) => (
+      <DriverTransferCard
+        key={transfer.id}
+        transfer={transfer}
+        onComplete={() =>
+          loadTransfers(selectedDate)
+        }
+      />
+    ))}
 
-            <div className="space-y-3">
+  </div>
+)}
 
-              {upcoming.slice(1).map((transfer) => (
-                <div
-                  key={transfer.id}
-                  className="rounded-2xl border border-slate-200 p-4"
-                >
-                  <div className="flex items-center justify-between">
+{completed > 0 && (
+  <div className="space-y-4">
 
-                    <div>
+    <div className="rounded-xl bg-green-700 py-2 text-center text-sm font-bold tracking-wide text-white">
+      COMPLETED TODAY
+    </div>
 
-                      <div className="text-xl font-bold">
-                        {transfer.time}
-                      </div>
+    {transfers
+      .filter((t) => t.status === "Completed")
+      .map((transfer) => (
+        <DriverTransferCard
+          key={transfer.id}
+          transfer={transfer}
+        />
+      ))}
 
-                      <div className="mt-1 font-medium">
-                        {transfer.clientName}
-                      </div>
-
-                    </div>
-
-                    <div className="text-right text-sm text-slate-500">
-                      {transfer.pickup}
-                    </div>
-
-                  </div>
-                </div>
-              ))}
-
-            </div>
-
-          </div>
-        )}
+  </div>
+)}
 
       </div>
     </DriverLayout>
-  );
-}
+     );
+    }

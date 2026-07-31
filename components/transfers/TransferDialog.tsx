@@ -77,10 +77,14 @@ export default function TransferDialog({
       const transferToSave: Transfer = {
         ...currentTransfer,
         status:
-          currentTransfer.driverId &&
-          currentTransfer.vehicleId
-            ? "Assigned"
-            : "New",
+  currentTransfer.status === "Completed" ||
+  currentTransfer.status === "In Progress" ||
+  currentTransfer.status === "Cancelled"
+    ? currentTransfer.status
+    : currentTransfer.driverId &&
+      currentTransfer.vehicleId
+    ? "Assigned"
+    : "New",
       };
   
       console.log("TRANSFER TO SAVE:", transferToSave);

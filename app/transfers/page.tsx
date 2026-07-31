@@ -85,7 +85,13 @@ export default function TransfersPage() {
             : "New",
       };
 
-      console.log("TRANSFER TO SAVE:", transferToSave);
+      console.log("TRANSFER TO SAVE:", {
+        driverId: transfer.driverId,
+        vehicleId: transfer.vehicleId,
+        partnerId: transfer.partnerId,
+        status: transferToSave.status,
+        transfer: transferToSave,
+      });
 
       const exists = transfers.some(
         (t) => t.id === transferToSave.id

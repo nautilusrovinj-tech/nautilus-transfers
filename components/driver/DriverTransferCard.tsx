@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Transfer } from "@/types/transfer";
 import { googleMapsUrl } from "@/lib/helpers/maps";
@@ -17,6 +17,23 @@ export default function DriverTransferCard({
   onComplete,
 }: Props) {
   const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const statusColour = useMemo(() => {
+    switch (transfer.status) {
+      case "Completed":
+        return "bg-green-600";
+
+      case "In Progress":
+        return "bg-orange-500";
+
+      case "Cancelled":
+        return "bg-red-600";
+
+      default:
+        return "bg-blue-600";
+    }
+  }, [transfer.status]);
 
   async function startTransfer() {
     if (saving) return;
@@ -59,27 +76,35 @@ export default function DriverTransferCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
+    <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
 
       {/* Header */}
 
-      <div className="bg-slate-900 p-6 text-white">
+      <div className="bg-gradient-to-r from-slate-900 to-blue-900 p-6 text-white">
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
 
-          <div>
-            <p className="text-slate-300">
-              {transfer.date}
-            </p>
+        <div>
 
-            <h1 className="mt-1 text-5xl font-bold">
-              {transfer.time}
-            </h1>
+<p className="text-5xl font-bold tracking-tight">
+  {transfer.time}
+</p>
+
+<p className="mt-3 text-lg font-semibold text-white">
+  {transfer.transferType}
+</p>
+
+<p className="mt-1 text-slate-300">
+  {transfer.clientName}
+</p>
+
+</div>
+
+<div
+  className={`rounded-full px-5 py-2 text-sm font-bold uppercase tracking-wide text-white shadow-md ${statusColour}`}
+>
+            {transfer.status}
           </div>
-
-          <span className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold">
-            {transfer.transferType}
-          </span>
 
         </div>
 
@@ -87,256 +112,288 @@ export default function DriverTransferCard({
 
       <div className="space-y-5 p-6">
 
-        {/* Client */}
+        <div>
 
-        {/* Client */}
+          <h2 className="text-2xl font-bold text-slate-900">
+            {transfer.clientName}
+          </h2>
 
-<div className="space-y-4">
-
-<div>
-<h2 className="text-3xl font-bold">
-  {transfer.clientName}
-</h2>
-
-  {transfer.phone && (
-    <p className="mt-2 text-slate-500">
-      📞 {transfer.phone}
-    </p>
-  )}
-</div>
-
-<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-
-<div className="rounded-2xl bg-slate-100 p-4">
-  <div className="text-xs font-semibold uppercase text-slate-500">
-    Vehicle
-  </div>
-
-  <div className="mt-2 text-lg font-bold">
-    🚐 {transfer.vehicle}
-  </div>
-</div>
-
-  <div className="rounded-2xl bg-slate-100 p-4">
-    <div className="text-xs font-semibold uppercase text-slate-500">
-      Partner
-    </div>
-
-    <div className="mt-2 text-lg font-bold">
-      🤝 {transfer.partner || "Direct Booking"}
-    </div>
-  </div>
-
-  <div className="rounded-2xl bg-green-100 p-4">
-    <div className="text-xs font-semibold uppercase text-green-700">
-      Price
-    </div>
-
-    <div className="mt-2 text-2xl font-bold text-green-700">
-      £{transfer.price}
-    </div>
-  </div>
-
-</div>
-
-</div>
-
-        {/* Flight */}
-
-        {transfer.flight && (
-          <div className="rounded-2xl bg-blue-50 p-5">
-
-            <div className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-              Flight
-            </div>
-
-            <div className="mt-1 text-3xl font-bold text-blue-900">
-              ✈️ {transfer.flight}
-            </div>
-
-          </div>
-        )}
-
-        {/* Route */}
-
-        <div className="rounded-2xl bg-slate-100 p-5">
-
-          <div>
-
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Pickup
-            </div>
-
-            <div className="mt-1 text-lg font-semibold">
-              {transfer.pickup}
-            </div>
-
-          </div>
-
-          <div className="py-4 text-center text-3xl">
-            ↓
-          </div>
-
-          <div>
-
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Destination
-            </div>
-
-            <div className="mt-1 text-lg font-semibold">
-              {transfer.destination}
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Passengers */}
-
-        {(transfer.adults > 0 ||
-          transfer.children > 0 ||
-          transfer.babySeats > 0 ||
-          transfer.boosterSeats > 0) && (
-          <div className="rounded-2xl border bg-white p-5">
-
-            <h3 className="mb-4 text-lg font-bold">
-              👥 Passengers
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-
-              <div className="rounded-xl bg-slate-100 p-3 text-center">
-                <div className="text-2xl font-bold">
-                  {transfer.adults}
-                </div>
-
-                <div className="text-sm text-slate-500">
-                  Adults
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-slate-100 p-3 text-center">
-                <div className="text-2xl font-bold">
-                  {transfer.children}
-                </div>
-
-                <div className="text-sm text-slate-500">
-                  Children
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-slate-100 p-3 text-center">
-                <div className="text-2xl font-bold">
-                  {transfer.babySeats}
-                </div>
-
-                <div className="text-sm text-slate-500">
-                  Baby Seats
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-slate-100 p-3 text-center">
-                <div className="text-2xl font-bold">
-                  {transfer.boosterSeats}
-                </div>
-
-                <div className="text-sm text-slate-500">
-                  Boosters
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-        {/* Notes */}
-
-        {transfer.notes && (
-          <div className="rounded-2xl border-l-4 border-amber-500 bg-amber-50 p-5">
-
-            <h3 className="mb-2 text-lg font-bold">
-              ⚠️ Notes
-            </h3>
-
-            <p className="whitespace-pre-wrap text-slate-700">
-              {transfer.notes}
+          {transfer.phone && (
+            <p className="mt-1 text-slate-500">
+              {transfer.phone}
             </p>
-
-          </div>
-        )}
-
-        {/* Navigate */}
-
-        <button
-          onClick={() =>
-            window.open(
-              googleMapsUrl(
-                transfer.pickup,
-                transfer.destination
-              ),
-              "_blank"
-            )
-          }
-          className="w-full rounded-2xl bg-orange-500 py-5 text-xl font-bold text-white active:scale-95"
-        >
-          🧭 START NAVIGATION
-        </button>
-
-        {/* Secondary Actions */}
-
-        <div className="grid grid-cols-2 gap-4">
-
-          <button
-            onClick={() =>
-              window.open(
-                guestWhatsAppUrl(
-                  transfer
-                ),
-                "_blank"
-              )
-            }
-            className="rounded-2xl bg-green-600 py-5 text-lg font-bold text-white active:scale-95"
-          >
-            💬 WhatsApp
-          </button>
-
-          <button
-            onClick={() =>
-              window.open(
-                `tel:${transfer.phone}`
-              )
-            }
-            className="rounded-2xl bg-sky-600 py-5 text-lg font-bold text-white active:scale-95"
-          >
-            📞 Call
-          </button>
+          )}
 
         </div>
 
-        {/* Status Action */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
 
-        {(transfer.status === "Assigned" ||
+<div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+  Route
+</div>
+{(transfer.flight || transfer.adults > 0) && (
+  <div className="flex flex-wrap gap-2">
+
+    {transfer.flight && (
+      <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+        Flight: {transfer.flight}
+      </span>
+    )}
+
+    <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+      {transfer.adults} Adult{transfer.adults !== 1 ? "s" : ""}
+    </span>
+
+    {transfer.children > 0 && (
+      <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+        {transfer.children} Child{transfer.children !== 1 ? "ren" : ""}
+      </span>
+    )}
+
+  </div>
+)}
+<div className="mt-5 flex gap-4">
+
+  <div className="flex flex-col items-center">
+
+    <div className="h-3 w-3 rounded-full bg-blue-600" />
+
+    <div className="my-2 h-16 w-0.5 bg-slate-300" />
+
+    <div className="h-3 w-3 rounded-full bg-green-600" />
+
+  </div>
+
+  <div className="flex-1">
+
+    <div>
+      <p className="text-xs uppercase text-slate-500">
+        Pickup
+      </p>
+
+      <p className="mt-1 font-semibold text-slate-900">
+        {transfer.pickup}
+      </p>
+    </div>
+
+    <div className="mt-6">
+      <p className="text-xs uppercase text-slate-500">
+        Destination
+      </p>
+
+      <p className="mt-1 font-semibold text-slate-900">
+        {transfer.destination}
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+
+  <div className="grid grid-cols-3 gap-4">
+
+    <div>
+      <p className="text-xs uppercase tracking-wide text-slate-500">
+        Vehicle
+      </p>
+
+      <p className="mt-1 font-semibold text-slate-900">
+        {transfer.vehicle}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-xs uppercase tracking-wide text-slate-500">
+        Partner
+      </p>
+
+      <p className="mt-1 font-semibold text-slate-900">
+        {transfer.partner || "Direct"}
+      </p>
+    </div>
+
+    <div className="text-right">
+      <p className="text-xs uppercase tracking-wide text-slate-500">
+        Price
+      </p>
+
+      <p className="mt-1 text-2xl font-bold text-green-600">
+        £{transfer.price}
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<button
+  onClick={() => setExpanded(!expanded)}
+  className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-slate-100"
+>
+  <span className="font-semibold text-slate-700">
+    {expanded ? "Less Details" : "More Details"}
+  </span>
+
+  <span className="text-xl text-slate-500">
+    {expanded ? "▲" : "▼"}
+  </span>
+</button>
+        {expanded && (
+          <>
+
+            {transfer.flight && (
+              <div className="rounded-2xl bg-blue-50 p-5">
+
+                <div className="text-xs font-semibold uppercase text-blue-600">
+                  Flight
+                </div>
+
+                <div className="mt-2 text-2xl font-bold text-blue-900">
+                  {transfer.flight}
+                </div>
+
+              </div>
+            )}
+
+            {(transfer.adults > 0 ||
+              transfer.children > 0 ||
+              transfer.babySeats > 0 ||
+              transfer.boosterSeats > 0) && (
+
+              <div className="rounded-2xl border border-slate-200 p-5">
+
+                <h3 className="mb-4 text-lg font-bold">
+                  Passengers
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+
+                  <div className="rounded-xl bg-slate-100 p-3 text-center">
+                    <div className="text-2xl font-bold">
+                      {transfer.adults}
+                    </div>
+
+                    <div className="text-sm text-slate-500">
+                      Adults
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-100 p-3 text-center">
+                    <div className="text-2xl font-bold">
+                      {transfer.children}
+                    </div>
+
+                    <div className="text-sm text-slate-500">
+                      Children
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-100 p-3 text-center">
+                    <div className="text-2xl font-bold">
+                      {transfer.babySeats}
+                    </div>
+
+                    <div className="text-sm text-slate-500">
+                      Baby Seats
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-100 p-3 text-center">
+                    <div className="text-2xl font-bold">
+                      {transfer.boosterSeats}
+                    </div>
+
+                    <div className="text-sm text-slate-500">
+                      Booster Seats
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {transfer.notes && (
+
+              <div className="rounded-2xl border-l-4 border-amber-500 bg-amber-50 p-5">
+
+                <h3 className="mb-2 text-lg font-bold">
+                  Notes
+                </h3>
+
+                <p className="whitespace-pre-wrap text-slate-700">
+                  {transfer.notes}
+                </p>
+
+              </div>
+            )}
+
+            <button
+              onClick={() =>
+                window.open(
+                  googleMapsUrl(
+                    transfer.pickup,
+                    transfer.destination
+                  ),
+                  "_blank"
+                )
+              }
+              className="w-full rounded-2xl bg-orange-500 py-4 text-lg font-bold text-white"
+            >
+              Start Navigation
+            </button>
+
+            <div className="grid grid-cols-2 gap-4">
+
+              <button
+                onClick={() =>
+                  window.open(
+                    guestWhatsAppUrl(transfer),
+                    "_blank"
+                  )
+                }
+                className="rounded-2xl bg-green-600 py-4 font-bold text-white"
+              >
+                WhatsApp
+              </button>
+
+              <button
+                onClick={() =>
+                  window.open(
+                    `tel:${transfer.phone}`
+                  )
+                }
+                className="rounded-2xl bg-sky-600 py-4 font-bold text-white"
+              >
+                Call
+              </button>
+
+            </div>
+
+          </>
+        )}
+                {(transfer.status === "Assigned" ||
           transfer.status === "Confirmed") && (
           <button
             disabled={saving}
             onClick={startTransfer}
-            className="w-full rounded-2xl bg-blue-600 py-5 text-xl font-bold text-white active:scale-95 disabled:opacity-50"
+            className="w-full rounded-2xl bg-blue-600 py-5 text-lg font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
-            ▶ START TRANSFER
+            Start Transfer
           </button>
         )}
 
-        {transfer.status ===
-          "In Progress" && (
+        {transfer.status === "In Progress" && (
           <button
             disabled={saving}
-            onClick={
-              completeTransfer
-            }
-            className="w-full rounded-2xl bg-green-700 py-5 text-xl font-bold text-white active:scale-95 disabled:opacity-50"
+            onClick={completeTransfer}
+            className="w-full rounded-2xl bg-green-700 py-5 text-lg font-bold text-white transition hover:bg-green-800 disabled:opacity-50"
           >
-            ✅ COMPLETE TRANSFER
+            Complete Transfer
           </button>
         )}
 
