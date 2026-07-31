@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
+import AIBookingImport from "./AIBookingImport";
 
 import { useEffect, useState } from "react";
 
@@ -182,13 +183,89 @@ export default function TransferDialog({
             </DialogHeader>
 
             <div className="flex-1 overflow-y-auto px-8 py-8">
-              <TransferForm
-                transfer={currentTransfer}
-                setTransfer={
-                  setCurrentTransfer
-                }
-              />
-            </div>
+
+<AIBookingImport
+  onImport={(booking) =>
+    setCurrentTransfer((prev) => ({
+      ...prev,
+
+      transferType:
+        booking.transferType ??
+        prev.transferType,
+
+      date:
+        booking.date ??
+        prev.date,
+
+      time:
+        booking.time ??
+        prev.time,
+
+      pickup:
+        booking.pickup ??
+        prev.pickup,
+
+      destination:
+        booking.destination ??
+        prev.destination,
+
+      clientName:
+        booking.clientName ??
+        prev.clientName,
+
+      phone:
+        booking.phone ??
+        prev.phone,
+
+      email:
+        booking.email ??
+        prev.email,
+
+      flight:
+        booking.flight ??
+        prev.flight,
+
+      adults:
+        booking.adults ??
+        prev.adults,
+
+      children:
+        booking.children ??
+        prev.children,
+
+      babySeats:
+        booking.babySeats ??
+        prev.babySeats,
+
+      boosterSeats:
+        booking.boosterSeats ??
+        prev.boosterSeats,
+
+      vehicle:
+        booking.vehicle ??
+        prev.vehicle,
+
+      partner:
+        booking.partner ??
+        prev.partner,
+
+      price:
+        booking.price ??
+        prev.price,
+
+      notes:
+        booking.notes ??
+        prev.notes,
+    }))
+  }
+/>
+
+<TransferForm
+  transfer={currentTransfer}
+  setTransfer={setCurrentTransfer}
+/>
+
+</div>
 
             <div className="flex items-center justify-between border-t bg-slate-50 px-8 py-5">
 
