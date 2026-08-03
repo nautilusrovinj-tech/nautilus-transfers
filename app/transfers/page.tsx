@@ -7,10 +7,7 @@ import PageHeader from "@/components/ui/PageHeader";
 
 import TransferTable from "@/components/transfers/TransferTable";
 import TransferDialog from "@/components/transfers/TransferDialog";
-import TransferSearchBar from "@/components/transfers/TransferSearchBar";
-
-import DateRangeFilter from "@/components/ui/DateRangeFilter";
-import PartnerFilter from "@/components/ui/PartnerFilter";
+import TransferFilters from "@/components/transfers/TransferFilters";
 
 import {
   getTransfers,
@@ -25,13 +22,20 @@ import { Transfer } from "@/types/transfer";
 import { Partner } from "@/types/partner";
 
 export default function TransfersPage() {
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const [transfers, setTransfers] =
+    useState<Transfer[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [partners, setPartners] =
+    useState<Partner[]>([]);
 
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [search, setSearch] =
+    useState("");
+
+  const [status, setStatus] =
+    useState("");
 
   const [partnerFilter, setPartnerFilter] =
     useState("");
@@ -47,11 +51,13 @@ export default function TransfersPage() {
 
   async function loadTransfers() {
     try {
-      const [transferData, partnerData] =
-        await Promise.all([
-          getTransfers(),
-          getPartners(),
-        ]);
+      const [
+        transferData,
+        partnerData,
+      ] = await Promise.all([
+        getTransfers(),
+        getPartners(),
+      ]);
 
       setTransfers(transferData);
       setPartners(partnerData);
@@ -67,53 +73,55 @@ export default function TransfersPage() {
     loadTransfers();
   }, []);
 
-  const filteredTransfers = useMemo(() => {
-    const q = search.toLowerCase();
+  const filteredTransfers =
+    useMemo(() => {
+      const q = search.toLowerCase();
 
-    return transfers.filter((t) => {
-      const matchesSearch = [
-        t.transferNumber,
-        t.clientName,
-        t.phone,
-        t.pickup,
-        t.destination,
-        t.flight,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
+      return transfers.filter((t) => {
+        const matchesSearch = [
+          t.transferNumber,
+          t.clientName,
+          t.phone,
+          t.pickup,
+          t.destination,
+          t.flight,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
 
-      const matchesStatus =
-        status === "" ||
-        t.status === status;
+        const matchesStatus =
+          status === "" ||
+          t.status === status;
 
-      const matchesPartner =
-        partnerFilter === "" ||
-        (partnerFilter === "DIRECT"
-          ? !t.partnerId
-          : t.partnerId === partnerFilter);
+        const matchesPartner =
+          partnerFilter === "" ||
+          (partnerFilter === "DIRECT"
+            ? !t.partnerId
+            : t.partnerId ===
+              partnerFilter);
 
-      const matchesDate =
-        (!fromDate ||
-          t.date >= fromDate) &&
-        (!toDate ||
-          t.date <= toDate);
+        const matchesDate =
+          (!fromDate ||
+            t.date >= fromDate) &&
+          (!toDate ||
+            t.date <= toDate);
 
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesPartner &&
-        matchesDate
-      );
-    });
-  }, [
-    transfers,
-    search,
-    status,
-    partnerFilter,
-    fromDate,
-    toDate,
-  ]);
+        return (
+          matchesSearch &&
+          matchesStatus &&
+          matchesPartner &&
+          matchesDate
+        );
+      });
+    }, [
+      transfers,
+      search,
+      status,
+      partnerFilter,
+      fromDate,
+      toDate,
+    ]);
 
   async function handleSave(
     transfer: Transfer
@@ -121,27 +129,28 @@ export default function TransfersPage() {
     try {
       const transferToSave: Transfer = {
         ...transfer,
-  
+
         status:
-          transfer.status === "Completed" ||
-          transfer.status === "In Progress" ||
-          transfer.status === "Cancelled"
+          transfer.status ===
+            "Completed" ||
+          transfer.status ===
+            "In Progress" ||
+          transfer.status ===
+            "Cancelled"
             ? transfer.status
             : transfer.driverId &&
               transfer.vehicleId
             ? "Assigned"
             : "New",
       };
-  
-      console.log(
-        "TRANSFER TO SAVE:",
-        transferToSave
-      );
-  
-      const exists = transfers.some(
-        (t) => t.id === transferToSave.id
-      );
-  
+
+      const exists =
+        transfers.some(
+          (t) =>
+            t.id ===
+            transferToSave.id
+        );
+
       if (exists) {
         await updateTransfer(
           transferToSave.id,
@@ -152,13 +161,15 @@ export default function TransfersPage() {
           transferToSave
         );
       }
-  
+
       setSelectedTransfer(null);
-  
+
       await loadTransfers();
     } catch (error) {
       console.error(error);
-      alert("Failed to save transfer.");
+      alert(
+        "Failed to save transfer."
+      );
     }
   }
 
@@ -180,7 +191,9 @@ export default function TransfersPage() {
       await loadTransfers();
     } catch (error) {
       console.error(error);
-      alert("Failed to delete transfer.");
+      alert(
+        "Failed to delete transfer."
+      );
     }
   }
 
@@ -198,36 +211,24 @@ export default function TransfersPage() {
           }
         />
 
-        <div className="grid gap-4 lg:grid-cols-3">
-
-          <TransferSearchBar
-            value={search}
-            status={status}
-            date=""
-            onChange={setSearch}
-            onStatusChange={
-              setStatus
-            }
-            onDateChange={() => {}}
-          />
-
-          <PartnerFilter
-            partners={partners}
-            value={partnerFilter}
-            onChange={
-              setPartnerFilter
-            }
-          />
-
-        </div>
-
-        <DateRangeFilter
-          from={fromDate}
-          to={toDate}
-          onFromChange={
+        <TransferFilters
+          search={search}
+          status={status}
+          partner={partnerFilter}
+          partners={partners}
+          fromDate={fromDate}
+          toDate={toDate}
+          onSearchChange={setSearch}
+          onStatusChange={setStatus}
+          onPartnerChange={
+            setPartnerFilter
+          }
+          onFromDateChange={
             setFromDate
           }
-          onToChange={setToDate}
+          onToDateChange={
+            setToDate
+          }
         />
 
         {loading ? (
