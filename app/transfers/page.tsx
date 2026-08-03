@@ -8,7 +8,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import TransferTable from "@/components/transfers/TransferTable";
 import TransferDialog from "@/components/transfers/TransferDialog";
 import TransferSearchBar from "@/components/transfers/TransferSearchBar";
-
+import DateRangeFilter from "@/components/ui/DateRangeFilter";
 import {
   getTransfers,
   createTransfer,
@@ -24,7 +24,8 @@ export default function TransfersPage() {
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [date, setDate] = useState("");
+  const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
 
   const [selectedTransfer, setSelectedTransfer] =
     useState<Transfer | null>(null);
@@ -64,8 +65,9 @@ export default function TransfersPage() {
       const matchesStatus =
         status === "" || t.status === status;
 
-      const matchesDate =
-        date === "" || t.date === date;
+        const matchesDate =
+        (!fromDate || t.date >= fromDate) &&
+        (!toDate || t.date <= toDate);
 
       return (
         matchesSearch &&
@@ -139,14 +141,25 @@ export default function TransfersPage() {
           action={<TransferDialog onSave={handleSave} />}
         />
 
-        <TransferSearchBar
-          value={search}
-          status={status}
-          date={date}
-          onChange={setSearch}
-          onStatusChange={setStatus}
-          onDateChange={setDate}
-        />
+<div className="space-y-4">
+
+<TransferSearchBar
+  value={search}
+  status={status}
+  date=""
+  onChange={setSearch}
+  onStatusChange={setStatus}
+  onDateChange={() => {}}
+/>
+
+<DateRangeFilter
+  from={fromDate}
+  to={toDate}
+  onFromChange={setFromDate}
+  onToChange={setToDate}
+/>
+
+</div>
 
         {loading ? (
           <div className="rounded-xl border bg-white p-10 text-center">

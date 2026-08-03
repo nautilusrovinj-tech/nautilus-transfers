@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
 import PageHeader from "@/components/ui/PageHeader";
+import DateRangeFilter from "@/components/ui/DateRangeFilter";
 
 import DispatchBoard from "@/components/dispatch/DispatchBoard";
 import DispatchSearch from "@/components/dispatch/DispatchSearch";
@@ -14,6 +15,10 @@ import { useTransfers } from "@/hooks/useTransfers";
 import { useLookups } from "@/hooks/useLookups";
 
 import { Transfer } from "@/types/transfer";
+
+const TODAY = new Date()
+  .toISOString()
+  .split("T")[0];
 
 export default function DispatchPage() {
   const {
@@ -39,16 +44,18 @@ export default function DispatchPage() {
 
   const [search, setSearch] = useState("");
 
-  const [selectedDate, setSelectedDate] =
-    useState(
-      new Date()
-        .toISOString()
-        .split("T")[0]
-    );
+  const [fromDate, setFromDate] =
+    useState(TODAY);
+
+  const [toDate, setToDate] =
+    useState(TODAY);
 
   const filteredTransfers = useMemo(() => {
     return transfers.filter((t) => {
-      if (t.date !== selectedDate)
+      if (
+        (fromDate && t.date < fromDate) ||
+        (toDate && t.date > toDate)
+      )
         return false;
 
       if (
@@ -91,29 +98,12 @@ export default function DispatchPage() {
     transfers,
     statusFilter,
     search,
-    selectedDate,
+    fromDate,
+    toDate,
     getDriverName,
     getVehicleName,
     getPartnerName,
   ]);
-
-  function today() {
-    setSelectedDate(
-      new Date()
-        .toISOString()
-        .split("T")[0]
-    );
-  }
-
-  function tomorrow() {
-    const d = new Date();
-
-    d.setDate(d.getDate() + 1);
-
-    setSelectedDate(
-      d.toISOString().split("T")[0]
-    );
-  }
 
   return (
     <AppLayout>
@@ -121,7 +111,7 @@ export default function DispatchPage() {
 
         <PageHeader
           title="Dispatch"
-          subtitle={selectedDate}
+          subtitle={`${filteredTransfers.length} transfer(s) • ${fromDate} → ${toDate}`}
         />
 
         <DispatchSearch
@@ -134,34 +124,12 @@ export default function DispatchPage() {
           onChange={setStatusFilter}
         />
 
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
-
-          <button
-            onClick={today}
-            className="rounded-xl bg-slate-900 px-5 py-2.5 text-white"
-          >
-            Today
-          </button>
-
-          <button
-            onClick={tomorrow}
-            className="rounded-xl bg-slate-200 px-5 py-2.5"
-          >
-            Tomorrow
-          </button>
-
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) =>
-              setSelectedDate(
-                e.target.value
-              )
-            }
-            className="rounded-xl border border-slate-300 px-4 py-2.5"
-          />
-
-        </div>
+        <DateRangeFilter
+          from={fromDate}
+          to={toDate}
+          onFromChange={setFromDate}
+          onToChange={setToDate}
+        />
 
         <DispatchBoard
           transfers={filteredTransfers}
