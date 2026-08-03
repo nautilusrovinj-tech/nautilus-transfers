@@ -75,7 +75,7 @@ const [toDate, setToDate] = useState("");
         matchesDate
       );
     });
-  }, [search, status, date, transfers]);
+  }, [search, status, fromDate, toDate, transfers]);
 
   async function handleSave(transfer: Transfer) {
     try {
