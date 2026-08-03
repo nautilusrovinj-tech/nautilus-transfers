@@ -8,7 +8,10 @@ import PageHeader from "@/components/ui/PageHeader";
 import TransferTable from "@/components/transfers/TransferTable";
 import TransferDialog from "@/components/transfers/TransferDialog";
 import TransferSearchBar from "@/components/transfers/TransferSearchBar";
+
 import DateRangeFilter from "@/components/ui/DateRangeFilter";
+import PartnerFilter from "@/components/ui/PartnerFilter";
+
 import {
   getTransfers,
   createTransfer,
@@ -16,24 +19,42 @@ import {
   deleteTransfer,
 } from "@/services/transfers";
 
+import { getPartners } from "@/services/partners";
+
 import { Transfer } from "@/types/transfer";
+import { Partner } from "@/types/partner";
 
 export default function TransfersPage() {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [fromDate, setFromDate] = useState("");
-const [toDate, setToDate] = useState("");
+
+  const [partnerFilter, setPartnerFilter] =
+    useState("");
+
+  const [fromDate, setFromDate] =
+    useState("");
+
+  const [toDate, setToDate] =
+    useState("");
 
   const [selectedTransfer, setSelectedTransfer] =
     useState<Transfer | null>(null);
 
   async function loadTransfers() {
     try {
-      const data = await getTransfers();
-      setTransfers(data);
+      const [transferData, partnerData] =
+        await Promise.all([
+          getTransfers(),
+          getPartners(),
+        ]);
+
+      setTransfers(transferData);
+      setPartners(partnerData);
     } catch (error) {
       console.error(error);
       alert("Failed to load transfers.");
@@ -63,53 +84,77 @@ const [toDate, setToDate] = useState("");
         .includes(q);
 
       const matchesStatus =
-        status === "" || t.status === status;
+        status === "" ||
+        t.status === status;
 
-        const matchesDate =
-        (!fromDate || t.date >= fromDate) &&
-        (!toDate || t.date <= toDate);
+      const matchesPartner =
+        partnerFilter === "" ||
+        (partnerFilter === "DIRECT"
+          ? !t.partnerId
+          : t.partnerId === partnerFilter);
+
+      const matchesDate =
+        (!fromDate ||
+          t.date >= fromDate) &&
+        (!toDate ||
+          t.date <= toDate);
 
       return (
         matchesSearch &&
         matchesStatus &&
+        matchesPartner &&
         matchesDate
       );
     });
-  }, [search, status, fromDate, toDate, transfers]);
+  }, [
+    transfers,
+    search,
+    status,
+    partnerFilter,
+    fromDate,
+    toDate,
+  ]);
 
-  async function handleSave(transfer: Transfer) {
+  async function handleSave(
+    transfer: Transfer
+  ) {
     try {
       const transferToSave: Transfer = {
         ...transfer,
+  
         status:
-          transfer.driverId && transfer.vehicleId
+          transfer.status === "Completed" ||
+          transfer.status === "In Progress" ||
+          transfer.status === "Cancelled"
+            ? transfer.status
+            : transfer.driverId &&
+              transfer.vehicleId
             ? "Assigned"
             : "New",
       };
-
-      console.log("TRANSFER TO SAVE:", {
-        driverId: transfer.driverId,
-        vehicleId: transfer.vehicleId,
-        partnerId: transfer.partnerId,
-        status: transferToSave.status,
-        transfer: transferToSave,
-      });
-
+  
+      console.log(
+        "TRANSFER TO SAVE:",
+        transferToSave
+      );
+  
       const exists = transfers.some(
         (t) => t.id === transferToSave.id
       );
-
+  
       if (exists) {
         await updateTransfer(
           transferToSave.id,
           transferToSave
         );
       } else {
-        await createTransfer(transferToSave);
+        await createTransfer(
+          transferToSave
+        );
       }
-
+  
       setSelectedTransfer(null);
-
+  
       await loadTransfers();
     } catch (error) {
       console.error(error);
@@ -117,8 +162,15 @@ const [toDate, setToDate] = useState("");
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete transfer?")) return;
+  async function handleDelete(
+    id: string
+  ) {
+    if (
+      !window.confirm(
+        "Delete transfer?"
+      )
+    )
+      return;
 
     try {
       await deleteTransfer(id);
@@ -135,31 +187,48 @@ const [toDate, setToDate] = useState("");
   return (
     <AppLayout>
       <div className="space-y-6">
+
         <PageHeader
           title="Transfers"
           subtitle={`${filteredTransfers.length} transfer(s)`}
-          action={<TransferDialog onSave={handleSave} />}
+          action={
+            <TransferDialog
+              onSave={handleSave}
+            />
+          }
         />
 
-<div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-3">
 
-<TransferSearchBar
-  value={search}
-  status={status}
-  date=""
-  onChange={setSearch}
-  onStatusChange={setStatus}
-  onDateChange={() => {}}
-/>
+          <TransferSearchBar
+            value={search}
+            status={status}
+            date=""
+            onChange={setSearch}
+            onStatusChange={
+              setStatus
+            }
+            onDateChange={() => {}}
+          />
 
-<DateRangeFilter
-  from={fromDate}
-  to={toDate}
-  onFromChange={setFromDate}
-  onToChange={setToDate}
-/>
+          <PartnerFilter
+            partners={partners}
+            value={partnerFilter}
+            onChange={
+              setPartnerFilter
+            }
+          />
 
-</div>
+        </div>
+
+        <DateRangeFilter
+          from={fromDate}
+          to={toDate}
+          onFromChange={
+            setFromDate
+          }
+          onToChange={setToDate}
+        />
 
         {loading ? (
           <div className="rounded-xl border bg-white p-10 text-center">
@@ -167,18 +236,29 @@ const [toDate, setToDate] = useState("");
           </div>
         ) : (
           <TransferTable
-            transfers={filteredTransfers}
-            onEdit={setSelectedTransfer}
-            onDelete={handleDelete}
+            transfers={
+              filteredTransfers
+            }
+            onEdit={
+              setSelectedTransfer
+            }
+            onDelete={
+              handleDelete
+            }
           />
         )}
 
         <TransferDialog
           hideTrigger
-          transfer={selectedTransfer}
+          transfer={
+            selectedTransfer
+          }
           onSave={handleSave}
-          onDelete={handleDelete}
+          onDelete={
+            handleDelete
+          }
         />
+
       </div>
     </AppLayout>
   );
