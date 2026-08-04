@@ -56,3 +56,19 @@ export async function deleteDriver(id: string) {
 
   if (error) throw error;
 }
+
+export async function getDriverPhone(
+  id: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("drivers")
+    .select("phone")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) return null;
+
+  return data.phone
+    ?.replace(/\s+/g, "")
+    .replace("+", "") ?? null;
+}

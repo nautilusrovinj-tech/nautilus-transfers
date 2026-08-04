@@ -5,7 +5,7 @@ const supabase = createClient();
 export async function getTransfersToNotify() {
   const now = new Date();
 
-  const in48Hours = new Date(
+  const end = new Date(
     now.getTime() + 48 * 60 * 60 * 1000
   );
 
@@ -16,11 +16,11 @@ export async function getTransfersToNotify() {
     .eq("driver_notified", false)
     .gte(
       "date",
-      now.toISOString().split("T")[0]
+      now.toISOString().slice(0, 10)
     )
     .lte(
       "date",
-      in48Hours.toISOString().split("T")[0]
+      end.toISOString().slice(0, 10)
     );
 
   if (error) throw error;
@@ -29,7 +29,7 @@ export async function getTransfersToNotify() {
 }
 
 export async function markDriverNotified(
-  transferId: string
+  id: string
 ) {
   const { error } = await supabase
     .from("transfers")
@@ -38,7 +38,7 @@ export async function markDriverNotified(
       driver_notified_at:
         new Date().toISOString(),
     })
-    .eq("id", transferId);
+    .eq("id", id);
 
   if (error) throw error;
 }
