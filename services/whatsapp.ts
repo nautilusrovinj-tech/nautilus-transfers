@@ -4,26 +4,38 @@ export async function sendWhatsApp(
   to: string,
   body: string
 ) {
-  const url =
-    `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-
-  const response = await axios.post(
-    url,
-    {
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: {
-        body,
-      },
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    }
+  console.log("PHONE_NUMBER_ID:", process.env.WHATSAPP_PHONE_NUMBER_ID);
+  console.log(
+    "TOKEN EXISTS:",
+    !!process.env.WHATSAPP_ACCESS_TOKEN
   );
 
-  return response.data;
+  try {
+    const response = await axios.post(
+      `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: "whatsapp",
+        to,
+        type: "text",
+        text: {
+          body,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "META ERROR:",
+      JSON.stringify(error.response?.data, null, 2)
+    );
+
+    throw error;
+  }
 }

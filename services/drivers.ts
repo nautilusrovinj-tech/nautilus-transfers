@@ -28,7 +28,40 @@ export async function getDriverByEmail(
   return data;
 }
 
-export async function createDriver(driver: Driver) {
+export async function getDriverById(
+  id: string
+) {
+  const { data, error } = await supabase
+    .from("drivers")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function getDriverPhone(
+  id: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("drivers")
+    .select("phone")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) return null;
+
+  return (
+    data.phone
+      ?.replace(/\D/g, "") ?? null
+  );
+}
+
+export async function createDriver(
+  driver: Driver
+) {
   const { error } = await supabase
     .from("drivers")
     .insert(driver);
@@ -48,27 +81,13 @@ export async function updateDriver(
   if (error) throw error;
 }
 
-export async function deleteDriver(id: string) {
+export async function deleteDriver(
+  id: string
+) {
   const { error } = await supabase
     .from("drivers")
     .delete()
     .eq("id", id);
 
   if (error) throw error;
-}
-
-export async function getDriverPhone(
-  id: string
-): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("drivers")
-    .select("phone")
-    .eq("id", id)
-    .single();
-
-  if (error || !data) return null;
-
-  return data.phone
-    ?.replace(/\s+/g, "")
-    .replace("+", "") ?? null;
 }
