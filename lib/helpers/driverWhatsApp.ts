@@ -43,5 +43,5 @@ ${transfer.notes || "-"}
 
 Driver App
 
-https://YOURDOMAIN.com/driver`;
+https://nautilus-transfers.vercel.app/driver`;
 }
