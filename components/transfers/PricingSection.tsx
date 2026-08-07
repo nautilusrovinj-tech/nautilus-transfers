@@ -13,6 +13,17 @@ export default function PricingSection({
   transfer,
   updateField,
 }: Props) {
+  function handlePriceChange(
+    value: string
+  ) {
+    updateField(
+      "price",
+      (value === ""
+        ? 0
+        : Number(value)) as Transfer["price"]
+    );
+  }
+
   return (
     <TransferSection
       title="Pricing"
@@ -29,11 +40,14 @@ export default function PricingSection({
           step="0.01"
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-lg font-semibold shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
           placeholder="0.00"
-          value={transfer.price}
+          value={
+            transfer.price === 0
+              ? ""
+              : transfer.price
+          }
           onChange={(e) =>
-            updateField(
-              "price",
-              Number(e.target.value)
+            handlePriceChange(
+              e.target.value
             )
           }
         />
