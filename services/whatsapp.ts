@@ -29,6 +29,11 @@ export async function sendWhatsApp(
       }
     );
 
+    console.log(
+      "META RESPONSE:",
+      JSON.stringify(response.data, null, 2)
+    );
+    
     return response.data;
   } catch (error: any) {
     console.error("========== WHATSAPP ERROR ==========");
