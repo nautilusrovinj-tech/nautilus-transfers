@@ -1,20 +1,40 @@
 import { NextResponse } from "next/server";
-import { sendWhatsApp } from "@/services/whatsapp";
+
+import { sendWhatsAppTemplate } from "@/services/whatsapp";
 
 export async function GET() {
   try {
-    const result = await sendWhatsApp(
-      "+385918833706", // <-- replace with YOUR phone number
-      "Hello from Nautilus 🚤"
+    const result = await sendWhatsAppTemplate(
+      "385918833706",
+      "TEST-2026-000001",
+      "09 Aug 2026",
+      "07:30",
+      "Hotel Lone, Rovinj",
+      "Pula Airport",
+      "Test Passenger"
     );
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      result,
+    });
   } catch (error: any) {
+    console.error(
+      "TEST WHATSAPP ERROR:",
+      error
+    );
+
     return NextResponse.json(
       {
-        error: error.response?.data ?? error.message,
+        success: false,
+        error:
+          error.response?.data ??
+          error.message ??
+          "Unknown error",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

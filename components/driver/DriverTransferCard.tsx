@@ -75,8 +75,13 @@ export default function DriverTransferCard({
     }
   }
 
+  const hasSeats =
+    transfer.childSeats > 0 ||
+    transfer.babySeats > 0 ||
+    transfer.boosterSeats > 0;
+
   return (
-    <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
+    <div className="overflow-hidden rounded-3xl bg-white shadow">
 
       {/* Header */}
 
@@ -111,6 +116,8 @@ export default function DriverTransferCard({
       </div>
 
       <div className="space-y-5 p-6">
+
+        {/* Phone */}
 
         {transfer.phone && (
           <div>
@@ -196,11 +203,13 @@ export default function DriverTransferCard({
 
         </div>
 
-        {/* Vehicle */}
+        {/* Vehicle / Partner / Price / Payment */}
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+
+            {/* Vehicle */}
 
             <div>
 
@@ -214,6 +223,8 @@ export default function DriverTransferCard({
 
             </div>
 
+            {/* Partner */}
+
             <div>
 
               <p className="text-xs uppercase tracking-wide text-slate-500">
@@ -226,14 +237,36 @@ export default function DriverTransferCard({
 
             </div>
 
-            <div className="text-right">
+            {/* Price */}
+
+            <div>
 
               <p className="text-xs uppercase tracking-wide text-slate-500">
                 Price
               </p>
 
               <p className="mt-1 text-2xl font-bold text-green-600">
-              €{transfer.price}
+                €{Number(transfer.price).toFixed(2)}
+              </p>
+
+            </div>
+
+            {/* Payment */}
+
+            <div>
+
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Payment
+              </p>
+
+              <p
+                className={`mt-1 text-lg font-bold ${
+                  transfer.paymentMethod === "Invoice"
+                    ? "text-blue-600"
+                    : "text-green-600"
+                }`}
+              >
+                {transfer.paymentMethod || "Cash"}
               </p>
 
             </div>
@@ -241,152 +274,196 @@ export default function DriverTransferCard({
           </div>
 
         </div>
-                {/* Quick Actions */}
 
-                <div className="space-y-3">
+        {/* Quick Actions */}
 
-{transfer.phone && (
-  <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
 
-    <button
-      onClick={() =>
-        window.open(
-          guestWhatsAppUrl(transfer),
-          "_blank"
-        )
-      }
-      className="rounded-2xl bg-green-600 py-4 text-lg font-bold text-white transition hover:bg-green-700"
-    >
-      WhatsApp
-    </button>
+          {transfer.phone && (
+            <>
+              <button
+                onClick={() =>
+                  window.open(
+                    guestWhatsAppUrl(transfer),
+                    "_blank"
+                  )
+                }
+                className="w-full rounded-2xl bg-green-600 py-4 text-lg font-bold text-white transition hover:bg-green-700"
+              >
+                WhatsApp
+              </button>
 
-    <button
-      onClick={() =>
-        window.open(
-          `tel:${transfer.phone}`,
-          "_self"
-        )
-      }
-      className="rounded-2xl bg-sky-600 py-4 text-lg font-bold text-white transition hover:bg-sky-700"
-    >
-      Call
-    </button>
-
-  </div>
-)}
-
-<button
-  onClick={() =>
-    window.open(
-      googleMapsUrl(
-        transfer.pickup,
-        transfer.destination
-      ),
-      "_blank"
-    )
-  }
-  className="w-full rounded-2xl bg-orange-500 py-4 text-lg font-bold text-white transition hover:bg-orange-600"
->
-  Start Navigation
-</button>
-
-</div>
-
-{/* Expand Button */}
-
-<button
-onClick={() => setExpanded(!expanded)}
-className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-slate-100"
->
-<span className="font-semibold text-slate-700">
-  {expanded
-    ? "Less Details"
-    : "More Details"}
-</span>
-
-<span className="text-xl text-slate-500">
-  {expanded ? "▲" : "▼"}
-</span>
-</button>
-
-{expanded && (
-<>
-
-  {(transfer.adults > 0 ||
-    transfer.children > 0 ||
-    transfer.babySeats > 0 ||
-    transfer.boosterSeats > 0) && (
-
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-
-      <h3 className="mb-4 text-lg font-bold">
-        Passengers
-      </h3>
-
-      <div className="grid grid-cols-2 gap-3">
-
-        <div className="rounded-xl bg-slate-100 p-4 text-center">
-          <div className="text-2xl font-bold">
-            {transfer.adults}
-          </div>
-
-          <div className="text-sm text-slate-500">
-            Adults
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-slate-100 p-4 text-center">
-          <div className="text-2xl font-bold">
-            {transfer.children}
-          </div>
-
-          <div className="text-sm text-slate-500">
-            Children
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-slate-100 p-4 text-center">
-          <div className="text-2xl font-bold">
-            {transfer.babySeats}
-          </div>
-
-          <div className="text-sm text-slate-500">
-            Baby Seats
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-slate-100 p-4 text-center">
-          <div className="text-2xl font-bold">
-            {transfer.boosterSeats}
-          </div>
-
-          <div className="text-sm text-slate-500">
-            Booster Seats
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  )}
-
-  {transfer.notes && (
-
-    <div className="rounded-2xl border-l-4 border-amber-500 bg-amber-50 p-5">
-
-      <h3 className="mb-2 text-lg font-bold">
-        Notes
-      </h3>
-
-      <p className="whitespace-pre-wrap text-slate-700">
-        {transfer.notes}
-      </p>
-
-    </div>
-
-  )}
+              <button
+                onClick={() =>
+                  window.open(
+                    `tel:${transfer.phone}`,
+                    "_self"
+                  )
+                }
+                className="w-full rounded-2xl bg-sky-600 py-4 text-lg font-bold text-white transition hover:bg-sky-700"
+              >
+                Call
+              </button>
             </>
+          )}
+
+          <button
+            onClick={() =>
+              window.open(
+                googleMapsUrl(
+                  transfer.pickup,
+                  transfer.destination
+                ),
+                "_blank"
+              )
+            }
+            className="w-full rounded-2xl bg-orange-500 py-4 text-lg font-bold text-white transition hover:bg-orange-600"
+          >
+            Start Navigation
+          </button>
+
+          {/* Expand Button */}
+
+          <button
+            onClick={() =>
+              setExpanded(!expanded)
+            }
+            className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-slate-100"
+          >
+            <span className="font-semibold text-slate-900">
+              {expanded
+                ? "Hide Details"
+                : "More Details"}
+            </span>
+
+            <span className="text-xl text-slate-500">
+              {expanded ? "−" : "+"}
+            </span>
+          </button>
+
+        </div>
+
+        {/* Expanded Details */}
+
+        {expanded && (
+          <>
+
+            {/* Passengers */}
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+
+              <h3 className="mb-4 text-lg font-bold">
+                Passengers
+              </h3>
+
+              <div className="grid grid-cols-2 gap-3">
+
+                <div className="rounded-xl bg-slate-100 p-4 text-center">
+
+                  <div className="text-2xl font-bold">
+                    {transfer.adults}
+                  </div>
+
+                  <div className="text-sm text-slate-500">
+                    Adults
+                  </div>
+
+                </div>
+
+                <div className="rounded-xl bg-slate-100 p-4 text-center">
+
+                  <div className="text-2xl font-bold">
+                    {transfer.children}
+                  </div>
+
+                  <div className="text-sm text-slate-500">
+                    Children
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Seats */}
+
+            {hasSeats && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+
+                <h3 className="mb-4 text-lg font-bold">
+                  Seats
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+
+                  {transfer.childSeats > 0 && (
+                    <div className="rounded-xl bg-slate-100 p-4 text-center">
+
+                      <div className="text-2xl font-bold">
+                        {transfer.childSeats}
+                      </div>
+
+                      <div className="text-sm text-slate-500">
+                        Child Seats
+                      </div>
+
+                    </div>
+                  )}
+
+                  {transfer.babySeats > 0 && (
+                    <div className="rounded-xl bg-slate-100 p-4 text-center">
+
+                      <div className="text-2xl font-bold">
+                        {transfer.babySeats}
+                      </div>
+
+                      <div className="text-sm text-slate-500">
+                        Baby Seats
+                      </div>
+
+                    </div>
+                  )}
+
+                  {transfer.boosterSeats > 0 && (
+                    <div className="rounded-xl bg-slate-100 p-4 text-center">
+
+                      <div className="text-2xl font-bold">
+                        {transfer.boosterSeats}
+                      </div>
+
+                      <div className="text-sm text-slate-500">
+                        Booster Seats
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+            )}
+
+            {/* Notes */}
+
+            {transfer.notes && (
+              <div className="rounded-2xl border-l-4 border-amber-500 bg-amber-50 p-5">
+
+                <h3 className="mb-2 text-lg font-bold">
+                  Notes
+                </h3>
+
+                <p className="whitespace-pre-wrap text-slate-700">
+                  {transfer.notes}
+                </p>
+
+              </div>
+            )}
+
+          </>
         )}
+
+        {/* Start Transfer */}
 
         {(transfer.status === "Assigned" ||
           transfer.status === "Confirmed") && (
@@ -400,6 +477,8 @@ className="flex w-full items-center justify-between rounded-2xl border border-sl
               : "Start Transfer"}
           </button>
         )}
+
+        {/* Complete Transfer */}
 
         {transfer.status === "In Progress" && (
           <button

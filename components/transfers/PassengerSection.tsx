@@ -3,9 +3,9 @@ import { Transfer } from "@/types/transfer";
 
 interface Props {
   transfer: Transfer;
-  updateField: <K extends keyof Transfer>(
-    field: K,
-    value: Transfer[K]
+  updateField: (
+    field: keyof Transfer,
+    value: Transfer[keyof Transfer]
   ) => void;
 }
 
@@ -17,6 +17,7 @@ export default function PassengerSection({
     field:
       | "adults"
       | "children"
+      | "childSeats"
       | "babySeats"
       | "boosterSeats",
     value: string
@@ -31,87 +32,134 @@ export default function PassengerSection({
 
   return (
     <TransferSection title="Passengers">
+      <div className="grid grid-cols-2 gap-4">
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Adults
-        </label>
+        {/* Adults */}
 
-        <input
-          type="number"
-          min={0}
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          value={transfer.adults === 0 ? "" : transfer.adults}
-          onChange={(e) =>
-            handleNumberChange(
-              "adults",
-              e.target.value
-            )
-          }
-        />
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Adults
+          </label>
+
+          <input
+            type="number"
+            min={0}
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={
+              transfer.adults === 0
+                ? ""
+                : transfer.adults
+            }
+            onChange={(e) =>
+              handleNumberChange(
+                "adults",
+                e.target.value
+              )
+            }
+          />
+        </div>
+
+        {/* Children */}
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Children
+          </label>
+
+          <input
+            type="number"
+            min={0}
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={
+              transfer.children === 0
+                ? ""
+                : transfer.children
+            }
+            onChange={(e) =>
+              handleNumberChange(
+                "children",
+                e.target.value
+              )
+            }
+          />
+        </div>
+
+        {/* Child Seats */}
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Child Seats
+          </label>
+
+          <input
+            type="number"
+            min={0}
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={
+              transfer.childSeats === 0
+                ? ""
+                : transfer.childSeats
+            }
+            onChange={(e) =>
+              handleNumberChange(
+                "childSeats",
+                e.target.value
+              )
+            }
+          />
+        </div>
+
+        {/* Baby Seats */}
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Baby Seats
+          </label>
+
+          <input
+            type="number"
+            min={0}
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={
+              transfer.babySeats === 0
+                ? ""
+                : transfer.babySeats
+            }
+            onChange={(e) =>
+              handleNumberChange(
+                "babySeats",
+                e.target.value
+              )
+            }
+          />
+        </div>
+
+        {/* Booster Seats */}
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">
+            Booster Seats
+          </label>
+
+          <input
+            type="number"
+            min={0}
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={
+              transfer.boosterSeats === 0
+                ? ""
+                : transfer.boosterSeats
+            }
+            onChange={(e) =>
+              handleNumberChange(
+                "boosterSeats",
+                e.target.value
+              )
+            }
+          />
+        </div>
+
       </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Children
-        </label>
-
-        <input
-          type="number"
-          min={0}
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          value={transfer.children === 0 ? "" : transfer.children}
-          onChange={(e) =>
-            handleNumberChange(
-              "children",
-              e.target.value
-            )
-          }
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Baby Seats
-        </label>
-
-        <input
-          type="number"
-          min={0}
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          value={transfer.babySeats === 0 ? "" : transfer.babySeats}
-          onChange={(e) =>
-            handleNumberChange(
-              "babySeats",
-              e.target.value
-            )
-          }
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Booster Seats
-        </label>
-
-        <input
-          type="number"
-          min={0}
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          value={
-            transfer.boosterSeats === 0
-              ? ""
-              : transfer.boosterSeats
-          }
-          onChange={(e) =>
-            handleNumberChange(
-              "boosterSeats",
-              e.target.value
-            )
-          }
-        />
-      </div>
-
     </TransferSection>
   );
 }

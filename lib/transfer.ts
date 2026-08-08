@@ -27,22 +27,24 @@ export function createEmptyTransfer(): Transfer {
 
     adults: 1,
     children: 0,
+
+    // Seat types
+    childSeats: 0,
     babySeats: 0,
     boosterSeats: 0,
 
-    // Legacy fields (kept during migration)
+    // Legacy fields
     driver: "",
     vehicle: "",
     partner: "",
 
-    // New relational fields
+    // Relational fields
     driverId: "",
     vehicleId: "",
     partnerId: "",
 
     price: 0,
 
-    // Payment method
     paymentMethod: "Cash",
 
     status: "New",

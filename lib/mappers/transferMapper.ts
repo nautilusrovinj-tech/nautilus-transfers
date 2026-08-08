@@ -19,6 +19,9 @@ export function mapTransfer(row: any): Transfer {
 
     adults: row.adults ?? 1,
     children: row.children ?? 0,
+
+    // Seat types
+    childSeats: row.child_seats ?? 0,
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
@@ -33,6 +36,9 @@ export function mapTransfer(row: any): Transfer {
     partnerId: row.partner_id ?? "",
 
     price: Number(row.price ?? 0),
+
+    // Payment method
+    paymentMethod: row.payment_method ?? "Cash",
 
     status: row.status,
 

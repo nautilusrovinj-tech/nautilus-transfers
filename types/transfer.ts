@@ -36,6 +36,9 @@ export interface Transfer {
 
   adults: number;
   children: number;
+
+  // Child seat types
+  childSeats: number;
   babySeats: number;
   boosterSeats: number;
 

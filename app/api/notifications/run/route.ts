@@ -7,15 +7,17 @@ import {
 
 import { getDriverById } from "@/services/drivers";
 
-import { driverWhatsAppMessage } from "@/lib/helpers/driverWhatsApp";
-import { sendWhatsApp } from "@/services/whatsapp";
+import { sendWhatsAppTemplate } from "@/services/whatsapp";
 
 export async function GET() {
   try {
     const transfers = await getTransfersToNotify();
 
     console.log("================================");
-    console.log("Transfers to notify:", transfers.length);
+    console.log(
+      "Transfers to notify:",
+      transfers.length
+    );
     console.log("================================");
 
     const sent: string[] = [];
@@ -24,7 +26,10 @@ export async function GET() {
     for (const transfer of transfers) {
       try {
         console.log("--------------------------------");
-        console.log("Transfer:", transfer.transfer_number);
+        console.log(
+          "Transfer:",
+          transfer.transfer_number
+        );
 
         if (!transfer.driver_id) {
           console.log("No driver assigned");
@@ -41,48 +46,48 @@ export async function GET() {
         }
 
         if (!driver.phone) {
-          console.log("Driver has no phone");
+          console.log(
+            "Driver has no phone"
+          );
           continue;
         }
 
-        const phone = driver.phone.replace(/\D/g, "");
-
-        console.log("Driver:", driver.name);
-        console.log("Phone:", phone);
-
-        const message = driverWhatsAppMessage({
-          id: transfer.id,
-          transferNumber: transfer.transfer_number,
-          transferType: transfer.transfer_type,
-          clientName: transfer.client_name,
-          phone: transfer.phone,
-          email: transfer.email,
-          date: transfer.date,
-          time: transfer.time,
-          pickup: transfer.pickup,
-          destination: transfer.destination,
-          flight: transfer.flight,
-          adults: transfer.adults,
-          children: transfer.children,
-          babySeats: transfer.baby_seats,
-          boosterSeats: transfer.booster_seats,
-          driver: driver.name,
-          vehicle: transfer.vehicle,
-          partner: transfer.partner,
-          price: transfer.price,
-          status: transfer.status,
-          notes: transfer.notes,
-          driverId: transfer.driver_id,
-          vehicleId: transfer.vehicle_id,
-          partnerId: transfer.partner_id,
-        } as any);
-
-        console.log("Sending WhatsApp...");
-
-        const result = await sendWhatsApp(
-          phone,
-          message
+        let phone = driver.phone.replace(
+          /\D/g,
+          ""
         );
+
+        // Convert Croatian local numbers:
+        // 0912345678 -> 385912345678
+        if (phone.startsWith("0")) {
+          phone =
+            "385" + phone.substring(1);
+        }
+
+        console.log(
+          "Driver:",
+          driver.name
+        );
+
+        console.log(
+          "Phone:",
+          phone
+        );
+
+        console.log(
+          "Sending WhatsApp template..."
+        );
+
+        const result =
+          await sendWhatsAppTemplate(
+            phone,
+            transfer.transfer_number,
+            transfer.date,
+            transfer.time,
+            transfer.pickup,
+            transfer.destination,
+            transfer.client_name
+          );
 
         console.log(
           "WhatsApp response:",
@@ -105,6 +110,7 @@ export async function GET() {
           "FAILED:",
           transfer.transfer_number
         );
+
         console.error(error);
 
         failed.push(
@@ -119,7 +125,10 @@ export async function GET() {
       failed,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Notification route error:",
+      error
+    );
 
     return NextResponse.json(
       {

@@ -23,6 +23,9 @@ function mapTransfer(row: any): Transfer {
 
     adults: row.adults ?? 0,
     children: row.children ?? 0,
+
+    // Seat types
+    childSeats: row.child_seats ?? 0,
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
@@ -67,6 +70,9 @@ function mapToDatabase(
 
     adults: transfer.adults,
     children: transfer.children,
+
+    // Seat types
+    child_seats: transfer.childSeats,
     baby_seats: transfer.babySeats,
     booster_seats: transfer.boosterSeats,
 

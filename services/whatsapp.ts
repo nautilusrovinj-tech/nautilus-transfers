@@ -1,59 +1,134 @@
 import axios from "axios";
 
-export async function sendWhatsApp(
+export async function sendWhatsAppTemplate(
   to: string,
-  body: string
+  transferNumber: string,
+  date: string,
+  time: string,
+  pickup: string,
+  destination: string,
+  passenger: string
 ) {
-  // Convert Croatian numbers to international format
-  let phone = to.replace(/\D/g, "");
+  const phoneNumberId =
+    process.env.WHATSAPP_PHONE_NUMBER_ID;
 
-  if (phone.startsWith("0")) {
-    phone = "385" + phone.substring(1);
+  const accessToken =
+    process.env.WHATSAPP_ACCESS_TOKEN;
+
+  if (!phoneNumberId) {
+    throw new Error(
+      "WHATSAPP_PHONE_NUMBER_ID is missing"
+    );
   }
 
-  console.log("================================");
-  console.log("PHONE_NUMBER_ID:", process.env.WHATSAPP_PHONE_NUMBER_ID);
-  console.log("BUSINESS_ACCOUNT_ID:", process.env.WHATSAPP_BUSINESS_ACCOUNT_ID);
-  console.log("TOKEN EXISTS:", !!process.env.WHATSAPP_ACCESS_TOKEN);
-  console.log("Sending to:", phone);
-  console.log("Message:");
-  console.log(body);
-  console.log("================================");
+  if (!accessToken) {
+    throw new Error(
+      "WHATSAPP_ACCESS_TOKEN is missing"
+    );
+  }
+
+  console.log(
+    "Sending WhatsApp template to:",
+    to
+  );
+
+  console.log(
+    "Phone Number ID:",
+    phoneNumberId
+  );
+
+  console.log(
+    "Template: new_transfer_assigned"
+  );
 
   try {
     const response = await axios.post(
-      `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+      `https://graph.facebook.com/v23.0/${phoneNumberId}/messages`,
       {
         messaging_product: "whatsapp",
-        to: phone,
-        type: "text",
-        text: {
-          body,
+
+        to,
+
+        type: "template",
+
+        template: {
+          name: "new_transfer_assigned",
+
+          language: {
+            code: "en_US",
+          },
+
+          components: [
+            {
+              type: "body",
+
+              parameters: [
+                {
+                  type: "text",
+                  text: transferNumber,
+                },
+                {
+                  type: "text",
+                  text: date,
+                },
+                {
+                  type: "text",
+                  text: time,
+                },
+                {
+                  type: "text",
+                  text: pickup,
+                },
+                {
+                  type: "text",
+                  text: destination,
+                },
+                {
+                  type: "text",
+                  text: passenger,
+                },
+              ],
+            },
+          ],
         },
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
     );
 
-    console.log("========== META RESPONSE ==========");
     console.log(
-      JSON.stringify(response.data, null, 2)
+      "WhatsApp template response:",
+      response.data
     );
-    console.log("===================================");
 
     return response.data;
   } catch (error: any) {
-    console.error("========== WHATSAPP ERROR ==========");
-    console.error("Status:", error.response?.status);
     console.error(
-      JSON.stringify(error.response?.data, null, 2)
+      "========== WHATSAPP TEMPLATE ERROR =========="
     );
-    console.error("Message:", error.message);
-    console.error("====================================");
+
+    console.error(
+      "Status:",
+      error.response?.status
+    );
+
+    console.error(
+      "Data:",
+      JSON.stringify(
+        error.response?.data,
+        null,
+        2
+      )
+    );
+
+    console.error(
+      "Message:",
+      error.message
+    );
 
     throw error;
   }

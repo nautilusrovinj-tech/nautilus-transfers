@@ -17,12 +17,17 @@ function normalizeDate(value: string): string {
   }
 
   // Croatian date (21.7. or 21.07.)
-  const match = raw.match(/^(\d{1,2})\.(\d{1,2})\.?$/);
+  const match = raw.match(
+    /^(\d{1,2})\.(\d{1,2})\.?$/
+  );
 
   if (match) {
     const [, day, month] = match;
 
-    return `2026-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    return `2026-${month.padStart(
+      2,
+      "0"
+    )}-${day.padStart(2, "0")}`;
   }
 
   // ISO date
@@ -39,7 +44,9 @@ function normalizeTime(value: string): string {
   if (!raw) return "00:00";
 
   // Excel fractional time (0.75 = 18:00)
-  const numeric = Number(raw.replace(",", "."));
+  const numeric = Number(
+    raw.replace(",", ".")
+  );
 
   if (
     !isNaN(numeric) &&
@@ -54,8 +61,7 @@ function normalizeTime(value: string): string {
       totalMinutes / 60
     );
 
-    const minutes =
-      totalMinutes % 60;
+    const minutes = totalMinutes % 60;
 
     return `${String(hours).padStart(
       2,
@@ -135,17 +141,21 @@ function detectType(
     "venice",
   ];
 
-  const fromAirport = airportWords.some((w) =>
-    from.includes(w)
+  const fromAirport = airportWords.some(
+    (w) => from.includes(w)
   );
 
-  const toAirport = airportWords.some((w) =>
-    to.includes(w)
+  const toAirport = airportWords.some(
+    (w) => to.includes(w)
   );
 
-  if (fromAirport && !toAirport) return "Arrival";
+  if (fromAirport && !toAirport) {
+    return "Arrival";
+  }
 
-  if (!fromAirport && toAirport) return "Departure";
+  if (!fromAirport && toAirport) {
+    return "Departure";
+  }
 
   return "Local";
 }
@@ -157,7 +167,9 @@ export function mapTransfer(
   return {
     id: crypto.randomUUID(),
 
-    transferNumber: `TR-${String(index + 1).padStart(6, "0")}`,
+    transferNumber: `TR-${String(
+      index + 1
+    ).padStart(6, "0")}`,
 
     transferType: detectType(
       row.pickup,
@@ -181,6 +193,9 @@ export function mapTransfer(
 
     adults: 0,
     children: 0,
+
+    // Seat types
+    childSeats: 0,
     babySeats: 0,
     boosterSeats: 0,
 
@@ -193,6 +208,9 @@ export function mapTransfer(
     partnerId: "",
 
     price: normalizePrice(row.price),
+
+    // Payment method
+    paymentMethod: "Cash",
 
     status: "New",
 
