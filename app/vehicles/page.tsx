@@ -49,9 +49,7 @@ export default function VehiclesPage() {
     return vehicles.filter((vehicle) =>
       [
         vehicle.name,
-        vehicle.brand,
-        vehicle.model,
-        vehicle.plate,
+        vehicle.registration,
       ]
         .join(" ")
         .toLowerCase()

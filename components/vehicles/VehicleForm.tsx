@@ -4,9 +4,7 @@ import { Vehicle } from "@/types/vehicle";
 
 interface Props {
   vehicle: Vehicle;
-  setVehicle: React.Dispatch<
-    React.SetStateAction<Vehicle>
-  >;
+  setVehicle: React.Dispatch<React.SetStateAction<Vehicle>>;
 }
 
 export default function VehicleForm({
@@ -24,79 +22,49 @@ export default function VehicleForm({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-5">
+    <div className="grid grid-cols-2 gap-4">
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Vehicle Name
-        </label>
+      <input
+        className="border rounded-lg p-2"
+        placeholder="Vehicle Name"
+        value={vehicle.name}
+        onChange={(e) =>
+          update("name", e.target.value)
+        }
+      />
 
-        <input
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          placeholder="Mercedes V-Class"
-          value={vehicle.name}
-          onChange={(e) =>
-            update("name", e.target.value)
-          }
-        />
-      </div>
+      <input
+        className="border rounded-lg p-2"
+        placeholder="Registration"
+        value={vehicle.registration}
+        onChange={(e) =>
+          update("registration", e.target.value)
+        }
+      />
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Registration
-        </label>
+      <input
+        className="border rounded-lg p-2"
+        type="number"
+        placeholder="Seats"
+        value={vehicle.seats}
+        onChange={(e) =>
+          update("seats", Number(e.target.value))
+        }
+      />
 
-        <input
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          placeholder="PU123NO"
-          value={vehicle.registration}
-          onChange={(e) =>
-            update(
-              "registration",
-              e.target.value
-            )
-          }
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
-          Seats
-        </label>
+      <label className="flex items-center gap-2">
 
         <input
-          type="number"
-          min={1}
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          value={vehicle.seats}
+          type="checkbox"
+          checked={vehicle.active}
           onChange={(e) =>
-            update(
-              "seats",
-              Number(e.target.value || 1)
-            )
+            update("active", e.target.checked)
           }
         />
-      </div>
 
-      <div className="flex items-end pb-3">
-        <label className="flex items-center gap-3 text-sm font-medium text-slate-700">
+        Active Vehicle
 
-          <input
-            type="checkbox"
-            className="h-4 w-4"
-            checked={vehicle.active}
-            onChange={(e) =>
-              update(
-                "active",
-                e.target.checked
-              )
-            }
-          />
-
-          Active Vehicle
-
-        </label>
-      </div>
+      </label>
 
     </div>
   );
