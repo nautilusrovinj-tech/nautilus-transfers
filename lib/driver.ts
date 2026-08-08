@@ -12,6 +12,16 @@ export function createEmptyDriver(): Driver {
 
     languages: "",
 
+    role: "driver",
+
     active: true,
+
+    baseLocation: "",
+
+    maxPassengers: 4,
+
+    vehicleId: "",
+
+    priority: 1,
   };
 }

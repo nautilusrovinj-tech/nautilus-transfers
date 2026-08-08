@@ -7,11 +7,15 @@ function mapPartnerFromDb(data: any): Partner {
   return {
     id: data.id,
     name: data.name,
-    contactPerson: data.contact_person,
-    phone: data.phone,
-    email: data.email,
-    commission: data.commission,
-    active: data.active,
+    contactPerson:
+      data.contact_person ??
+      data.contactPerson ??
+      "",
+    phone: data.phone ?? "",
+    email: data.email ?? "",
+    commission: data.commission ?? 0,
+    notes: data.notes ?? "",
+    active: data.active ?? true,
   };
 }
 
@@ -23,6 +27,7 @@ function mapPartnerToDb(partner: Partner) {
     phone: partner.phone,
     email: partner.email,
     commission: partner.commission,
+    notes: partner.notes,
     active: partner.active,
   };
 }
@@ -38,7 +43,9 @@ export async function getPartners(): Promise<Partner[]> {
   return (data ?? []).map(mapPartnerFromDb);
 }
 
-export async function createPartner(partner: Partner) {
+export async function createPartner(
+  partner: Partner
+) {
   const { error } = await supabase
     .from("partners")
     .insert(mapPartnerToDb(partner));
@@ -58,7 +65,9 @@ export async function updatePartner(
   if (error) throw error;
 }
 
-export async function deletePartner(id: string) {
+export async function deletePartner(
+  id: string
+) {
   const { error } = await supabase
     .from("partners")
     .delete()

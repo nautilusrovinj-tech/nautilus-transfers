@@ -14,6 +14,8 @@ export function createEmptyPartner(): Partner {
 
     commission: 0,
 
+    notes: "",
+
     active: true,
   };
 }
