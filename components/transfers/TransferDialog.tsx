@@ -71,24 +71,6 @@ export default function TransferDialog({
     }
   }
 
-  async function handleSave() {
-  try {
-    setSaving(true);
-
-    console.log(currentDriver);
-
-    await onSave(currentDriver);
-
-    setOpen(false);
-
-    setCurrentDriver(createEmptyDriver());
-  } catch (error) {
-    console.error(error);
-    alert(JSON.stringify(error));
-  } finally {
-    setSaving(false);
-  }
-}
 
   function handleDuplicate() {
     setCurrentTransfer({
