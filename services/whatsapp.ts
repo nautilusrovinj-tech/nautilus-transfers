@@ -55,7 +55,7 @@ export async function sendWhatsAppTemplate(
           name: "new_transfer_assigned",
 
           language: {
-            code: "en_US",
+            code: "en",
           },
 
           components: [
