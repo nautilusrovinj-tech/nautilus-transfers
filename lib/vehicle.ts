@@ -4,9 +4,7 @@ export function createEmptyVehicle(): Vehicle {
   return {
     id: crypto.randomUUID(),
     name: "",
-    brand: "",
-    model: "",
-    plate: "",
+    registration: "",
     seats: 4,
     active: true,
   };

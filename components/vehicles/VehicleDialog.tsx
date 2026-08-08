@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -62,6 +61,13 @@ export default function VehicleDialog({
       setOpen(false);
 
       setCurrentVehicle(createEmptyVehicle());
+    } catch (error: any) {
+      console.error(error);
+
+      alert(
+        error?.message ??
+          JSON.stringify(error, null, 2)
+      );
     } finally {
       setSaving(false);
     }
@@ -84,24 +90,37 @@ export default function VehicleDialog({
         open={open}
         onOpenChange={handleOpenChange}
       >
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-2xl overflow-hidden rounded-2xl p-0">
 
-          <DialogHeader>
+          <div className="border-b bg-white px-6 py-5">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">
+                {editing
+                  ? "Edit Vehicle"
+                  : "New Vehicle"}
+              </DialogTitle>
 
-            <DialogTitle>
-              {editing
-                ? "Edit Vehicle"
-                : "New Vehicle"}
-            </DialogTitle>
+              <p className="mt-1 text-sm text-slate-500">
+                Enter vehicle information.
+              </p>
+            </DialogHeader>
+          </div>
 
-          </DialogHeader>
+          <div className="p-6">
+            <VehicleForm
+              vehicle={currentVehicle}
+              setVehicle={setCurrentVehicle}
+            />
+          </div>
 
-          <VehicleForm
-            vehicle={currentVehicle}
-            setVehicle={setCurrentVehicle}
-          />
+          <div className="flex items-center justify-end gap-3 border-t bg-slate-50 px-6 py-4">
 
-          <div className="mt-6 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
 
             <Button
               onClick={handleSave}
@@ -117,7 +136,6 @@ export default function VehicleDialog({
           </div>
 
         </DialogContent>
-
       </Dialog>
     </>
   );

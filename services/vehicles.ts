@@ -3,7 +3,7 @@ import { Vehicle } from "@/types/vehicle";
 
 const supabase = createClient();
 
-export async function getVehicles() {
+export async function getVehicles(): Promise<Vehicle[]> {
   const { data, error } = await supabase
     .from("vehicles")
     .select("*")
@@ -11,10 +11,12 @@ export async function getVehicles() {
 
   if (error) throw error;
 
-  return data ?? [];
+  return (data ?? []) as Vehicle[];
 }
 
-export async function createVehicle(vehicle: Vehicle) {
+export async function createVehicle(
+  vehicle: Vehicle
+) {
   const { error } = await supabase
     .from("vehicles")
     .insert(vehicle);
@@ -34,7 +36,9 @@ export async function updateVehicle(
   if (error) throw error;
 }
 
-export async function deleteVehicle(id: string) {
+export async function deleteVehicle(
+  id: string
+) {
   const { error } = await supabase
     .from("vehicles")
     .delete()

@@ -3,11 +3,7 @@ export interface Vehicle {
 
   name: string;
 
-  brand: string;
-
-  model: string;
-
-  plate: string;
+  registration: string;
 
   seats: number;
 

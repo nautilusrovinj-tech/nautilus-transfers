@@ -61,6 +61,13 @@ export default function DriverDialog({
       setOpen(false);
 
       setCurrentDriver(createEmptyDriver());
+    } catch (error: any) {
+      console.error(error);
+
+      alert(
+        error?.message ??
+          JSON.stringify(error, null, 2)
+      );
     } finally {
       setSaving(false);
     }
@@ -83,21 +90,44 @@ export default function DriverDialog({
         open={open}
         onOpenChange={handleOpenChange}
       >
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editing
-                ? "Edit Driver"
-                : "New Driver"}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl overflow-hidden rounded-2xl p-0">
 
-          <DriverForm
-            driver={currentDriver}
-            setDriver={setCurrentDriver}
-          />
+          {/* Header */}
 
-          <div className="mt-6 flex justify-end">
+          <div className="border-b bg-white px-6 py-5">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">
+                {editing
+                  ? "Edit Driver"
+                  : "New Driver"}
+              </DialogTitle>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Enter driver information.
+              </p>
+            </DialogHeader>
+          </div>
+
+          {/* Body */}
+
+          <div className="p-6">
+            <DriverForm
+              driver={currentDriver}
+              setDriver={setCurrentDriver}
+            />
+          </div>
+
+          {/* Footer */}
+
+          <div className="flex items-center justify-end gap-3 border-t bg-slate-50 px-6 py-4">
+
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+
             <Button
               onClick={handleSave}
               disabled={saving}
@@ -108,7 +138,9 @@ export default function DriverDialog({
                 ? "Update Driver"
                 : "Save Driver"}
             </Button>
+
           </div>
+
         </DialogContent>
       </Dialog>
     </>

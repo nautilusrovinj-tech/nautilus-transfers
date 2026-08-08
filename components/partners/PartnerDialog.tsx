@@ -31,7 +31,7 @@ export default function PartnerDialog({
   const [saving, setSaving] = useState(false);
 
   const [currentPartner, setCurrentPartner] =
-    useState(createEmptyPartner());
+    useState<Partner>(createEmptyPartner());
 
   const editing = !!partner;
 
@@ -44,12 +44,30 @@ export default function PartnerDialog({
     }
   }, [partner]);
 
+  function handleOpenChange(value: boolean) {
+    setOpen(value);
+
+    if (!value) {
+      setCurrentPartner(createEmptyPartner());
+    }
+  }
+
   async function handleSave() {
     try {
       setSaving(true);
+
       await onSave(currentPartner);
+
       setOpen(false);
+
       setCurrentPartner(createEmptyPartner());
+    } catch (error: any) {
+      console.error(error);
+
+      alert(
+        error?.message ??
+          JSON.stringify(error, null, 2)
+      );
     } finally {
       setSaving(false);
     }
@@ -70,26 +88,45 @@ export default function PartnerDialog({
 
       <Dialog
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleOpenChange}
       >
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-2xl overflow-hidden rounded-2xl p-0">
 
-          <DialogHeader>
+          {/* Header */}
 
-            <DialogTitle>
-              {editing
-                ? "Edit Partner"
-                : "New Partner"}
-            </DialogTitle>
+          <div className="border-b bg-white px-6 py-5">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">
+                {editing
+                  ? "Edit Partner"
+                  : "New Partner"}
+              </DialogTitle>
 
-          </DialogHeader>
+              <p className="mt-1 text-sm text-slate-500">
+                Enter partner information.
+              </p>
+            </DialogHeader>
+          </div>
 
-          <PartnerForm
-            partner={currentPartner}
-            setPartner={setCurrentPartner}
-          />
+          {/* Body */}
 
-          <div className="mt-6 flex justify-end">
+          <div className="p-6">
+            <PartnerForm
+              partner={currentPartner}
+              setPartner={setCurrentPartner}
+            />
+          </div>
+
+          {/* Footer */}
+
+          <div className="flex items-center justify-end gap-3 border-t bg-slate-50 px-6 py-4">
+
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
 
             <Button
               onClick={handleSave}
@@ -105,7 +142,6 @@ export default function PartnerDialog({
           </div>
 
         </DialogContent>
-
       </Dialog>
     </>
   );

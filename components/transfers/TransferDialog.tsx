@@ -72,63 +72,23 @@ export default function TransferDialog({
   }
 
   async function handleSave() {
-    try {
-      setSaving(true);
-  
-      const transferToSave: Transfer = {
-        ...currentTransfer,
-        status:
-  currentTransfer.status === "Completed" ||
-  currentTransfer.status === "In Progress" ||
-  currentTransfer.status === "Cancelled"
-    ? currentTransfer.status
-    : currentTransfer.driverId &&
-      currentTransfer.vehicleId
-    ? "Assigned"
-    : "New",
-      };
-  
-      console.log("TRANSFER TO SAVE:", transferToSave);
-  
-      await onSave(transferToSave);
-  
-      setOpen(false);
-      setCurrentTransfer(createEmptyTransfer());
-    } catch (error) {
-      console.error("SAVE ERROR:", error);
-    } finally {
-      setSaving(false);
-    }
+  try {
+    setSaving(true);
+
+    console.log(currentDriver);
+
+    await onSave(currentDriver);
+
+    setOpen(false);
+
+    setCurrentDriver(createEmptyDriver());
+  } catch (error) {
+    console.error(error);
+    alert(JSON.stringify(error));
+  } finally {
+    setSaving(false);
   }
-  async function handleDelete() {
-    console.log("DELETE BUTTON CLICKED");
-    console.log("Transfer ID:", currentTransfer.id);
-    console.log("onDelete:", onDelete);
-  
-    if (!onDelete) {
-      console.log("❌ onDelete is undefined");
-      return;
-    }
-  
-    try {
-      setSaving(true);
-  
-      console.log("Calling onDelete...");
-  
-      await onDelete(currentTransfer.id);
-  
-      console.log("✅ Delete finished");
-  
-      setConfirmDelete(false);
-      setOpen(false);
-  
-      setCurrentTransfer(createEmptyTransfer());
-    } catch (error) {
-      console.error("DELETE ERROR:", error);
-    } finally {
-      setSaving(false);
-    }
-  }
+}
 
   function handleDuplicate() {
     setCurrentTransfer({

@@ -13,16 +13,5 @@ export interface Driver {
 
   languages: string;
 
-  role: DriverRole;
-
   active: boolean;
-
-  // New fields
-  baseLocation: string;
-
-  maxPassengers: number;
-
-  vehicleId: string;
-
-  priority: number;
 }

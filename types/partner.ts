@@ -11,7 +11,5 @@ export interface Partner {
 
   commission: number;
 
-  notes: string;
-
   active: boolean;
 }
