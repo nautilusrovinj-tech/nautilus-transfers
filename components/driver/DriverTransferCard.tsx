@@ -233,7 +233,7 @@ export default function DriverTransferCard({
               </p>
 
               <p className="mt-1 text-2xl font-bold text-green-600">
-                £{transfer.price}
+              €{transfer.price}
               </p>
 
             </div>
