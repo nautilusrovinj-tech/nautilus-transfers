@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
+
 import AIBookingImport from "./AIBookingImport";
+import TransferForm from "./TransferForm";
 
 import { useEffect, useState } from "react";
 
@@ -23,8 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-import TransferForm from "./TransferForm";
 
 import { Transfer } from "@/types/transfer";
 
@@ -52,7 +52,7 @@ export default function TransferDialog({
     useState(false);
 
   const [currentTransfer, setCurrentTransfer] =
-    useState<Transfer>(createEmptyTransfer());
+    useState(createEmptyTransfer());
 
   const editing = !!transfer;
 
@@ -60,6 +60,8 @@ export default function TransferDialog({
     if (transfer) {
       setCurrentTransfer(transfer);
       setOpen(true);
+    } else {
+      setCurrentTransfer(createEmptyTransfer());
     }
   }, [transfer]);
 
@@ -71,13 +73,39 @@ export default function TransferDialog({
     }
   }
 
+  async function handleSave() {
+    try {
+      setSaving(true);
+
+      await onSave(currentTransfer);
+
+      setOpen(false);
+
+      setCurrentTransfer(createEmptyTransfer());
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save transfer.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!onDelete || !currentTransfer.id) return;
+
+    await onDelete(currentTransfer.id);
+
+    setConfirmDelete(false);
+    setOpen(false);
+
+    setCurrentTransfer(createEmptyTransfer());
+  }
 
   function handleDuplicate() {
     setCurrentTransfer({
       ...currentTransfer,
       id: crypto.randomUUID(),
-      transferNumber:
-        generateTransferNumber(),
+      transferNumber: generateTransferNumber(),
       status: "New",
     });
   }
@@ -87,9 +115,7 @@ export default function TransferDialog({
       {!hideTrigger && (
         <Button
           onClick={() => {
-            setCurrentTransfer(
-              createEmptyTransfer()
-            );
+            setCurrentTransfer(createEmptyTransfer());
             setOpen(true);
           }}
         >
@@ -126,88 +152,71 @@ export default function TransferDialog({
 
             <div className="flex-1 overflow-y-auto px-8 py-8">
 
-<AIBookingImport
-  onImport={(booking) =>
-    setCurrentTransfer((prev) => ({
-      ...prev,
+              <AIBookingImport
+                onImport={(booking) =>
+                  setCurrentTransfer((prev) => ({
+                    ...prev,
+                    transferType:
+                      booking.transferType ??
+                      prev.transferType,
+                    date:
+                      booking.date ??
+                      prev.date,
+                    time:
+                      booking.time ??
+                      prev.time,
+                    pickup:
+                      booking.pickup ??
+                      prev.pickup,
+                    destination:
+                      booking.destination ??
+                      prev.destination,
+                    clientName:
+                      booking.clientName ??
+                      prev.clientName,
+                    phone:
+                      booking.phone ??
+                      prev.phone,
+                    email:
+                      booking.email ??
+                      prev.email,
+                    flight:
+                      booking.flight ??
+                      prev.flight,
+                    adults:
+                      booking.adults ??
+                      prev.adults,
+                    children:
+                      booking.children ??
+                      prev.children,
+                    babySeats:
+                      booking.babySeats ??
+                      prev.babySeats,
+                    boosterSeats:
+                      booking.boosterSeats ??
+                      prev.boosterSeats,
+                    vehicle:
+                      booking.vehicle ??
+                      prev.vehicle,
+                    partner:
+                      booking.partner ??
+                      prev.partner,
+                    price:
+                      booking.price ??
+                      prev.price,
+                    notes:
+                      booking.notes ??
+                      prev.notes,
+                  }))
+                }
+              />
 
-      transferType:
-        booking.transferType ??
-        prev.transferType,
+              <TransferForm
+                transfer={currentTransfer}
+                setTransfer={setCurrentTransfer}
+              />
 
-      date:
-        booking.date ??
-        prev.date,
-
-      time:
-        booking.time ??
-        prev.time,
-
-      pickup:
-        booking.pickup ??
-        prev.pickup,
-
-      destination:
-        booking.destination ??
-        prev.destination,
-
-      clientName:
-        booking.clientName ??
-        prev.clientName,
-
-      phone:
-        booking.phone ??
-        prev.phone,
-
-      email:
-        booking.email ??
-        prev.email,
-
-      flight:
-        booking.flight ??
-        prev.flight,
-
-      adults:
-        booking.adults ??
-        prev.adults,
-
-      children:
-        booking.children ??
-        prev.children,
-
-      babySeats:
-        booking.babySeats ??
-        prev.babySeats,
-
-      boosterSeats:
-        booking.boosterSeats ??
-        prev.boosterSeats,
-
-      vehicle:
-        booking.vehicle ??
-        prev.vehicle,
-
-      partner:
-        booking.partner ??
-        prev.partner,
-
-      price:
-        booking.price ??
-        prev.price,
-
-      notes:
-        booking.notes ??
-        prev.notes,
-    }))
-  }
-/>
-
-<TransferForm
-  transfer={currentTransfer}
-  setTransfer={setCurrentTransfer}
-/>
-
-</div>
+            </div>
 
             <div className="flex items-center justify-between border-t bg-slate-50 px-8 py-5">
 
@@ -217,9 +226,7 @@ export default function TransferDialog({
                   <>
                     <Button
                       variant="secondary"
-                      onClick={
-                        handleDuplicate
-                      }
+                      onClick={handleDuplicate}
                     >
                       Duplicate
                     </Button>
@@ -227,9 +234,7 @@ export default function TransferDialog({
                     <Button
                       variant="destructive"
                       onClick={() =>
-                        setConfirmDelete(
-                          true
-                        )
+                        setConfirmDelete(true)
                       }
                     >
                       Delete
@@ -271,9 +276,7 @@ export default function TransferDialog({
 
       <AlertDialog
         open={confirmDelete}
-        onOpenChange={
-          setConfirmDelete
-        }
+        onOpenChange={setConfirmDelete}
       >
         <AlertDialogContent>
 
@@ -284,8 +287,7 @@ export default function TransferDialog({
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              This action cannot be
-              undone.
+              This action cannot be undone.
             </AlertDialogDescription>
 
           </AlertDialogHeader>
@@ -306,6 +308,7 @@ export default function TransferDialog({
 
         </AlertDialogContent>
       </AlertDialog>
+
     </>
   );
 }
