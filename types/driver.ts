@@ -13,5 +13,15 @@ export interface Driver {
 
   languages: string;
 
+  role: DriverRole;
+
   active: boolean;
+
+  baseLocation: string;
+
+  maxPassengers: number;
+
+  vehicleId: string;
+
+  priority: number;
 }
