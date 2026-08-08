@@ -26,9 +26,9 @@ interface Props {
   drivers: Driver[];
   vehicles: Vehicle[];
   partners: Partner[];
-  updateField: <K extends keyof Transfer>(
-    field: K,
-    value: Transfer[K]
+  updateField: (
+    field: keyof Transfer,
+    value: Transfer[keyof Transfer]
   ) => void;
 }
 
@@ -56,17 +56,19 @@ export default function AssignmentSection({
       )
     : true;
 
-  const availableDrivers = getAvailableDrivers(
-    transfers,
-    transfer,
-    drivers
-  );
+  const availableDrivers =
+    getAvailableDrivers(
+      transfers,
+      transfer,
+      drivers
+    );
 
-  const availableVehicles = getAvailableVehicles(
-    transfers,
-    transfer,
-    vehicles
-  );
+  const availableVehicles =
+    getAvailableVehicles(
+      transfers,
+      transfer,
+      vehicles
+    );
 
   function updateDriver(driverId: string) {
     updateField("driverId", driverId);
@@ -89,29 +91,25 @@ export default function AssignmentSection({
   }
 
   return (
-    <TransferSection title="Assignment">
-      <div className="space-y-5">
-
-        <ConflictAlert
-          show={!driverAvailable}
-          message="Selected driver already has another transfer within 90 minutes."
-        />
-
-        <ConflictAlert
-          show={!vehicleAvailable}
-          message="Selected vehicle is already assigned within 90 minutes."
-        />
+    <TransferSection
+      title="Assignment"
+      columns={1}
+    >
+      <div className="w-full max-w-[480px] space-y-5">
 
         {/* Driver */}
+
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700">
             Driver
           </label>
 
           <select
-            className="w-full rounded-xl border bg-white px-3 py-3"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3"
             value={transfer.driverId}
-            onChange={(e) => updateDriver(e.target.value)}
+            onChange={(e) =>
+              updateDriver(e.target.value)
+            }
           >
             <option value="">
               Select Driver
@@ -136,15 +134,18 @@ export default function AssignmentSection({
         </div>
 
         {/* Vehicle */}
+
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700">
             Vehicle
           </label>
 
           <select
-            className="w-full rounded-xl border bg-white px-3 py-3"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3"
             value={transfer.vehicleId}
-            onChange={(e) => updateVehicle(e.target.value)}
+            onChange={(e) =>
+              updateVehicle(e.target.value)
+            }
           >
             <option value="">
               Select Vehicle
@@ -168,16 +169,19 @@ export default function AssignmentSection({
           />
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        {/* Partner / Status */}
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
           {/* Partner */}
-          <div className="space-y-2">
+
+          <div className="min-w-0 space-y-2">
             <label className="text-sm font-semibold text-slate-700">
               Partner
             </label>
 
             <select
-              className="w-full rounded-xl border bg-white px-3 py-3"
+              className="w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-3"
               value={transfer.partnerId}
               onChange={(e) =>
                 updateField(
@@ -204,13 +208,14 @@ export default function AssignmentSection({
           </div>
 
           {/* Status */}
-          <div className="space-y-2">
+
+          <div className="min-w-0 space-y-2">
             <label className="text-sm font-semibold text-slate-700">
               Status
             </label>
 
             <select
-              className="w-full rounded-xl border bg-white px-3 py-3"
+              className="w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-3"
               value={transfer.status}
               onChange={(e) =>
                 updateField(
@@ -219,25 +224,47 @@ export default function AssignmentSection({
                 )
               }
             >
-              <option value="New">New</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Assigned">Assigned</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="New">
+                New
+              </option>
+
+              <option value="Confirmed">
+                Confirmed
+              </option>
+
+              <option value="Assigned">
+                Assigned
+              </option>
+
+              <option value="In Progress">
+                In Progress
+              </option>
+
+              <option value="Completed">
+                Completed
+              </option>
+
+              <option value="Cancelled">
+                Cancelled
+              </option>
             </select>
           </div>
 
         </div>
 
+        {/* Suggested Resources */}
+
         <div className="border-t pt-5">
+
           <AssignmentSuggestions
             drivers={availableDrivers}
             vehicles={availableVehicles}
           />
+
         </div>
 
       </div>
+
     </TransferSection>
   );
 }
