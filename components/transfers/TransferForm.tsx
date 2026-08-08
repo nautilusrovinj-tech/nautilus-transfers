@@ -69,10 +69,11 @@ export default function TransferForm({
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[1.6fr_1fr]">
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_560px]">
 
       {/* LEFT COLUMN */}
-      <div className="space-y-6">
+
+      <div className="min-w-0 space-y-6">
 
         <TransferDetails
           transfer={transfer}
@@ -97,7 +98,8 @@ export default function TransferForm({
       </div>
 
       {/* RIGHT COLUMN */}
-      <div className="space-y-6">
+
+      <div className="w-full min-w-0 max-w-[560px] space-y-6">
 
         <AssignmentSection
           transfer={transfer}
