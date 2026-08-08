@@ -12,6 +12,10 @@ export type TransferType =
   | "Tour"
   | "Local";
 
+export type PaymentMethod =
+  | "Cash"
+  | "Invoice";
+
 export interface Transfer {
   id: string;
 
@@ -46,6 +50,8 @@ export interface Transfer {
   partnerId: string;
 
   price: number;
+
+  paymentMethod: PaymentMethod;
 
   status: TransferStatus;
 

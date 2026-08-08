@@ -26,7 +26,7 @@ function mapTransfer(row: any): Transfer {
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
-    // Legacy fields (now populated from relations if available)
+    // Legacy fields
     driver: row.driver ?? "",
     vehicle: row.vehicles?.name ?? row.vehicle ?? "",
     partner: row.partners?.name ?? row.partner ?? "",
@@ -37,6 +37,9 @@ function mapTransfer(row: any): Transfer {
     partnerId: row.partner_id ?? "",
 
     price: Number(row.price ?? 0),
+
+    // Payment method
+    paymentMethod: row.payment_method ?? "Cash",
 
     status: row.status,
 
@@ -78,6 +81,9 @@ function mapToDatabase(
     partner_id: transfer.partnerId,
 
     price: transfer.price,
+
+    // Payment method
+    payment_method: transfer.paymentMethod,
 
     status: transfer.status,
 
@@ -142,7 +148,11 @@ export async function assignDriver(
   transferId: string,
   driverId: string
 ) {
-  console.log("Assigning:", transferId, driverId);
+  console.log(
+    "Assigning:",
+    transferId,
+    driverId
+  );
 
   const { data, error } = await supabase
     .from("transfers")
@@ -171,8 +181,15 @@ export async function assignVehicle(
     .eq("id", transferId)
     .select();
 
-  console.log("VEHICLE DATA:", data);
-  console.log("VEHICLE ERROR:", error);
+  console.log(
+    "VEHICLE DATA:",
+    data
+  );
+
+  console.log(
+    "VEHICLE ERROR:",
+    error
+  );
 
   if (error) throw error;
 }

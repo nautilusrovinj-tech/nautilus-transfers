@@ -80,7 +80,6 @@ export default function TransferDialog({
       await onSave(currentTransfer);
 
       setOpen(false);
-
       setCurrentTransfer(createEmptyTransfer());
     } catch (error) {
       console.error(error);
@@ -129,9 +128,9 @@ export default function TransferDialog({
       >
         <DialogContent
           style={{
-            width: "95vw",
-            maxWidth: "1600px",
-            height: "94vh",
+            width: "92vw",
+            maxWidth: "1400px",
+            height: "92vh",
           }}
           className="overflow-hidden rounded-2xl bg-white p-0"
         >
@@ -156,54 +155,71 @@ export default function TransferDialog({
                 onImport={(booking) =>
                   setCurrentTransfer((prev) => ({
                     ...prev,
+
                     transferType:
                       booking.transferType ??
                       prev.transferType,
+
                     date:
                       booking.date ??
                       prev.date,
+
                     time:
                       booking.time ??
                       prev.time,
+
                     pickup:
                       booking.pickup ??
                       prev.pickup,
+
                     destination:
                       booking.destination ??
                       prev.destination,
+
                     clientName:
                       booking.clientName ??
                       prev.clientName,
+
                     phone:
                       booking.phone ??
                       prev.phone,
+
                     email:
                       booking.email ??
                       prev.email,
+
                     flight:
                       booking.flight ??
                       prev.flight,
+
                     adults:
                       booking.adults ??
                       prev.adults,
+
                     children:
                       booking.children ??
                       prev.children,
+
                     babySeats:
                       booking.babySeats ??
                       prev.babySeats,
+
                     boosterSeats:
                       booking.boosterSeats ??
                       prev.boosterSeats,
+
                     vehicle:
                       booking.vehicle ??
                       prev.vehicle,
+
                     partner:
                       booking.partner ??
                       prev.partner,
+
                     price:
                       booking.price ??
                       prev.price,
+
                     notes:
                       booking.notes ??
                       prev.notes,
@@ -308,7 +324,6 @@ export default function TransferDialog({
 
         </AlertDialogContent>
       </AlertDialog>
-
     </>
   );
 }

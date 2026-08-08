@@ -42,11 +42,13 @@ export function createEmptyTransfer(): Transfer {
 
     price: 0,
 
+    // Payment method
+    paymentMethod: "Cash",
+
     status: "New",
 
     notes: "",
 
-    // Keep this if your project already uses it
     transferType: "Arrival",
   };
 }
