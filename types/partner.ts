@@ -14,4 +14,7 @@ export interface Partner {
   notes: string;
 
   active: boolean;
+
+  // Supabase Auth user connected to this partner
+  userId: string | null;
 }

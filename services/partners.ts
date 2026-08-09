@@ -3,52 +3,88 @@ import { Partner } from "@/types/partner";
 
 const supabase = createClient();
 
-function mapPartnerFromDb(data: any): Partner {
+function mapPartnerFromDb(
+  data: any
+): Partner {
   return {
     id: data.id,
+
     name: data.name,
+
     contactPerson:
       data.contact_person ??
       data.contactPerson ??
       "",
+
     phone: data.phone ?? "",
+
     email: data.email ?? "",
-    commission: data.commission ?? 0,
+
+    commission:
+      Number(data.commission ?? 0),
+
     notes: data.notes ?? "",
-    active: data.active ?? true,
+
+    active:
+      data.active ?? true,
+
+    userId:
+      data.user_id ?? null,
   };
 }
 
-function mapPartnerToDb(partner: Partner) {
+function mapPartnerToDb(
+  partner: Partner
+) {
   return {
     id: partner.id,
+
     name: partner.name,
-    contact_person: partner.contactPerson,
+
+    contact_person:
+      partner.contactPerson,
+
     phone: partner.phone,
+
     email: partner.email,
-    commission: partner.commission,
+
+    commission:
+      partner.commission,
+
     notes: partner.notes,
+
     active: partner.active,
+
+    user_id:
+      partner.userId,
   };
 }
 
-export async function getPartners(): Promise<Partner[]> {
-  const { data, error } = await supabase
-    .from("partners")
-    .select("*")
-    .order("name");
+export async function getPartners(): Promise<
+  Partner[]
+> {
+  const { data, error } =
+    await supabase
+      .from("partners")
+      .select("*")
+      .order("name");
 
   if (error) throw error;
 
-  return (data ?? []).map(mapPartnerFromDb);
+  return (data ?? []).map(
+    mapPartnerFromDb
+  );
 }
 
 export async function createPartner(
   partner: Partner
 ) {
-  const { error } = await supabase
-    .from("partners")
-    .insert(mapPartnerToDb(partner));
+  const { error } =
+    await supabase
+      .from("partners")
+      .insert(
+        mapPartnerToDb(partner)
+      );
 
   if (error) throw error;
 }
@@ -57,10 +93,13 @@ export async function updatePartner(
   id: string,
   partner: Partner
 ) {
-  const { error } = await supabase
-    .from("partners")
-    .update(mapPartnerToDb(partner))
-    .eq("id", id);
+  const { error } =
+    await supabase
+      .from("partners")
+      .update(
+        mapPartnerToDb(partner)
+      )
+      .eq("id", id);
 
   if (error) throw error;
 }
@@ -68,10 +107,11 @@ export async function updatePartner(
 export async function deletePartner(
   id: string
 ) {
-  const { error } = await supabase
-    .from("partners")
-    .delete()
-    .eq("id", id);
+  const { error } =
+    await supabase
+      .from("partners")
+      .delete()
+      .eq("id", id);
 
   if (error) throw error;
 }

@@ -17,5 +17,8 @@ export function createEmptyPartner(): Partner {
     notes: "",
 
     active: true,
+
+    // No Supabase user connected yet
+    userId: null,
   };
 }
