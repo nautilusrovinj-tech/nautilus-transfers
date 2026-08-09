@@ -5,7 +5,10 @@ import { useMemo, useState } from "react";
 import { Transfer } from "@/types/transfer";
 import { googleMapsUrl } from "@/lib/helpers/maps";
 import { guestWhatsAppUrl } from "@/lib/helpers/whatsapp";
-import { updateTransferStatus } from "@/services/transfers";
+import {
+  completeTransfer,
+  updateTransferStatus,
+} from "@/services/transfers";
 
 interface Props {
   transfer: Transfer;
@@ -18,6 +21,18 @@ export default function DriverTransferCard({
 }: Props) {
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  const [showCompletionForm, setShowCompletionForm] =
+    useState(false);
+
+  const [actualKilometers, setActualKilometers] =
+    useState("");
+
+  const [fuelLiters, setFuelLiters] =
+    useState("");
+
+  const [driverNote, setDriverNote] =
+    useState("");
 
   const statusColour = useMemo(() => {
     switch (transfer.status) {
@@ -55,16 +70,67 @@ export default function DriverTransferCard({
     }
   }
 
-  async function completeTransfer() {
+  function openCompletionForm() {
+    setShowCompletionForm(true);
+  }
+
+  function cancelCompletion() {
+    if (saving) return;
+
+    setShowCompletionForm(false);
+  }
+
+  async function handleCompleteTransfer() {
     if (saving) return;
 
     try {
       setSaving(true);
 
-      await updateTransferStatus(
+      const kilometers =
+        actualKilometers.trim() === ""
+          ? null
+          : Number(actualKilometers);
+
+      const fuel =
+        fuelLiters.trim() === ""
+          ? null
+          : Number(fuelLiters);
+
+      if (
+        kilometers !== null &&
+        (!Number.isFinite(kilometers) ||
+          kilometers < 0)
+      ) {
+        alert(
+          "Please enter a valid kilometer value."
+        );
+        setSaving(false);
+        return;
+      }
+
+      if (
+        fuel !== null &&
+        (!Number.isFinite(fuel) ||
+          fuel < 0)
+      ) {
+        alert(
+          "Please enter a valid fuel amount."
+        );
+        setSaving(false);
+        return;
+      }
+
+      await completeTransfer(
         transfer.id,
-        "Completed"
+        kilometers,
+        driverNote.trim(),
+        fuel
       );
+
+      setShowCompletionForm(false);
+      setActualKilometers("");
+      setFuelLiters("");
+      setDriverNote("");
 
       onComplete?.();
     } catch (err) {
@@ -135,7 +201,8 @@ export default function DriverTransferCard({
             Route
           </div>
 
-          {(transfer.flight || transfer.adults > 0) && (
+          {(transfer.flight ||
+            transfer.adults > 0) && (
             <div className="mt-3 flex flex-wrap gap-2">
 
               {transfer.flight && (
@@ -146,13 +213,17 @@ export default function DriverTransferCard({
 
               <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
                 {transfer.adults} Adult
-                {transfer.adults !== 1 ? "s" : ""}
+                {transfer.adults !== 1
+                  ? "s"
+                  : ""}
               </span>
 
               {transfer.children > 0 && (
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
                   {transfer.children} Child
-                  {transfer.children !== 1 ? "ren" : ""}
+                  {transfer.children !== 1
+                    ? "ren"
+                    : ""}
                 </span>
               )}
 
@@ -261,12 +332,14 @@ export default function DriverTransferCard({
 
               <p
                 className={`mt-1 text-lg font-bold ${
-                  transfer.paymentMethod === "Invoice"
+                  transfer.paymentMethod ===
+                  "Invoice"
                     ? "text-blue-600"
                     : "text-green-600"
                 }`}
               >
-                {transfer.paymentMethod || "Cash"}
+                {transfer.paymentMethod ||
+                  "Cash"}
               </p>
 
             </div>
@@ -284,7 +357,9 @@ export default function DriverTransferCard({
               <button
                 onClick={() =>
                   window.open(
-                    guestWhatsAppUrl(transfer),
+                    guestWhatsAppUrl(
+                      transfer
+                    ),
                     "_blank"
                   )
                 }
@@ -463,34 +538,148 @@ export default function DriverTransferCard({
           </>
         )}
 
+        {/* Completion Form */}
+
+        {showCompletionForm && (
+          <div className="rounded-2xl border-2 border-green-200 bg-green-50 p-5">
+
+            <h3 className="mb-1 text-lg font-bold text-slate-900">
+              Complete Transfer
+            </h3>
+
+            <p className="mb-5 text-sm text-slate-600">
+              All fields are optional.
+            </p>
+
+            <div className="space-y-4">
+
+              {/* Real Kilometers */}
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Real Kilometers
+                </label>
+
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  inputMode="numeric"
+                  placeholder="e.g. 125430"
+                  value={actualKilometers}
+                  onChange={(e) =>
+                    setActualKilometers(
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              {/* Fuel */}
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Fuel (liters)
+                </label>
+
+                <input
+                  type="number"
+                  min={0}
+                  step="0.1"
+                  inputMode="decimal"
+                  placeholder="e.g. 42.5"
+                  value={fuelLiters}
+                  onChange={(e) =>
+                    setFuelLiters(
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              {/* Driver Note */}
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Note
+                </label>
+
+                <textarea
+                  rows={3}
+                  placeholder="Optional note..."
+                  value={driverNote}
+                  onChange={(e) =>
+                    setDriverNote(
+                      e.target.value
+                    )
+                  }
+                  className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              {/* Buttons */}
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={cancelCompletion}
+                  className="rounded-2xl border border-slate-300 bg-white py-4 text-lg font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={
+                    handleCompleteTransfer
+                  }
+                  className="rounded-2xl bg-green-700 py-4 text-lg font-bold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {saving
+                    ? "Completing..."
+                    : "Complete Transfer"}
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
         {/* Start Transfer */}
 
         {(transfer.status === "Assigned" ||
-          transfer.status === "Confirmed") && (
-          <button
-            disabled={saving}
-            onClick={startTransfer}
-            className="w-full rounded-2xl bg-blue-600 py-5 text-lg font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving
-              ? "Starting..."
-              : "Start Transfer"}
-          </button>
-        )}
+          transfer.status === "Confirmed") &&
+          !showCompletionForm && (
+            <button
+              disabled={saving}
+              onClick={startTransfer}
+              className="w-full rounded-2xl bg-blue-600 py-5 text-lg font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving
+                ? "Starting..."
+                : "Start Transfer"}
+            </button>
+          )}
 
         {/* Complete Transfer */}
 
-        {transfer.status === "In Progress" && (
-          <button
-            disabled={saving}
-            onClick={completeTransfer}
-            className="w-full rounded-2xl bg-green-700 py-5 text-lg font-bold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving
-              ? "Completing..."
-              : "Complete Transfer"}
-          </button>
-        )}
+        {transfer.status === "In Progress" &&
+          !showCompletionForm && (
+            <button
+              disabled={saving}
+              onClick={openCompletionForm}
+              className="w-full rounded-2xl bg-green-700 py-5 text-lg font-bold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Complete Transfer
+            </button>
+          )}
 
       </div>
 

@@ -14,6 +14,8 @@ export function createEmptyTransfer(): Transfer {
 
     transferNumber: generateTransferNumber(),
 
+    transferType: "Arrival",
+
     clientName: "",
     phone: "",
     email: "",
@@ -27,8 +29,6 @@ export function createEmptyTransfer(): Transfer {
 
     adults: 1,
     children: 0,
-
-    // Seat types
     childSeats: 0,
     babySeats: 0,
     boosterSeats: 0,
@@ -51,6 +51,9 @@ export function createEmptyTransfer(): Transfer {
 
     notes: "",
 
-    transferType: "Arrival",
+    // Driver completion information
+    actualKilometers: null,
+    driverNote: "",
+    fuelLiters: null,
   };
 }

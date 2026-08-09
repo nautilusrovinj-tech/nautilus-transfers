@@ -36,13 +36,11 @@ export interface Transfer {
 
   adults: number;
   children: number;
-
-  // Child seat types
   childSeats: number;
   babySeats: number;
   boosterSeats: number;
 
-  // Legacy fields (temporary during migration)
+  // Legacy fields
   driver: string;
   vehicle: string;
   partner: string;
@@ -59,4 +57,9 @@ export interface Transfer {
   status: TransferStatus;
 
   notes: string;
+
+  // Driver completion information
+  actualKilometers: number | null;
+  driverNote: string;
+  fuelLiters: number | null;
 }

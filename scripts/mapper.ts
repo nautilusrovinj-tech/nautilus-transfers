@@ -214,6 +214,11 @@ export function mapTransfer(
 
     status: "New",
 
-    notes: "",
+notes: "",
+
+// Driver completion information
+actualKilometers: null,
+driverNote: "",
+fuelLiters: null,
   };
 }

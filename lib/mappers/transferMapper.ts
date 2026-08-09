@@ -6,6 +6,9 @@ export function mapTransfer(row: any): Transfer {
 
     transferNumber: row.transfer_number,
 
+    transferType:
+      row.transfer_type ?? "Arrival",
+
     clientName: row.client_name,
     phone: row.phone ?? "",
     email: row.email ?? "",
@@ -19,32 +22,42 @@ export function mapTransfer(row: any): Transfer {
 
     adults: row.adults ?? 1,
     children: row.children ?? 0,
-
-    // Seat types
     childSeats: row.child_seats ?? 0,
     babySeats: row.baby_seats ?? 0,
     boosterSeats: row.booster_seats ?? 0,
 
-    // Legacy fields (temporary)
+    // Legacy fields
     driver: row.driver ?? "",
     vehicle: row.vehicle ?? "",
     partner: row.partner ?? "",
 
-    // New relational fields
+    // Relational fields
     driverId: row.driver_id ?? "",
     vehicleId: row.vehicle_id ?? "",
     partnerId: row.partner_id ?? "",
 
     price: Number(row.price ?? 0),
 
-    // Payment method
-    paymentMethod: row.payment_method ?? "Cash",
+    paymentMethod:
+      row.payment_method ?? "Cash",
 
     status: row.status,
 
     notes: row.notes ?? "",
 
-    // Temporary default until we migrate transfer type
-    transferType: row.transfer_type ?? "Arrival",
+    // Driver completion information
+    actualKilometers:
+      row.actual_kilometers !== null &&
+      row.actual_kilometers !== undefined
+        ? Number(row.actual_kilometers)
+        : null,
+
+    driverNote: row.driver_note ?? "",
+
+    fuelLiters:
+      row.fuel_liters !== null &&
+      row.fuel_liters !== undefined
+        ? Number(row.fuel_liters)
+        : null,
   };
 }

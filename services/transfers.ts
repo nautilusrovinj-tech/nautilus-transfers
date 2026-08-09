@@ -47,6 +47,21 @@ function mapTransfer(row: any): Transfer {
     status: row.status,
 
     notes: row.notes ?? "",
+
+    // Driver completion information
+    actualKilometers:
+      row.actual_kilometers !== null &&
+      row.actual_kilometers !== undefined
+        ? Number(row.actual_kilometers)
+        : null,
+
+    driverNote: row.driver_note ?? "",
+
+    fuelLiters:
+      row.fuel_liters !== null &&
+      row.fuel_liters !== undefined
+        ? Number(row.fuel_liters)
+        : null,
   };
 }
 
@@ -94,6 +109,16 @@ function mapToDatabase(
     status: transfer.status,
 
     notes: transfer.notes,
+
+    // Driver completion information
+    actual_kilometers:
+      transfer.actualKilometers,
+
+    driver_note:
+      transfer.driverNote,
+
+    fuel_liters:
+      transfer.fuelLiters,
   };
 }
 
@@ -101,8 +126,12 @@ export async function getTransfers(): Promise<Transfer[]> {
   const { data, error } = await supabase
     .from("transfers")
     .select("*")
-    .order("date", { ascending: true })
-    .order("time", { ascending: true });
+    .order("date", {
+      ascending: true,
+    })
+    .order("time", {
+      ascending: true,
+    });
 
   if (error) throw error;
 
@@ -114,15 +143,25 @@ export async function createTransfer(
 ) {
   const payload = mapToDatabase(transfer);
 
-  console.log("INSERT PAYLOAD:", payload);
+  console.log(
+    "INSERT PAYLOAD:",
+    payload
+  );
 
   const { data, error } = await supabase
     .from("transfers")
     .insert(payload)
     .select();
 
-  console.log("INSERT DATA:", data);
-  console.log("INSERT ERROR:", error);
+  console.log(
+    "INSERT DATA:",
+    data
+  );
+
+  console.log(
+    "INSERT ERROR:",
+    error
+  );
 
   if (error) throw error;
 }
@@ -169,8 +208,15 @@ export async function assignDriver(
     .eq("id", transferId)
     .select();
 
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
+  console.log(
+    "DATA:",
+    data
+  );
+
+  console.log(
+    "ERROR:",
+    error
+  );
 
   if (error) throw error;
 }
@@ -208,6 +254,28 @@ export async function updateTransferStatus(
     .from("transfers")
     .update({
       status,
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function completeTransfer(
+  id: string,
+  actualKilometers: number | null,
+  driverNote: string,
+  fuelLiters: number | null
+) {
+  const { error } = await supabase
+    .from("transfers")
+    .update({
+      status: "Completed",
+      actual_kilometers:
+        actualKilometers,
+      driver_note:
+        driverNote,
+      fuel_liters:
+        fuelLiters,
     })
     .eq("id", id);
 
