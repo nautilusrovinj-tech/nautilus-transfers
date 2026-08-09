@@ -14,56 +14,100 @@ import {
   sendWhatsAppReminder,
 } from "@/services/whatsapp";
 
-function normalizePhone(
-  phone: string
-) {
-  let normalized =
-    phone.replace(/\D/g, "");
+function normalizePhone(phone: string) {
+  let normalized = phone.replace(/\D/g, "");
 
   // Croatian local number:
   // 0912345678
   //
   // becomes:
   // 385912345678
-
   if (normalized.startsWith("0")) {
     normalized =
-      "385" +
-      normalized.substring(1);
+      "385" + normalized.substring(1);
   }
 
   return normalized;
 }
 
 /**
- * Convert a database date + time into a Date.
+ * Convert a Croatian local date/time from the
+ * database into the correct UTC Date.
  *
- * IMPORTANT:
- * Your transfers are based in Croatia.
+ * Database example:
+ * date = "2026-08-10"
+ * time = "12:30"
  *
- * This uses the Europe/Zagreb timezone
- * when calculating the reminder.
+ * The transfer time is interpreted as Europe/Zagreb time,
+ * including daylight-saving time.
  */
 function getTransferDate(
   date: string,
   time: string
-) {
-  const cleanTime =
-    time.length === 5
-      ? `${time}:00`
-      : time;
+): Date {
+  const [year, month, day] =
+    date.split("-").map(Number);
 
-  const iso =
-    `${date}T${cleanTime}`;
+  const [hour, minute] =
+    time.split(":").map(Number);
 
-  return new Date(
-    new Date(iso).toLocaleString(
-      "en-US",
-      {
-        timeZone:
-          "Europe/Zagreb",
-      }
+  // First treat the local Croatian time as if it were UTC.
+  const assumedUtc = new Date(
+    Date.UTC(
+      year,
+      month - 1,
+      day,
+      hour,
+      minute || 0,
+      0
     )
+  );
+
+  // Ask Intl what the Zagreb clock shows for that instant.
+  const parts = new Intl.DateTimeFormat(
+    "en-US",
+    {
+      timeZone: "Europe/Zagreb",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }
+  ).formatToParts(assumedUtc);
+
+  const values: Record<string, number> =
+    {};
+
+  for (const part of parts) {
+    if (
+      part.type !== "literal"
+    ) {
+      values[part.type] =
+        Number(part.value);
+    }
+  }
+
+  const displayedAsUtc = Date.UTC(
+    values.year,
+    values.month - 1,
+    values.day,
+    values.hour,
+    values.minute,
+    values.second
+  );
+
+  // Difference between UTC and Zagreb.
+  const offset =
+    displayedAsUtc -
+    assumedUtc.getTime();
+
+  // Convert the original Croatian local
+  // time into the actual UTC instant.
+  return new Date(
+    assumedUtc.getTime() - offset
   );
 }
 
@@ -71,6 +115,7 @@ export async function GET() {
   try {
     const sent: string[] = [];
     const failed: string[] = [];
+
     const remindersSent: string[] = [];
     const remindersFailed: string[] = [];
 
@@ -273,23 +318,39 @@ export async function GET() {
           (1000 * 60);
 
         console.log(
+          "Transfer date:",
+          transfer.date
+        );
+
+        console.log(
+          "Transfer time:",
+          transfer.time
+        );
+
+        console.log(
+          "Transfer UTC:",
+          transferDate.toISOString()
+        );
+
+        console.log(
+          "Current UTC:",
+          now.toISOString()
+        );
+
+        console.log(
           "Minutes until transfer:",
           minutesUntilTransfer
         );
 
         /*
-         * Send when the transfer is approximately
-         * 2 hours away.
+         * Reminder window:
          *
-         * Window:
-         * 1 hour 45 minutes
-         * through
-         * 2 hours 15 minutes
+         * 105 minutes = 1h 45m
+         * 135 minutes = 2h 15m
          *
-         * This gives the hourly cron enough room
-         * to catch the transfer.
+         * This gives a 30-minute window so that
+         * an hourly cron can catch the reminder.
          */
-
         const shouldSendReminder =
           minutesUntilTransfer >= 105 &&
           minutesUntilTransfer <= 135;
@@ -360,13 +421,9 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-
       sent,
-
       failed,
-
       remindersSent,
-
       remindersFailed,
     });
   } catch (error) {
@@ -378,7 +435,6 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-
         error:
           error instanceof Error
             ? error.message
