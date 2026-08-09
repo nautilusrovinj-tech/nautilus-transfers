@@ -31,6 +31,9 @@ export default function DriverTransferCard({
   const [fuelLiters, setFuelLiters] =
     useState("");
 
+  const [fuelCost, setFuelCost] =
+    useState("");
+
   const [driverNote, setDriverNote] =
     useState("");
 
@@ -96,6 +99,11 @@ export default function DriverTransferCard({
           ? null
           : Number(fuelLiters);
 
+      const cost =
+        fuelCost.trim() === ""
+          ? null
+          : Number(fuelCost);
+
       if (
         kilometers !== null &&
         (!Number.isFinite(kilometers) ||
@@ -120,16 +128,31 @@ export default function DriverTransferCard({
         return;
       }
 
+      if (
+        cost !== null &&
+        (!Number.isFinite(cost) ||
+          cost < 0)
+      ) {
+        alert(
+          "Please enter a valid fuel cost."
+        );
+        setSaving(false);
+        return;
+      }
+
       await completeTransfer(
         transfer.id,
         kilometers,
         driverNote.trim(),
-        fuel
+        fuel,
+        cost
       );
 
       setShowCompletionForm(false);
+
       setActualKilometers("");
       setFuelLiters("");
+      setFuelCost("");
       setDriverNote("");
 
       onComplete?.();
@@ -576,7 +599,7 @@ export default function DriverTransferCard({
                 />
               </div>
 
-              {/* Fuel */}
+              {/* Fuel Liters */}
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">
@@ -592,6 +615,29 @@ export default function DriverTransferCard({
                   value={fuelLiters}
                   onChange={(e) =>
                     setFuelLiters(
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              {/* Fuel Cost */}
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Fuel Cost (€)
+                </label>
+
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  inputMode="decimal"
+                  placeholder="e.g. 68.40"
+                  value={fuelCost}
+                  onChange={(e) =>
+                    setFuelCost(
                       e.target.value
                     )
                   }
@@ -626,7 +672,9 @@ export default function DriverTransferCard({
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={cancelCompletion}
+                  onClick={
+                    cancelCompletion
+                  }
                   className="rounded-2xl border border-slate-300 bg-white py-4 text-lg font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel

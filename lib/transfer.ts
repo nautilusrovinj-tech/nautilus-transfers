@@ -3,16 +3,20 @@ import { Transfer } from "@/types/transfer";
 let sequence = 1;
 
 export function generateTransferNumber() {
-  const year = new Date().getFullYear();
+  const year =
+    new Date().getFullYear();
 
-  return `NT-${year}-${String(sequence++).padStart(6, "0")}`;
+  return `NT-${year}-${String(
+    sequence++
+  ).padStart(6, "0")}`;
 }
 
 export function createEmptyTransfer(): Transfer {
   return {
     id: crypto.randomUUID(),
 
-    transferNumber: generateTransferNumber(),
+    transferNumber:
+      generateTransferNumber(),
 
     transferType: "Arrival",
 
@@ -55,5 +59,6 @@ export function createEmptyTransfer(): Transfer {
     actualKilometers: null,
     driverNote: "",
     fuelLiters: null,
+    fuelCost: null,
   };
 }

@@ -59,5 +59,11 @@ export function mapTransfer(row: any): Transfer {
       row.fuel_liters !== undefined
         ? Number(row.fuel_liters)
         : null,
+
+        fuelCost:
+  row.fuel_cost !== null &&
+  row.fuel_cost !== undefined
+    ? Number(row.fuel_cost)
+    : null,
   };
 }

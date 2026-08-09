@@ -62,4 +62,5 @@ export interface Transfer {
   actualKilometers: number | null;
   driverNote: string;
   fuelLiters: number | null;
+  fuelCost: number | null;
 }

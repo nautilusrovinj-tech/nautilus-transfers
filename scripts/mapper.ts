@@ -220,5 +220,6 @@ notes: "",
 actualKilometers: null,
 driverNote: "",
 fuelLiters: null,
+fuelCost: null,
   };
 }

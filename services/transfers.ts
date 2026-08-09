@@ -31,8 +31,14 @@ function mapTransfer(row: any): Transfer {
 
     // Legacy fields
     driver: row.driver ?? "",
-    vehicle: row.vehicles?.name ?? row.vehicle ?? "",
-    partner: row.partners?.name ?? row.partner ?? "",
+    vehicle:
+      row.vehicles?.name ??
+      row.vehicle ??
+      "",
+    partner:
+      row.partners?.name ??
+      row.partner ??
+      "",
 
     // Relational fields
     driverId: row.driver_id ?? "",
@@ -42,7 +48,8 @@ function mapTransfer(row: any): Transfer {
     price: Number(row.price ?? 0),
 
     // Payment method
-    paymentMethod: row.payment_method ?? "Cash",
+    paymentMethod:
+      row.payment_method ?? "Cash",
 
     status: row.status,
 
@@ -55,12 +62,19 @@ function mapTransfer(row: any): Transfer {
         ? Number(row.actual_kilometers)
         : null,
 
-    driverNote: row.driver_note ?? "",
+    driverNote:
+      row.driver_note ?? "",
 
     fuelLiters:
       row.fuel_liters !== null &&
       row.fuel_liters !== undefined
         ? Number(row.fuel_liters)
+        : null,
+
+    fuelCost:
+      row.fuel_cost !== null &&
+      row.fuel_cost !== undefined
+        ? Number(row.fuel_cost)
         : null,
   };
 }
@@ -69,46 +83,84 @@ function mapToDatabase(
   transfer: Partial<Transfer>
 ) {
   return {
-    transfer_number: transfer.transferNumber,
-    transfer_type: transfer.transferType,
+    transfer_number:
+      transfer.transferNumber,
 
-    client_name: transfer.clientName,
-    phone: transfer.phone,
-    email: transfer.email,
+    transfer_type:
+      transfer.transferType,
 
-    date: transfer.date,
-    time: transfer.time,
+    client_name:
+      transfer.clientName,
 
-    pickup: transfer.pickup,
-    destination: transfer.destination,
-    flight: transfer.flight,
+    phone:
+      transfer.phone,
 
-    adults: transfer.adults,
-    children: transfer.children,
+    email:
+      transfer.email,
+
+    date:
+      transfer.date,
+
+    time:
+      transfer.time,
+
+    pickup:
+      transfer.pickup,
+
+    destination:
+      transfer.destination,
+
+    flight:
+      transfer.flight,
+
+    adults:
+      transfer.adults,
+
+    children:
+      transfer.children,
 
     // Seat types
-    child_seats: transfer.childSeats,
-    baby_seats: transfer.babySeats,
-    booster_seats: transfer.boosterSeats,
+    child_seats:
+      transfer.childSeats,
+
+    baby_seats:
+      transfer.babySeats,
+
+    booster_seats:
+      transfer.boosterSeats,
 
     // Legacy fields
-    driver: transfer.driver,
-    vehicle: transfer.vehicle,
-    partner: transfer.partner,
+    driver:
+      transfer.driver,
+
+    vehicle:
+      transfer.vehicle,
+
+    partner:
+      transfer.partner,
 
     // Relational fields
-    driver_id: transfer.driverId,
-    vehicle_id: transfer.vehicleId,
-    partner_id: transfer.partnerId,
+    driver_id:
+      transfer.driverId,
 
-    price: transfer.price,
+    vehicle_id:
+      transfer.vehicleId,
+
+    partner_id:
+      transfer.partnerId,
+
+    price:
+      transfer.price,
 
     // Payment method
-    payment_method: transfer.paymentMethod,
+    payment_method:
+      transfer.paymentMethod,
 
-    status: transfer.status,
+    status:
+      transfer.status,
 
-    notes: transfer.notes,
+    notes:
+      transfer.notes,
 
     // Driver completion information
     actual_kilometers:
@@ -119,10 +171,15 @@ function mapToDatabase(
 
     fuel_liters:
       transfer.fuelLiters,
+
+    fuel_cost:
+      transfer.fuelCost,
   };
 }
 
-export async function getTransfers(): Promise<Transfer[]> {
+export async function getTransfers(): Promise<
+  Transfer[]
+> {
   const { data, error } = await supabase
     .from("transfers")
     .select("*")
@@ -141,17 +198,19 @@ export async function getTransfers(): Promise<Transfer[]> {
 export async function createTransfer(
   transfer: Partial<Transfer>
 ) {
-  const payload = mapToDatabase(transfer);
+  const payload =
+    mapToDatabase(transfer);
 
   console.log(
     "INSERT PAYLOAD:",
     payload
   );
 
-  const { data, error } = await supabase
-    .from("transfers")
-    .insert(payload)
-    .select();
+  const { data, error } =
+    await supabase
+      .from("transfers")
+      .insert(payload)
+      .select();
 
   console.log(
     "INSERT DATA:",
@@ -170,10 +229,13 @@ export async function updateTransfer(
   id: string,
   transfer: Partial<Transfer>
 ) {
-  const { error } = await supabase
-    .from("transfers")
-    .update(mapToDatabase(transfer))
-    .eq("id", id);
+  const { error } =
+    await supabase
+      .from("transfers")
+      .update(
+        mapToDatabase(transfer)
+      )
+      .eq("id", id);
 
   if (error) throw error;
 }
@@ -181,10 +243,11 @@ export async function updateTransfer(
 export async function deleteTransfer(
   id: string
 ) {
-  const { error } = await supabase
-    .from("transfers")
-    .delete()
-    .eq("id", id);
+  const { error } =
+    await supabase
+      .from("transfers")
+      .delete()
+      .eq("id", id);
 
   if (error) throw error;
 }
@@ -199,14 +262,15 @@ export async function assignDriver(
     driverId
   );
 
-  const { data, error } = await supabase
-    .from("transfers")
-    .update({
-      driver_id: driverId,
-      status: "Assigned",
-    })
-    .eq("id", transferId)
-    .select();
+  const { data, error } =
+    await supabase
+      .from("transfers")
+      .update({
+        driver_id: driverId,
+        status: "Assigned",
+      })
+      .eq("id", transferId)
+      .select();
 
   console.log(
     "DATA:",
@@ -225,13 +289,14 @@ export async function assignVehicle(
   transferId: string,
   vehicleId: string
 ) {
-  const { data, error } = await supabase
-    .from("transfers")
-    .update({
-      vehicle_id: vehicleId,
-    })
-    .eq("id", transferId)
-    .select();
+  const { data, error } =
+    await supabase
+      .from("transfers")
+      .update({
+        vehicle_id: vehicleId,
+      })
+      .eq("id", transferId)
+      .select();
 
   console.log(
     "VEHICLE DATA:",
@@ -250,12 +315,13 @@ export async function updateTransferStatus(
   id: string,
   status: Transfer["status"]
 ) {
-  const { error } = await supabase
-    .from("transfers")
-    .update({
-      status,
-    })
-    .eq("id", id);
+  const { error } =
+    await supabase
+      .from("transfers")
+      .update({
+        status,
+      })
+      .eq("id", id);
 
   if (error) throw error;
 }
@@ -264,20 +330,28 @@ export async function completeTransfer(
   id: string,
   actualKilometers: number | null,
   driverNote: string,
-  fuelLiters: number | null
+  fuelLiters: number | null,
+  fuelCost: number | null
 ) {
-  const { error } = await supabase
-    .from("transfers")
-    .update({
-      status: "Completed",
-      actual_kilometers:
-        actualKilometers,
-      driver_note:
-        driverNote,
-      fuel_liters:
-        fuelLiters,
-    })
-    .eq("id", id);
+  const { error } =
+    await supabase
+      .from("transfers")
+      .update({
+        status: "Completed",
+
+        actual_kilometers:
+          actualKilometers,
+
+        driver_note:
+          driverNote,
+
+        fuel_liters:
+          fuelLiters,
+
+        fuel_cost:
+          fuelCost,
+      })
+      .eq("id", id);
 
   if (error) throw error;
 }
@@ -286,29 +360,35 @@ export async function getDriverTransfers(
   driverId: string,
   date: string
 ): Promise<Transfer[]> {
-  const { data, error } = await supabase
-    .from("transfers")
-    .select(`
-      *,
-      vehicles:vehicle_id (
-        name
-      ),
-      partners:partner_id (
-        name
+  const { data, error } =
+    await supabase
+      .from("transfers")
+      .select(`
+        *,
+        vehicles:vehicle_id (
+          name
+        ),
+        partners:partner_id (
+          name
+        )
+      `)
+      .eq(
+        "driver_id",
+        driverId
       )
-    `)
-    .eq("driver_id", driverId)
-    .eq("date", date)
-    .in("status", [
-      "Confirmed",
-      "Assigned",
-      "In Progress",
-    ])
-    .order("time", {
-      ascending: true,
-    });
+      .eq("date", date)
+      .in("status", [
+        "Confirmed",
+        "Assigned",
+        "In Progress",
+      ])
+      .order("time", {
+        ascending: true,
+      });
 
   if (error) throw error;
 
-  return (data ?? []).map(mapTransfer);
+  return (data ?? []).map(
+    mapTransfer
+  );
 }
