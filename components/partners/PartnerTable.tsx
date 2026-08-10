@@ -10,12 +10,16 @@ interface Props {
   partners: Partner[];
   onEdit: (partner: Partner) => void;
   onDelete: (id: string) => void;
+  onCreateAccount: (
+    partner: Partner
+  ) => Promise<void>;
 }
 
 export default function PartnerTable({
   partners,
   onEdit,
   onDelete,
+  onCreateAccount,
 }: Props) {
   if (partners.length === 0) {
     return (
@@ -32,6 +36,7 @@ export default function PartnerTable({
         columns={getPartnerColumns({
           onEdit,
           onDelete,
+          onCreateAccount,
         })}
         data={partners}
       />

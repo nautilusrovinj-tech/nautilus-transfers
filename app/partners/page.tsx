@@ -19,10 +19,14 @@ import {
 import { Partner } from "@/types/partner";
 
 export default function PartnersPage() {
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [partners, setPartners] =
+    useState<Partner[]>([]);
 
-  const [search, setSearch] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [search, setSearch] =
+    useState("");
 
   const [selectedPartner, setSelectedPartner] =
     useState<Partner | null>(null);
@@ -31,7 +35,8 @@ export default function PartnersPage() {
     try {
       setLoading(true);
 
-      const data = await getPartners();
+      const data =
+        await getPartners();
 
       setPartners(data);
     } finally {
@@ -43,25 +48,31 @@ export default function PartnersPage() {
     void loadPartners();
   }, []);
 
-  const filteredPartners = useMemo(() => {
-    const q = search.toLowerCase();
+  const filteredPartners =
+    useMemo(() => {
+      const q =
+        search.toLowerCase();
 
-    return partners.filter((partner) =>
-      [
-        partner.name,
-        partner.phone,
-        partner.email,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [partners, search]);
+      return partners.filter(
+        (partner) =>
+          [
+            partner.name,
+            partner.phone,
+            partner.email,
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(q)
+      );
+    }, [partners, search]);
 
-  async function handleSave(partner: Partner) {
-    const exists = partners.some(
-      (p) => p.id === partner.id
-    );
+  async function handleSave(
+    partner: Partner
+  ) {
+    const exists =
+      partners.some(
+        (p) => p.id === partner.id
+      );
 
     if (exists) {
       await updatePartner(
@@ -69,7 +80,9 @@ export default function PartnersPage() {
         partner
       );
     } else {
-      await createPartner(partner);
+      await createPartner(
+        partner
+      );
     }
 
     setSelectedPartner(null);
@@ -77,9 +90,16 @@ export default function PartnersPage() {
     await loadPartners();
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete partner?"))
+  async function handleDelete(
+    id: string
+  ) {
+    if (
+      !window.confirm(
+        "Delete partner?"
+      )
+    ) {
       return;
+    }
 
     await deletePartner(id);
 
@@ -88,8 +108,78 @@ export default function PartnersPage() {
     await loadPartners();
   }
 
+  async function handleCreateAccount(
+    partner: Partner
+  ) {
+    if (!partner.email) {
+      alert(
+        "Partner must have an email address."
+      );
+      return;
+    }
+
+    if (partner.userId) {
+      alert(
+        "This partner already has a portal account."
+      );
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        `Send a portal invitation to ${partner.email}?`
+      );
+
+    if (!confirmed) return;
+
+    try {
+      const response =
+        await fetch(
+          "/api/partners/create-account",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              partnerId:
+                partner.id,
+            }),
+          }
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ??
+            "Failed to create partner account."
+        );
+      }
+
+      alert(
+        `Portal invitation sent to ${partner.email}.`
+      );
+
+      await loadPartners();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to create partner account."
+      );
+    }
+  }
+
   return (
     <AppLayout>
+
       <div className="space-y-6">
 
         <PageHeader
@@ -113,19 +203,31 @@ export default function PartnersPage() {
           </div>
         ) : (
           <PartnerTable
-            partners={filteredPartners}
-            onEdit={setSelectedPartner}
-            onDelete={handleDelete}
+            partners={
+              filteredPartners
+            }
+            onEdit={
+              setSelectedPartner
+            }
+            onDelete={
+              handleDelete
+            }
+            onCreateAccount={
+              handleCreateAccount
+            }
           />
         )}
 
         <PartnerDialog
           hideTrigger
-          partner={selectedPartner}
+          partner={
+            selectedPartner
+          }
           onSave={handleSave}
         />
 
       </div>
+
     </AppLayout>
   );
 }
