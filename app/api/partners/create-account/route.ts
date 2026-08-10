@@ -1,30 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: NextRequest) {
   try {
-    const { partnerId } =
-      await request.json();
+    const { partnerId, password } = await request.json();
 
     if (!partnerId) {
       return NextResponse.json(
         {
-          error:
-            "Partner ID is required.",
+          error: "Partner ID is required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!password || typeof password !== "string") {
+      return NextResponse.json(
+        {
+          error: "Password is required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        {
+          error: "Password must be at least 6 characters.",
         },
         { status: 400 }
       );
     }
 
     const supabaseUrl =
-      process.env
-        .NEXT_PUBLIC_SUPABASE_URL;
+      process.env.NEXT_PUBLIC_SUPABASE_URL;
 
     const serviceRoleKey =
-      process.env
-        .SUPABASE_SERVICE_ROLE_KEY;
+      process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl) {
       return NextResponse.json(
@@ -46,26 +58,19 @@ export async function POST(
       );
     }
 
-    const supabaseAdmin =
-      createClient(
-        supabaseUrl,
-        serviceRoleKey,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-          },
-        }
-      );
-
-    console.log(
-      "CREATE PARTNER ACCOUNT"
+    const supabaseAdmin = createClient(
+      supabaseUrl,
+      serviceRoleKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
     );
 
-    console.log(
-      "Partner ID:",
-      partnerId
-    );
+    console.log("CREATE / UPDATE PARTNER ACCOUNT");
+    console.log("Partner ID:", partnerId);
 
     // Get partner
     const {
@@ -77,27 +82,13 @@ export async function POST(
       .eq("id", partnerId)
       .maybeSingle();
 
-    console.log(
-      "Partner:",
-      partner
-    );
-
-    console.log(
-      "Partner error:",
-      partnerError
-    );
-
     if (partnerError) {
       return NextResponse.json(
         {
-          error:
-            partnerError.message,
-          details:
-            partnerError.details,
-          hint:
-            partnerError.hint,
-          code:
-            partnerError.code,
+          error: partnerError.message,
+          details: partnerError.details,
+          hint: partnerError.hint,
+          code: partnerError.code,
         },
         { status: 500 }
       );
@@ -106,8 +97,7 @@ export async function POST(
     if (!partner) {
       return NextResponse.json(
         {
-          error:
-            "Partner was not found.",
+          error: "Partner was not found.",
           partnerId,
         },
         { status: 404 }
@@ -124,116 +114,159 @@ export async function POST(
       );
     }
 
+    const email = partner.email.trim();
+
+    let userId: string;
+
+    /*
+     * EXISTING PARTNER ACCOUNT
+     *
+     * If the partner already has a user_id,
+     * update the existing Supabase account
+     * and set the new password.
+     */
     if (partner.user_id) {
-      return NextResponse.json(
-        {
-          error:
-            "This partner already has a portal account.",
-        },
-        { status: 400 }
+      console.log(
+        "Updating existing auth user:",
+        partner.user_id
       );
-    }
 
-    const origin =
-      request.headers.get("origin") ??
-      new URL(request.url).origin;
-
-    const redirectTo =
-      `${origin}/partner`;
-
-    console.log(
-      "Sending invitation to:",
-      partner.email
-    );
-
-    const {
-      data,
-      error,
-    } =
-      await supabaseAdmin.auth.admin
-        .inviteUserByEmail(
-          partner.email.trim(),
+      const {
+        data: updatedUser,
+        error: updateUserError,
+      } =
+        await supabaseAdmin.auth.admin.updateUserById(
+          partner.user_id,
           {
-            data: {
-              partner_id:
-                partner.id,
-
-              partner_name:
-                partner.name,
+            password,
+            email_confirm: true,
+            user_metadata: {
+              partner_id: partner.id,
+              partner_name: partner.name,
             },
-
-            redirectTo,
           }
         );
 
-    if (error) {
-      console.error(
-        "Invite error:",
-        error
+      if (updateUserError) {
+        console.error(
+          "Update auth user error:",
+          updateUserError
+        );
+
+        return NextResponse.json(
+          {
+            error: updateUserError.message,
+          },
+          { status: 500 }
+        );
+      }
+
+      if (!updatedUser.user) {
+        return NextResponse.json(
+          {
+            error:
+              "Supabase did not return the updated user.",
+          },
+          { status: 500 }
+        );
+      }
+
+      userId = updatedUser.user.id;
+    } else {
+      /*
+       * NEW PARTNER ACCOUNT
+       *
+       * Create the Supabase account directly.
+       * No invitation email is sent.
+       */
+      console.log(
+        "Creating new auth user:",
+        email
       );
 
-      return NextResponse.json(
-        {
-          error:
-            error.message,
-        },
-        { status: 500 }
-      );
-    }
+      const {
+        data: createdUser,
+        error: createUserError,
+      } =
+        await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            partner_id: partner.id,
+            partner_name: partner.name,
+          },
+        });
 
-    if (!data.user) {
-      return NextResponse.json(
-        {
-          error:
-            "Supabase did not return the invited user.",
-        },
-        { status: 500 }
-      );
+      if (createUserError) {
+        console.error(
+          "Create auth user error:",
+          createUserError
+        );
+
+        return NextResponse.json(
+          {
+            error: createUserError.message,
+          },
+          { status: 500 }
+        );
+      }
+
+      if (!createdUser.user) {
+        return NextResponse.json(
+          {
+            error:
+              "Supabase did not return the created user.",
+          },
+          { status: 500 }
+        );
+      }
+
+      userId = createdUser.user.id;
+
+      /*
+       * Connect Supabase user to partner
+       */
+      const {
+        error: partnerUpdateError,
+      } = await supabaseAdmin
+        .from("partners")
+        .update({
+          user_id: userId,
+        })
+        .eq("id", partner.id);
+
+      if (partnerUpdateError) {
+        console.error(
+          "Partner update error:",
+          partnerUpdateError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              partnerUpdateError.message,
+            details:
+              partnerUpdateError.details,
+            hint:
+              partnerUpdateError.hint,
+            code:
+              partnerUpdateError.code,
+          },
+          { status: 500 }
+        );
+      }
     }
 
     console.log(
-      "Auth user created:",
-      data.user.id
+      "Partner account ready:",
+      userId
     );
-
-    const {
-      error: updateError,
-    } = await supabaseAdmin
-      .from("partners")
-      .update({
-        user_id:
-          data.user.id,
-      })
-      .eq(
-        "id",
-        partner.id
-      );
-
-    if (updateError) {
-      console.error(
-        "Partner update error:",
-        updateError
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            updateError.message,
-          details:
-            updateError.details,
-          hint:
-            updateError.hint,
-          code:
-            updateError.code,
-        },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json({
       success: true,
-      userId:
-        data.user.id,
+      userId,
+      email,
     });
   } catch (error) {
     console.error(

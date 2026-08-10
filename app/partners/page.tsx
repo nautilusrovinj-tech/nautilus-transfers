@@ -31,6 +31,19 @@ export default function PartnersPage() {
   const [selectedPartner, setSelectedPartner] =
     useState<Partner | null>(null);
 
+  // Partner account dialog
+  const [accountPartner, setAccountPartner] =
+    useState<Partner | null>(null);
+
+  const [accountPassword, setAccountPassword] =
+    useState("");
+
+  const [accountPasswordConfirm, setAccountPasswordConfirm] =
+    useState("");
+
+  const [accountSaving, setAccountSaving] =
+    useState(false);
+
   async function loadPartners() {
     try {
       setLoading(true);
@@ -108,7 +121,7 @@ export default function PartnersPage() {
     await loadPartners();
   }
 
-  async function handleCreateAccount(
+  function handleCreateAccount(
     partner: Partner
   ) {
     if (!partner.email) {
@@ -118,21 +131,60 @@ export default function PartnersPage() {
       return;
     }
 
-    if (partner.userId) {
+    setAccountPartner(partner);
+    setAccountPassword("");
+    setAccountPasswordConfirm("");
+  }
+
+  function closeAccountDialog() {
+    if (accountSaving) {
+      return;
+    }
+
+    setAccountPartner(null);
+    setAccountPassword("");
+    setAccountPasswordConfirm("");
+  }
+
+  async function submitCreateAccount() {
+    if (!accountPartner) {
+      return;
+    }
+
+    if (!accountPartner.email) {
       alert(
-        "This partner already has a portal account."
+        "Partner must have an email address."
       );
       return;
     }
 
-    const confirmed =
-      window.confirm(
-        `Send a portal invitation to ${partner.email}?`
+    if (!accountPassword) {
+      alert(
+        "Please enter a password."
       );
+      return;
+    }
 
-    if (!confirmed) return;
+    if (accountPassword.length < 6) {
+      alert(
+        "Password must be at least 6 characters."
+      );
+      return;
+    }
+
+    if (
+      accountPassword !==
+      accountPasswordConfirm
+    ) {
+      alert(
+        "Passwords do not match."
+      );
+      return;
+    }
 
     try {
+      setAccountSaving(true);
+
       const response =
         await fetch(
           "/api/partners/create-account",
@@ -144,7 +196,9 @@ export default function PartnersPage() {
             },
             body: JSON.stringify({
               partnerId:
-                partner.id,
+                accountPartner.id,
+              password:
+                accountPassword,
             }),
           }
         );
@@ -162,8 +216,12 @@ export default function PartnersPage() {
       }
 
       alert(
-        `Portal invitation sent to ${partner.email}.`
+        accountPartner.userId
+          ? `Password updated for ${accountPartner.email}.`
+          : `Partner account created for ${accountPartner.email}.`
       );
+
+      closeAccountDialog();
 
       await loadPartners();
     } catch (error) {
@@ -174,6 +232,8 @@ export default function PartnersPage() {
           ? error.message
           : "Failed to create partner account."
       );
+    } finally {
+      setAccountSaving(false);
     }
   }
 
@@ -227,6 +287,144 @@ export default function PartnersPage() {
         />
 
       </div>
+
+      {/* Partner Account Dialog */}
+
+      {accountPartner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+
+            {/* Header */}
+
+            <div className="border-b px-6 py-5">
+
+              <h2 className="text-xl font-bold text-slate-900">
+                {accountPartner.userId
+                  ? "Set Partner Password"
+                  : "Create Partner Account"}
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {accountPartner.userId
+                  ? "Set a new password for this existing partner account."
+                  : "Create login credentials for this partner."}
+              </p>
+
+            </div>
+
+            {/* Body */}
+
+            <div className="space-y-5 p-6">
+
+              <div>
+
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Partner
+                </label>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+
+                  <div className="font-semibold text-slate-900">
+                    {accountPartner.name}
+                  </div>
+
+                  <div className="mt-1 text-sm text-slate-500">
+                    {accountPartner.email}
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div>
+
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  value={accountPassword}
+                  onChange={(e) =>
+                    setAccountPassword(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter password"
+                  autoComplete="new-password"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Minimum 6 characters.
+                </p>
+
+              </div>
+
+              <div>
+
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Confirm Password
+                </label>
+
+                <input
+                  type="password"
+                  value={
+                    accountPasswordConfirm
+                  }
+                  onChange={(e) =>
+                    setAccountPasswordConfirm(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Repeat password"
+                  autoComplete="new-password"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+
+              </div>
+
+            </div>
+
+            {/* Footer */}
+
+            <div className="flex items-center justify-end gap-3 border-t bg-slate-50 px-6 py-4">
+
+              <button
+                type="button"
+                onClick={
+                  closeAccountDialog
+                }
+                disabled={accountSaving}
+                className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  submitCreateAccount
+                }
+                disabled={
+                  accountSaving
+                }
+                className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+              >
+                {accountSaving
+                  ? "Saving..."
+                  : accountPartner.userId
+                  ? "Update Password"
+                  : "Create Account"}
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </AppLayout>
   );

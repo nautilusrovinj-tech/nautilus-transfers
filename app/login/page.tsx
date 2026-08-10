@@ -16,7 +16,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
 
     setLoading(true);
@@ -25,30 +27,117 @@ export default function LoginPage() {
     try {
       console.log("Attempting login...");
 
-      const { data, error } =
+      const {
+        data,
+        error: loginError,
+      } =
         await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-      console.log("LOGIN DATA:", data);
-      console.log("LOGIN ERROR:", error);
+      console.log(
+        "LOGIN DATA:",
+        data
+      );
 
-      if (error) {
-        console.error(error);
-        alert(error.message);
-        setError(error.message);
+      console.log(
+        "LOGIN ERROR:",
+        loginError
+      );
+
+      if (loginError) {
+        console.error(loginError);
+
+        setError(
+          loginError.message
+        );
+
         return;
       }
 
       if (!data.user) {
-        alert("Supabase did not return a user.");
+        setError(
+          "Supabase did not return a user."
+        );
+
         return;
       }
 
-      const driver = await getDriverByEmail(
-        data.user.email!
+      const user = data.user;
+
+      console.log(
+        "LOGGED IN USER:",
+        user.id
       );
+
+      console.log(
+        "USER EMAIL:",
+        user.email
+      );
+
+      console.log(
+        "USER METADATA:",
+        user.user_metadata
+      );
+
+      /*
+       * PARTNER LOGIN
+       *
+       * Partner accounts created through
+       * the Partner management page have
+       * partner_id in user metadata.
+       */
+
+      const partnerId =
+        user.user_metadata
+          ?.partner_id;
+
+      if (partnerId) {
+        console.log(
+          "PARTNER LOGIN:",
+          partnerId
+        );
+
+        localStorage.setItem(
+          "role",
+          "partner"
+        );
+
+        localStorage.setItem(
+          "partnerId",
+          partnerId
+        );
+
+        router.replace(
+          "/partner"
+        );
+
+        router.refresh();
+
+        return;
+      }
+
+      /*
+       * DRIVER / DISPATCHER LOGIN
+       *
+       * If there is no partner_id,
+       * continue with the existing
+       * driver/dispatcher logic.
+       */
+
+      if (!user.email) {
+        setError(
+          "User email is missing."
+        );
+
+        return;
+      }
+
+      const driver =
+        await getDriverByEmail(
+          user.email
+        );
 
       if (driver) {
         localStorage.setItem(
@@ -58,31 +147,55 @@ export default function LoginPage() {
 
         localStorage.setItem(
           "role",
-          driver.role ?? "driver"
+          driver.role ??
+            "driver"
         );
 
-        if (driver.role === "dispatcher") {
-          router.replace("/dashboard");
+        if (
+          driver.role ===
+          "dispatcher"
+        ) {
+          router.replace(
+            "/dashboard"
+          );
         } else {
-          router.replace("/driver");
+          router.replace(
+            "/driver"
+          );
         }
-      } else {
-        localStorage.setItem("role", "driver");
-        router.replace("/driver");
+
+        router.refresh();
+
+        return;
       }
 
-      router.refresh();
+      /*
+       * Unknown account
+       */
+
+      setError(
+        "Your account is not connected to a driver, dispatcher, or partner profile."
+      );
     } catch (err) {
-      console.error(err);
-      alert("Unexpected error");
+      console.error(
+        "LOGIN UNEXPECTED ERROR:",
+        err
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unexpected error"
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
 
         <h1 className="mb-2 text-3xl font-bold">
           Nautilus Dispatch
@@ -96,13 +209,16 @@ export default function LoginPage() {
           onSubmit={handleLogin}
           className="space-y-4"
         >
+
           <input
             type="email"
             placeholder="Email"
             className="w-full rounded-lg border p-3"
             value={email}
             onChange={(e) =>
-              setEmail(e.target.value)
+              setEmail(
+                e.target.value
+              )
             }
             required
           />
@@ -113,7 +229,9 @@ export default function LoginPage() {
             className="w-full rounded-lg border p-3"
             value={password}
             onChange={(e) =>
-              setPassword(e.target.value)
+              setPassword(
+                e.target.value
+              )
             }
             required
           />
@@ -133,9 +251,11 @@ export default function LoginPage() {
               ? "Signing in..."
               : "Sign In"}
           </button>
+
         </form>
 
       </div>
+
     </div>
   );
 }

@@ -12,7 +12,7 @@ interface Props {
   onDelete: (id: string) => void;
   onCreateAccount: (
     partner: Partner
-  ) => Promise<void>;
+  ) => void;
 }
 
 export default function PartnerTable({

@@ -10,7 +10,7 @@ interface Props {
   onDelete: (id: string) => void;
   onCreateAccount: (
     partner: Partner
-  ) => Promise<void>;
+  ) => void;
 }
 
 export function getPartnerColumns({
@@ -67,32 +67,25 @@ export function getPartnerColumns({
       id: "portal",
       header: "Portal",
       enableSorting: false,
+
       cell: ({ row }) => {
         const partner =
           row.original;
-
-        if (partner.userId) {
-          return (
-            <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-              Account Active
-            </span>
-          );
-        }
 
         return (
           <Button
             size="sm"
             variant="outline"
-            disabled={
-              !partner.email
-            }
+            disabled={!partner.email}
             onClick={() =>
               onCreateAccount(
                 partner
               )
             }
           >
-            Create Account
+            {partner.userId
+              ? "Set Password"
+              : "Create Account"}
           </Button>
         );
       },

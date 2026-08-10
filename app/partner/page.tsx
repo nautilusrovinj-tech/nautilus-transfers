@@ -3,7 +3,19 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
-export default async function PartnerPage() {
+import PartnerDateFilter from "@/components/partner/PartnerDateFilter";
+import PartnerSignOut from "@/components/partner/PartnerSignOut";
+
+interface PartnerPageProps {
+  searchParams: Promise<{
+    from?: string;
+    to?: string;
+  }>;
+}
+
+export default async function PartnerPage({
+  searchParams,
+}: PartnerPageProps) {
   const supabase = await createClient();
 
   const {
@@ -34,6 +46,10 @@ export default async function PartnerPage() {
 
   let partner = null;
 
+  /*
+   * First try partner_id from
+   * Supabase user metadata.
+   */
   if (metadataPartnerId) {
     const {
       data,
@@ -57,6 +73,10 @@ export default async function PartnerPage() {
     partner = data;
   }
 
+  /*
+   * Fallback:
+   * Find partner using user_id.
+   */
   if (!partner) {
     const {
       data,
@@ -80,6 +100,9 @@ export default async function PartnerPage() {
     partner = data;
   }
 
+  /*
+   * Partner account not connected.
+   */
   if (!partner) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
@@ -130,20 +153,52 @@ export default async function PartnerPage() {
           </p>
 
         </div>
+
       </div>
     );
   }
 
+  /*
+   * DATE FILTER
+   */
+
   const {
-    data: transfers,
-    error: transfersError,
-  } = await supabase
+    from = "",
+    to = "",
+  } = await searchParams;
+
+  /*
+   * LOAD PARTNER TRANSFERS
+   */
+
+  let transfersQuery = supabase
     .from("transfers")
     .select("*")
     .eq(
       "partner_id",
       partner.id
-    )
+    );
+
+  if (from) {
+    transfersQuery =
+      transfersQuery.gte(
+        "date",
+        from
+      );
+  }
+
+  if (to) {
+    transfersQuery =
+      transfersQuery.lte(
+        "date",
+        to
+      );
+  }
+
+  const {
+    data: transfers,
+    error: transfersError,
+  } = await transfersQuery
     .order("date", {
       ascending: true,
     })
@@ -171,14 +226,38 @@ export default async function PartnerPage() {
           </p>
 
         </div>
+
       </div>
     );
   }
 
+  /*
+   * SUMMARY
+   */
+
+  const totalTransfers =
+    transfers?.length ?? 0;
+
+  const upcomingTransfers =
+    (transfers ?? []).filter(
+      (transfer) =>
+        transfer.status !==
+          "Completed" &&
+        transfer.status !==
+          "Cancelled"
+    ).length;
+
+  const completedTransfers =
+    (transfers ?? []).filter(
+      (transfer) =>
+        transfer.status ===
+        "Completed"
+    ).length;
+
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* Header */}
+      {/* HEADER */}
 
       <header className="border-b bg-white">
 
@@ -196,7 +275,7 @@ export default async function PartnerPage() {
 
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
 
             <Link
               href="/partner/new-transfer"
@@ -205,7 +284,9 @@ export default async function PartnerPage() {
               New Transfer
             </Link>
 
-            <div className="text-right">
+            <PartnerSignOut />
+
+            <div className="hidden text-right sm:block">
 
               <p className="font-semibold text-slate-900">
                 {partner.name}
@@ -223,9 +304,11 @@ export default async function PartnerPage() {
 
       </header>
 
-      {/* Content */}
+      {/* CONTENT */}
 
       <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
+
+        {/* WELCOME */}
 
         <div>
 
@@ -242,7 +325,14 @@ export default async function PartnerPage() {
 
         </div>
 
-        {/* Summary */}
+        {/* DATE FILTER */}
+
+        <PartnerDateFilter
+          fromDate={from}
+          toDate={to}
+        />
+
+        {/* SUMMARY */}
 
         <div className="grid gap-4 md:grid-cols-3">
 
@@ -253,7 +343,7 @@ export default async function PartnerPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-slate-900">
-              {transfers?.length ?? 0}
+              {totalTransfers}
             </p>
 
           </div>
@@ -265,15 +355,7 @@ export default async function PartnerPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-blue-600">
-              {
-                (transfers ?? []).filter(
-                  (transfer) =>
-                    transfer.status !==
-                      "Completed" &&
-                    transfer.status !==
-                      "Cancelled"
-                ).length
-              }
+              {upcomingTransfers}
             </p>
 
           </div>
@@ -285,20 +367,14 @@ export default async function PartnerPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-green-600">
-              {
-                (transfers ?? []).filter(
-                  (transfer) =>
-                    transfer.status ===
-                    "Completed"
-                ).length
-              }
+              {completedTransfers}
             </p>
 
           </div>
 
         </div>
 
-        {/* Transfers */}
+        {/* TRANSFERS */}
 
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
 
@@ -312,6 +388,18 @@ export default async function PartnerPage() {
               Transfers associated with your
               partner account.
             </p>
+
+            {(from || to) && (
+              <p className="mt-2 text-xs font-medium text-blue-600">
+                Filtered
+                {from
+                  ? ` from ${from}`
+                  : ""}
+                {to
+                  ? ` to ${to}`
+                  : ""}
+              </p>
+            )}
 
           </div>
 
@@ -453,8 +541,6 @@ export default async function PartnerPage() {
 
                         </td>
 
-                        {/* View */}
-
                         <td className="whitespace-nowrap px-6 py-4 text-right">
 
                           <Link
@@ -479,18 +565,19 @@ export default async function PartnerPage() {
             <div className="p-12 text-center">
 
               <h3 className="text-lg font-semibold text-slate-900">
-                No transfers yet
+                No transfers found
               </h3>
 
               <p className="mt-2 text-sm text-slate-500">
-                Your transfers will appear here.
+                No transfers match the selected
+                date range.
               </p>
 
               <Link
                 href="/partner/new-transfer"
                 className="mt-5 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
-                Create First Transfer
+                Create Transfer
               </Link>
 
             </div>
