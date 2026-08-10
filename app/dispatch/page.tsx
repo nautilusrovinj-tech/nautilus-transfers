@@ -42,7 +42,8 @@ export default function DispatchPage() {
   const [statusFilter, setStatusFilter] =
     useState("All");
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
   const [fromDate, setFromDate] =
     useState(TODAY);
@@ -50,19 +51,27 @@ export default function DispatchPage() {
   const [toDate, setToDate] =
     useState(TODAY);
 
+  const [sendingNotifications, setSendingNotifications] =
+    useState(false);
+
+  const [notificationResult, setNotificationResult] =
+    useState<string | null>(null);
+
   const filteredTransfers = useMemo(() => {
     return transfers.filter((t) => {
       if (
         (fromDate && t.date < fromDate) ||
         (toDate && t.date > toDate)
-      )
+      ) {
         return false;
+      }
 
       if (
         statusFilter !== "All" &&
         t.status !== statusFilter
-      )
+      ) {
         return false;
+      }
 
       if (search.trim()) {
         const value =
@@ -75,21 +84,17 @@ export default function DispatchPage() {
           t.flight,
           t.pickup,
           t.destination,
-          getDriverName(
-            t.driverId
-          ),
-          getVehicleName(
-            t.vehicleId
-          ),
-          getPartnerName(
-            t.partnerId
-          ),
+          getDriverName(t.driverId),
+          getVehicleName(t.vehicleId),
+          getPartnerName(t.partnerId),
         ]
           .join(" ")
           .toLowerCase()
           .includes(value);
 
-        if (!found) return false;
+        if (!found) {
+          return false;
+        }
       }
 
       return true;
@@ -105,14 +110,87 @@ export default function DispatchPage() {
     getPartnerName,
   ]);
 
+  async function handleSendNotifications() {
+    try {
+      setSendingNotifications(true);
+      setNotificationResult(null);
+
+      const response = await fetch(
+        "/api/notifications/run",
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error ||
+            "Failed to send notifications"
+        );
+      }
+
+      const sentCount =
+        data.sent?.length ?? 0;
+
+      const reminderCount =
+        data.remindersSent?.length ?? 0;
+
+      const failedCount =
+        data.failed?.length ?? 0;
+
+      const reminderFailedCount =
+        data.remindersFailed?.length ?? 0;
+
+      setNotificationResult(
+        `Done: ${sentCount} new notification(s), ${reminderCount} reminder(s), ${failedCount + reminderFailedCount} failed.`
+      );
+    } catch (error) {
+      console.error(
+        "Manual notification error:",
+        error
+      );
+
+      setNotificationResult(
+        error instanceof Error
+          ? `Error: ${error.message}`
+          : "Error sending notifications."
+      );
+    } finally {
+      setSendingNotifications(false);
+    }
+  }
+
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
 
         <PageHeader
           title="Dispatch"
           subtitle={`${filteredTransfers.length} transfer(s) • ${fromDate} → ${toDate}`}
         />
+
+        {/* Manual WhatsApp notification button */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSendNotifications}
+            disabled={sendingNotifications}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {sendingNotifications
+              ? "Sending notifications..."
+              : "🔔 Send Driver Notifications"}
+          </button>
+
+          {notificationResult && (
+            <div className="text-sm text-gray-700">
+              {notificationResult}
+            </div>
+          )}
+        </div>
 
         <DispatchSearch
           value={search}
@@ -134,15 +212,9 @@ export default function DispatchPage() {
         <DispatchBoard
           transfers={filteredTransfers}
           onEdit={setEditingTransfer}
-          getDriverPhone={
-            getDriverPhone
-          }
-          onAssignDriver={
-            updateDriver
-          }
-          onAssignVehicle={
-            updateVehicle
-          }
+          getDriverPhone={getDriverPhone}
+          onAssignDriver={updateDriver}
+          onAssignVehicle={updateVehicle}
         />
 
         <TransferDialog
