@@ -7,59 +7,99 @@ function mapTransfer(row: any): Transfer {
   return {
     id: row.id,
 
-    transferNumber: row.transfer_number,
-    transferType: row.transfer_type,
+    transferNumber:
+      row.transfer_number,
 
-    clientName: row.client_name,
-    phone: row.phone ?? "",
-    email: row.email ?? "",
+    transferType:
+      row.transfer_type,
 
-    date: row.date,
-    time: row.time,
+    clientName:
+      row.client_name,
 
-    pickup: row.pickup,
-    destination: row.destination,
-    flight: row.flight ?? "",
+    phone:
+      row.phone ?? "",
 
-    adults: row.adults ?? 0,
-    children: row.children ?? 0,
+    email:
+      row.email ?? "",
+
+    date:
+      row.date,
+
+    time:
+      row.time,
+
+    pickup:
+      row.pickup,
+
+    destination:
+      row.destination,
+
+    flight:
+      row.flight ?? "",
+
+    adults:
+      row.adults ?? 0,
+
+    children:
+      row.children ?? 0,
 
     // Seat types
-    childSeats: row.child_seats ?? 0,
-    babySeats: row.baby_seats ?? 0,
-    boosterSeats: row.booster_seats ?? 0,
+    childSeats:
+      row.child_seats ?? 0,
+
+    babySeats:
+      row.baby_seats ?? 0,
+
+    boosterSeats:
+      row.booster_seats ?? 0,
 
     // Legacy fields
-    driver: row.driver ?? "",
+    driver:
+      row.drivers?.name ??
+      row.driver ??
+      "",
+
     vehicle:
       row.vehicles?.name ??
       row.vehicle ??
       "",
+
     partner:
       row.partners?.name ??
       row.partner ??
       "",
 
     // Relational fields
-    driverId: row.driver_id ?? "",
-    vehicleId: row.vehicle_id ?? "",
-    partnerId: row.partner_id ?? "",
+    driverId:
+      row.driver_id ?? "",
 
-    price: Number(row.price ?? 0),
+    vehicleId:
+      row.vehicle_id ?? "",
+
+    partnerId:
+      row.partner_id ?? "",
+
+    price:
+      Number(row.price ?? 0),
 
     // Payment method
     paymentMethod:
-      row.payment_method ?? "Cash",
+      row.payment_method ??
+      "Cash",
 
-    status: row.status,
+    status:
+      row.status,
 
-    notes: row.notes ?? "",
+    notes:
+      row.notes ?? "",
 
     // Driver completion information
     actualKilometers:
       row.actual_kilometers !== null &&
       row.actual_kilometers !== undefined
-        ? Number(row.actual_kilometers)
+        ? Number(
+            row.actual_kilometers
+          )
         : null,
 
     driverNote:
@@ -68,13 +108,17 @@ function mapTransfer(row: any): Transfer {
     fuelLiters:
       row.fuel_liters !== null &&
       row.fuel_liters !== undefined
-        ? Number(row.fuel_liters)
+        ? Number(
+            row.fuel_liters
+          )
         : null,
 
     fuelCost:
       row.fuel_cost !== null &&
       row.fuel_cost !== undefined
-        ? Number(row.fuel_cost)
+        ? Number(
+            row.fuel_cost
+          )
         : null,
   };
 }
@@ -177,22 +221,47 @@ function mapToDatabase(
   };
 }
 
+/*
+ * GET ALL TRANSFERS
+ *
+ * Loads related:
+ * - Driver
+ * - Vehicle
+ * - Partner
+ */
 export async function getTransfers(): Promise<
   Transfer[]
 > {
-  const { data, error } = await supabase
-    .from("transfers")
-    .select("*")
-    .order("date", {
-      ascending: true,
-    })
-    .order("time", {
-      ascending: true,
-    });
+  const { data, error } =
+    await supabase
+      .from("transfers")
+      .select(`
+        *,
+        drivers:driver_id (
+          name,
+          phone
+        ),
+        vehicles:vehicle_id (
+          name
+        ),
+        partners:partner_id (
+          name
+        )
+      `)
+      .order("date", {
+        ascending: true,
+      })
+      .order("time", {
+        ascending: true,
+      });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-  return (data ?? []).map(mapTransfer);
+  return (data ?? []).map(
+    mapTransfer
+  );
 }
 
 export async function createTransfer(
@@ -222,7 +291,9 @@ export async function createTransfer(
     error
   );
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function updateTransfer(
@@ -237,7 +308,9 @@ export async function updateTransfer(
       )
       .eq("id", id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function deleteTransfer(
@@ -249,7 +322,9 @@ export async function deleteTransfer(
       .delete()
       .eq("id", id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function assignDriver(
@@ -266,8 +341,10 @@ export async function assignDriver(
     await supabase
       .from("transfers")
       .update({
-        driver_id: driverId,
-        status: "Assigned",
+        driver_id:
+          driverId,
+        status:
+          "Assigned",
       })
       .eq("id", transferId)
       .select();
@@ -282,7 +359,9 @@ export async function assignDriver(
     error
   );
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function assignVehicle(
@@ -293,7 +372,8 @@ export async function assignVehicle(
     await supabase
       .from("transfers")
       .update({
-        vehicle_id: vehicleId,
+        vehicle_id:
+          vehicleId,
       })
       .eq("id", transferId)
       .select();
@@ -308,7 +388,9 @@ export async function assignVehicle(
     error
   );
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function updateTransferStatus(
@@ -323,7 +405,9 @@ export async function updateTransferStatus(
       })
       .eq("id", id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function completeTransfer(
@@ -337,7 +421,8 @@ export async function completeTransfer(
     await supabase
       .from("transfers")
       .update({
-        status: "Completed",
+        status:
+          "Completed",
 
         actual_kilometers:
           actualKilometers,
@@ -353,7 +438,9 @@ export async function completeTransfer(
       })
       .eq("id", id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function getDriverTransfers(
@@ -365,6 +452,10 @@ export async function getDriverTransfers(
       .from("transfers")
       .select(`
         *,
+        drivers:driver_id (
+          name,
+          phone
+        ),
         vehicles:vehicle_id (
           name
         ),
@@ -376,7 +467,10 @@ export async function getDriverTransfers(
         "driver_id",
         driverId
       )
-      .eq("date", date)
+      .eq(
+        "date",
+        date
+      )
       .in("status", [
         "Confirmed",
         "Assigned",
@@ -386,7 +480,9 @@ export async function getDriverTransfers(
         ascending: true,
       });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? []).map(
     mapTransfer
