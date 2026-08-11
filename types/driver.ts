@@ -1,6 +1,7 @@
 export type DriverRole =
   | "admin"
-  | "driver";
+  | "driver"
+  | "dispatcher";
 
 export interface Driver {
   id: string;
