@@ -9,9 +9,27 @@ export async function getVehicles(): Promise<Vehicle[]> {
     .select("*")
     .order("name");
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? []) as Vehicle[];
+}
+
+export async function getVehicleById(
+  id: string
+): Promise<Vehicle> {
+  const { data, error } = await supabase
+    .from("vehicles")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as Vehicle;
 }
 
 export async function createVehicle(
@@ -21,7 +39,9 @@ export async function createVehicle(
     .from("vehicles")
     .insert(vehicle);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function updateVehicle(
@@ -33,7 +53,9 @@ export async function updateVehicle(
     .update(vehicle)
     .eq("id", id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function deleteVehicle(
@@ -44,5 +66,7 @@ export async function deleteVehicle(
     .delete()
     .eq("id", id);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }

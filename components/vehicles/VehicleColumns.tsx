@@ -1,7 +1,11 @@
 "use client";
 
+import Link from "next/link";
+
 import { ColumnDef } from "@tanstack/react-table";
+
 import { Button } from "@/components/ui/button";
+
 import { Vehicle } from "@/types/vehicle";
 
 interface Props {
@@ -18,25 +22,25 @@ export function getVehicleColumns({
       accessorKey: "name",
       header: "Vehicle",
     },
+
     {
-      accessorKey: "brand",
-      header: "Brand",
-    },
-    {
-      accessorKey: "model",
-      header: "Model",
-    },
-    {
-      accessorKey: "plate",
+      accessorKey: "registration",
       header: "Registration",
+
+      cell: ({ row }) =>
+        row.original.registration ||
+        "-",
     },
+
     {
       accessorKey: "seats",
       header: "Seats",
     },
+
     {
       accessorKey: "active",
       header: "Status",
+
       cell: ({ row }) => (
         <span
           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
@@ -51,12 +55,27 @@ export function getVehicleColumns({
         </span>
       ),
     },
+
     {
       id: "actions",
+
       header: "",
+
       enableSorting: false,
+
       cell: ({ row }) => (
-        <div className="flex justify-end gap-2">
+        <div className="flex items-center justify-end gap-2">
+
+          <Link
+            href={`/vehicles/${row.original.id}`}
+          >
+            <Button
+              size="sm"
+              variant="outline"
+            >
+              View
+            </Button>
+          </Link>
 
           <Button
             size="sm"

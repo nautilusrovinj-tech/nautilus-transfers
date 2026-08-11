@@ -3,13 +3,23 @@
 import { Vehicle } from "@/types/vehicle";
 
 import EmptyState from "@/components/ui/EmptyState";
+
 import { DataTable } from "@/components/table/DataTable";
-import { getVehicleColumns } from "./VehicleColumns";
+
+import {
+  getVehicleColumns,
+} from "./VehicleColumns";
 
 interface Props {
   vehicles: Vehicle[];
-  onEdit: (vehicle: Vehicle) => void;
-  onDelete: (id: string) => void;
+
+  onEdit: (
+    vehicle: Vehicle
+  ) => void;
+
+  onDelete: (
+    id: string
+  ) => void;
 }
 
 export default function VehicleTable({
@@ -28,6 +38,7 @@ export default function VehicleTable({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+
       <DataTable
         columns={getVehicleColumns({
           onEdit,
@@ -35,6 +46,7 @@ export default function VehicleTable({
         })}
         data={vehicles}
       />
+
     </div>
   );
 }

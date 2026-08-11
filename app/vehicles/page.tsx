@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import AppLayout from "@/components/layout/AppLayout";
+
 import PageHeader from "@/components/ui/PageHeader";
 
 import VehicleTable from "@/components/vehicles/VehicleTable";
+
 import VehicleDialog from "@/components/vehicles/VehicleDialog";
+
 import SearchInput from "@/components/common/SearchInput";
 
 import {
@@ -19,21 +26,47 @@ import {
 import { Vehicle } from "@/types/vehicle";
 
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [
+    vehicles,
+    setVehicles,
+  ] = useState<Vehicle[]>([]);
 
-  const [search, setSearch] = useState("");
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [selectedVehicle, setSelectedVehicle] =
-    useState<Vehicle | null>(null);
+  const [
+    search,
+    setSearch,
+  ] = useState("");
+
+  const [
+    selectedVehicle,
+    setSelectedVehicle,
+  ] = useState<Vehicle | null>(
+    null
+  );
 
   async function loadVehicles() {
     try {
       setLoading(true);
 
-      const data = await getVehicles();
+      const data =
+        await getVehicles();
 
       setVehicles(data);
+    } catch (error) {
+      console.error(
+        "Load vehicles error:",
+        error
+      );
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to load vehicles."
+      );
     } finally {
       setLoading(false);
     }
@@ -43,52 +76,110 @@ export default function VehiclesPage() {
     void loadVehicles();
   }, []);
 
-  const filteredVehicles = useMemo(() => {
-    const q = search.toLowerCase();
+  const filteredVehicles =
+    useMemo(() => {
+      const q =
+        search
+          .trim()
+          .toLowerCase();
 
-    return vehicles.filter((vehicle) =>
-      [
-        vehicle.name,
-        vehicle.registration,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [vehicles, search]);
+      if (!q) {
+        return vehicles;
+      }
 
-  async function handleSave(vehicle: Vehicle) {
-    const exists = vehicles.some(
-      (v) => v.id === vehicle.id
-    );
-
-    if (exists) {
-      await updateVehicle(
-        vehicle.id,
-        vehicle
+      return vehicles.filter(
+        (vehicle) =>
+          [
+            vehicle.name,
+            vehicle.registration,
+            String(
+              vehicle.seats
+            ),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(q)
       );
-    } else {
-      await createVehicle(vehicle);
+    }, [
+      vehicles,
+      search,
+    ]);
+
+  async function handleSave(
+    vehicle: Vehicle
+  ) {
+    const exists =
+      vehicles.some(
+        (v) =>
+          v.id === vehicle.id
+      );
+
+    try {
+      if (exists) {
+        await updateVehicle(
+          vehicle.id,
+          vehicle
+        );
+      } else {
+        await createVehicle(
+          vehicle
+        );
+      }
+
+      setSelectedVehicle(null);
+
+      await loadVehicles();
+    } catch (error) {
+      console.error(
+        "Save vehicle error:",
+        error
+      );
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to save vehicle."
+      );
+
+      throw error;
     }
-
-    setSelectedVehicle(null);
-
-    await loadVehicles();
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete vehicle?"))
+  async function handleDelete(
+    id: string
+  ) {
+    const confirmed =
+      window.confirm(
+        "Delete vehicle?"
+      );
+
+    if (!confirmed) {
       return;
+    }
 
-    await deleteVehicle(id);
+    try {
+      await deleteVehicle(id);
 
-    setSelectedVehicle(null);
+      setSelectedVehicle(null);
 
-    await loadVehicles();
+      await loadVehicles();
+    } catch (error) {
+      console.error(
+        "Delete vehicle error:",
+        error
+      );
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete vehicle."
+      );
+    }
   }
 
   return (
     <AppLayout>
+
       <div className="space-y-6">
 
         <PageHeader
@@ -112,19 +203,28 @@ export default function VehiclesPage() {
           </div>
         ) : (
           <VehicleTable
-            vehicles={filteredVehicles}
-            onEdit={setSelectedVehicle}
-            onDelete={handleDelete}
+            vehicles={
+              filteredVehicles
+            }
+            onEdit={
+              setSelectedVehicle
+            }
+            onDelete={
+              handleDelete
+            }
           />
         )}
 
         <VehicleDialog
           hideTrigger
-          vehicle={selectedVehicle}
+          vehicle={
+            selectedVehicle
+          }
           onSave={handleSave}
         />
 
       </div>
+
     </AppLayout>
   );
 }

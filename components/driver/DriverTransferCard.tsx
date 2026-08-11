@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Transfer } from "@/types/transfer";
 import { googleMapsUrl } from "@/lib/helpers/maps";
 import { guestWhatsAppUrl } from "@/lib/helpers/whatsapp";
+
 import {
   completeTransfer,
   updateTransferStatus,
@@ -112,6 +113,7 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid kilometer value."
         );
+
         setSaving(false);
         return;
       }
@@ -124,6 +126,7 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid fuel amount."
         );
+
         setSaving(false);
         return;
       }
@@ -136,6 +139,7 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid fuel cost."
         );
+
         setSaving(false);
         return;
       }
@@ -149,7 +153,6 @@ export default function DriverTransferCard({
       );
 
       setShowCompletionForm(false);
-
       setActualKilometers("");
       setFuelLiters("");
       setFuelCost("");
@@ -158,7 +161,12 @@ export default function DriverTransferCard({
       onComplete?.();
     } catch (err) {
       console.error(err);
-      alert("Failed to complete transfer.");
+
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to complete transfer."
+      );
     } finally {
       setSaving(false);
     }
@@ -378,6 +386,7 @@ export default function DriverTransferCard({
           {transfer.phone && (
             <>
               <button
+                type="button"
                 onClick={() =>
                   window.open(
                     guestWhatsAppUrl(
@@ -392,6 +401,7 @@ export default function DriverTransferCard({
               </button>
 
               <button
+                type="button"
                 onClick={() =>
                   window.open(
                     `tel:${transfer.phone}`,
@@ -406,6 +416,7 @@ export default function DriverTransferCard({
           )}
 
           <button
+            type="button"
             onClick={() =>
               window.open(
                 googleMapsUrl(
@@ -423,6 +434,7 @@ export default function DriverTransferCard({
           {/* Expand Button */}
 
           <button
+            type="button"
             onClick={() =>
               setExpanded(!expanded)
             }
@@ -579,6 +591,7 @@ export default function DriverTransferCard({
               {/* Real Kilometers */}
 
               <div className="space-y-2">
+
                 <label className="text-sm font-semibold text-slate-700">
                   Real Kilometers
                 </label>
@@ -597,11 +610,13 @@ export default function DriverTransferCard({
                   }
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
+
               </div>
 
               {/* Fuel Liters */}
 
               <div className="space-y-2">
+
                 <label className="text-sm font-semibold text-slate-700">
                   Fuel (liters)
                 </label>
@@ -620,11 +635,13 @@ export default function DriverTransferCard({
                   }
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
+
               </div>
 
               {/* Fuel Cost */}
 
               <div className="space-y-2">
+
                 <label className="text-sm font-semibold text-slate-700">
                   Fuel Cost (€)
                 </label>
@@ -634,7 +651,7 @@ export default function DriverTransferCard({
                   min={0}
                   step="0.01"
                   inputMode="decimal"
-                  placeholder="e.g. 68.40"
+                  placeholder="e.g. 68.50"
                   value={fuelCost}
                   onChange={(e) =>
                     setFuelCost(
@@ -643,11 +660,13 @@ export default function DriverTransferCard({
                   }
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
+
               </div>
 
               {/* Driver Note */}
 
               <div className="space-y-2">
+
                 <label className="text-sm font-semibold text-slate-700">
                   Note
                 </label>
@@ -663,6 +682,7 @@ export default function DriverTransferCard({
                   }
                   className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
+
               </div>
 
               {/* Buttons */}
@@ -672,9 +692,7 @@ export default function DriverTransferCard({
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={
-                    cancelCompletion
-                  }
+                  onClick={cancelCompletion}
                   className="rounded-2xl border border-slate-300 bg-white py-4 text-lg font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
@@ -706,6 +724,7 @@ export default function DriverTransferCard({
           transfer.status === "Confirmed") &&
           !showCompletionForm && (
             <button
+              type="button"
               disabled={saving}
               onClick={startTransfer}
               className="w-full rounded-2xl bg-blue-600 py-5 text-lg font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -721,6 +740,7 @@ export default function DriverTransferCard({
         {transfer.status === "In Progress" &&
           !showCompletionForm && (
             <button
+              type="button"
               disabled={saving}
               onClick={openCompletionForm}
               className="w-full rounded-2xl bg-green-700 py-5 text-lg font-bold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"

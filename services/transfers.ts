@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
 import { Transfer } from "@/types/transfer";
 
+import { createVehicleKilometer } from "@/services/vehicleKilometers";
+import { createVehicleFuel } from "@/services/vehicleFuel";
+
 const supabase = createClient();
 
 function mapTransfer(row: any): Transfer {
@@ -43,7 +46,6 @@ function mapTransfer(row: any): Transfer {
     children:
       row.children ?? 0,
 
-    // Seat types
     childSeats:
       row.child_seats ?? 0,
 
@@ -53,7 +55,6 @@ function mapTransfer(row: any): Transfer {
     boosterSeats:
       row.booster_seats ?? 0,
 
-    // Legacy fields
     driver:
       row.drivers?.name ??
       row.driver ??
@@ -69,7 +70,6 @@ function mapTransfer(row: any): Transfer {
       row.partner ??
       "",
 
-    // Relational fields
     driverId:
       row.driver_id ?? "",
 
@@ -82,7 +82,6 @@ function mapTransfer(row: any): Transfer {
     price:
       Number(row.price ?? 0),
 
-    // Payment method
     paymentMethod:
       row.payment_method ??
       "Cash",
@@ -93,13 +92,10 @@ function mapTransfer(row: any): Transfer {
     notes:
       row.notes ?? "",
 
-    // Driver completion information
     actualKilometers:
       row.actual_kilometers !== null &&
       row.actual_kilometers !== undefined
-        ? Number(
-            row.actual_kilometers
-          )
+        ? Number(row.actual_kilometers)
         : null,
 
     driverNote:
@@ -108,17 +104,13 @@ function mapTransfer(row: any): Transfer {
     fuelLiters:
       row.fuel_liters !== null &&
       row.fuel_liters !== undefined
-        ? Number(
-            row.fuel_liters
-          )
+        ? Number(row.fuel_liters)
         : null,
 
     fuelCost:
       row.fuel_cost !== null &&
       row.fuel_cost !== undefined
-        ? Number(
-            row.fuel_cost
-          )
+        ? Number(row.fuel_cost)
         : null,
   };
 }
@@ -163,7 +155,6 @@ function mapToDatabase(
     children:
       transfer.children,
 
-    // Seat types
     child_seats:
       transfer.childSeats,
 
@@ -173,7 +164,6 @@ function mapToDatabase(
     booster_seats:
       transfer.boosterSeats,
 
-    // Legacy fields
     driver:
       transfer.driver,
 
@@ -183,7 +173,6 @@ function mapToDatabase(
     partner:
       transfer.partner,
 
-    // Relational fields
     driver_id:
       transfer.driverId,
 
@@ -196,7 +185,6 @@ function mapToDatabase(
     price:
       transfer.price,
 
-    // Payment method
     payment_method:
       transfer.paymentMethod,
 
@@ -206,7 +194,6 @@ function mapToDatabase(
     notes:
       transfer.notes,
 
-    // Driver completion information
     actual_kilometers:
       transfer.actualKilometers,
 
@@ -223,11 +210,6 @@ function mapToDatabase(
 
 /*
  * GET ALL TRANSFERS
- *
- * Loads related:
- * - Driver
- * - Vehicle
- * - Partner
  */
 export async function getTransfers(): Promise<
   Transfer[]
@@ -264,6 +246,9 @@ export async function getTransfers(): Promise<
   );
 }
 
+/*
+ * CREATE TRANSFER
+ */
 export async function createTransfer(
   transfer: Partial<Transfer>
 ) {
@@ -296,6 +281,9 @@ export async function createTransfer(
   }
 }
 
+/*
+ * UPDATE TRANSFER
+ */
 export async function updateTransfer(
   id: string,
   transfer: Partial<Transfer>
@@ -313,6 +301,9 @@ export async function updateTransfer(
   }
 }
 
+/*
+ * DELETE TRANSFER
+ */
 export async function deleteTransfer(
   id: string
 ) {
@@ -327,35 +318,30 @@ export async function deleteTransfer(
   }
 }
 
+/*
+ * ASSIGN DRIVER
+ */
 export async function assignDriver(
   transferId: string,
   driverId: string
 ) {
-  console.log(
-    "Assigning:",
-    transferId,
-    driverId
-  );
-
   const { data, error } =
     await supabase
       .from("transfers")
       .update({
-        driver_id:
-          driverId,
-        status:
-          "Assigned",
+        driver_id: driverId,
+        status: "Assigned",
       })
       .eq("id", transferId)
       .select();
 
   console.log(
-    "DATA:",
+    "DRIVER ASSIGN DATA:",
     data
   );
 
   console.log(
-    "ERROR:",
+    "DRIVER ASSIGN ERROR:",
     error
   );
 
@@ -364,6 +350,9 @@ export async function assignDriver(
   }
 }
 
+/*
+ * ASSIGN VEHICLE
+ */
 export async function assignVehicle(
   transferId: string,
   vehicleId: string
@@ -372,8 +361,7 @@ export async function assignVehicle(
     await supabase
       .from("transfers")
       .update({
-        vehicle_id:
-          vehicleId,
+        vehicle_id: vehicleId,
       })
       .eq("id", transferId)
       .select();
@@ -393,6 +381,9 @@ export async function assignVehicle(
   }
 }
 
+/*
+ * UPDATE STATUS
+ */
 export async function updateTransferStatus(
   id: string,
   status: Transfer["status"]
@@ -410,6 +401,12 @@ export async function updateTransferStatus(
   }
 }
 
+/*
+ * COMPLETE TRANSFER
+ *
+ * Also writes the driver's final KM and
+ * fuel information into the assigned vehicle.
+ */
 export async function completeTransfer(
   id: string,
   actualKilometers: number | null,
@@ -417,12 +414,117 @@ export async function completeTransfer(
   fuelLiters: number | null,
   fuelCost: number | null
 ) {
+  /*
+   * First get the transfer so we know which
+   * vehicle was actually assigned.
+   */
+  const {
+    data: transfer,
+    error: transferError,
+  } = await supabase
+    .from("transfers")
+    .select(`
+      id,
+      date,
+      vehicle_id,
+      vehicle,
+      actual_kilometers,
+      fuel_liters,
+      fuel_cost
+    `)
+    .eq("id", id)
+    .single();
+
+  if (transferError) {
+    throw transferError;
+  }
+
+  if (!transfer) {
+    throw new Error(
+      "Transfer not found."
+    );
+  }
+
+  /*
+   * Vehicle is required when the driver
+   * provides vehicle-related information.
+   */
+  if (
+    (actualKilometers !== null ||
+      fuelLiters !== null) &&
+    !transfer.vehicle_id
+  ) {
+    throw new Error(
+      "This transfer has no vehicle assigned. Please assign a vehicle before completing the transfer."
+    );
+  }
+
+  /*
+   * Save KM into vehicle history.
+   */
+  if (
+    actualKilometers !== null &&
+    transfer.vehicle_id
+  ) {
+    await createVehicleKilometer(
+      transfer.vehicle_id,
+      transfer.date,
+      actualKilometers,
+      driverNote
+    );
+  }
+
+  /*
+   * Save fuel into vehicle history.
+   *
+   * The vehicle fuel system expects:
+   * liters
+   * price per liter
+   * total cost
+   * kilometers
+   * station
+   * note
+   */
+  if (
+    fuelLiters !== null &&
+    fuelLiters > 0 &&
+    transfer.vehicle_id
+  ) {
+    const totalCost =
+      fuelCost !== null
+        ? Number(fuelCost.toFixed(2))
+        : 0;
+
+    const pricePerLiter =
+      totalCost > 0
+        ? Number(
+            (
+              totalCost /
+              fuelLiters
+            ).toFixed(3)
+          )
+        : 0;
+
+    await createVehicleFuel(
+      transfer.vehicle_id,
+      transfer.date,
+      fuelLiters,
+      pricePerLiter,
+      totalCost,
+      actualKilometers,
+      "",
+      driverNote
+    );
+  }
+
+  /*
+   * Finally mark the transfer completed.
+   */
   const { error } =
     await supabase
       .from("transfers")
       .update({
-        status:
-          "Completed",
+        status: "Completed",
 
         actual_kilometers:
           actualKilometers,
@@ -443,6 +545,9 @@ export async function completeTransfer(
   }
 }
 
+/*
+ * GET DRIVER TRANSFERS
+ */
 export async function getDriverTransfers(
   driverId: string,
   date: string
