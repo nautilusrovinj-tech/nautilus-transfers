@@ -1,9 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { FileText } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 import { Transfer } from "@/types/transfer";
+
+import { generateTransferOrderPDF } from "./TransferOrderPDF";
 
 interface Actions {
   onEdit: (transfer: Transfer) => void;
@@ -48,21 +52,25 @@ export function getTransferColumns({
       header: "Date",
       size: 110,
     },
+
     {
       accessorKey: "time",
       header: "Time",
       size: 90,
     },
+
     {
       accessorKey: "transferType",
       header: "Type",
       size: 110,
     },
+
     {
       accessorKey: "clientName",
       header: "Client",
       size: 200,
     },
+
     {
       accessorKey: "flight",
       header: "Flight",
@@ -70,16 +78,19 @@ export function getTransferColumns({
       cell: ({ row }) =>
         row.original.flight || "-",
     },
+
     {
       accessorKey: "pickup",
       header: "Pickup",
       size: 220,
     },
+
     {
       accessorKey: "destination",
       header: "Destination",
       size: 220,
     },
+
     {
       id: "driver",
       header: "Driver",
@@ -89,6 +100,7 @@ export function getTransferColumns({
           row.original.driverId
         ) || "Unassigned",
     },
+
     {
       id: "vehicle",
       header: "Vehicle",
@@ -98,6 +110,7 @@ export function getTransferColumns({
           row.original.vehicleId
         ) || "Unassigned",
     },
+
     {
       accessorKey: "price",
       header: "Price",
@@ -105,6 +118,7 @@ export function getTransferColumns({
       cell: ({ row }) =>
         `€${row.original.price.toFixed(2)}`,
     },
+
     {
       accessorKey: "status",
       header: "Status",
@@ -115,38 +129,62 @@ export function getTransferColumns({
         />
       ),
     },
+
     {
       id: "actions",
       header: "",
       enableSorting: false,
-      size: 170,
-      cell: ({ row }) => (
-        <div className="flex justify-end gap-2">
+      size: 300,
 
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              onEdit(row.original)
-            }
-          >
-            Edit
-          </Button>
+      cell: ({ row }) => {
+        const transfer =
+          row.original;
 
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() =>
-              onDelete(
-                row.original.id
-              )
-            }
-          >
-            Delete
-          </Button>
+        return (
+          <div className="flex justify-end gap-2">
 
-        </div>
-      ),
+            <Button
+              size="sm"
+              onClick={() =>
+                generateTransferOrderPDF(
+                  transfer
+                )
+              }
+              className="gap-2 bg-slate-900 text-white shadow-sm hover:bg-slate-800"
+              title="Generate Transfer Order"
+            >
+              <FileText
+                className="h-4 w-4"
+              />
+
+              Transfer Order
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                onEdit(transfer)
+              }
+            >
+              Edit
+            </Button>
+
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() =>
+                onDelete(
+                  transfer.id
+                )
+              }
+            >
+              Delete
+            </Button>
+
+          </div>
+        );
+      },
     },
   ];
 }

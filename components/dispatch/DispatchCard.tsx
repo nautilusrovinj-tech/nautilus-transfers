@@ -13,6 +13,8 @@ import VehicleSelect from "./VehicleSelect";
 
 import { Transfer } from "@/types/transfer";
 
+import { generateTransferOrderPDF } from "@/components/transfers/TransferOrderPDF";
+
 interface Props {
   transfer: Transfer;
   driverPhone: string;
@@ -453,6 +455,29 @@ export default function DispatchCard({
     }
   }
 
+  /*
+   * =====================================================
+   * GENERATE TRANSFER ORDER
+   * =====================================================
+   */
+
+  function handleTransferOrder() {
+    try {
+      generateTransferOrderPDF(
+        transfer
+      );
+    } catch (error) {
+      console.error(
+        "Transfer Order PDF error:",
+        error
+      );
+
+      setGuestConfirmationResult(
+        "Failed to generate Transfer Order."
+      );
+    }
+  }
+
   const adults =
     Number(transfer.adults ?? 0);
 
@@ -508,6 +533,7 @@ export default function DispatchCard({
       <div className="flex items-start justify-between">
 
         <div>
+
           <div className="text-2xl font-bold text-slate-900">
             {transfer.time}
           </div>
@@ -515,6 +541,7 @@ export default function DispatchCard({
           <div className="mt-1 text-lg font-semibold text-slate-900">
             {transfer.clientName}
           </div>
+
         </div>
 
         <div className="space-y-2 text-right">
@@ -852,7 +879,7 @@ export default function DispatchCard({
 
       {/* GUEST CONFIRMATION */}
 
-      <div className="mt-3 flex items-center gap-2 border-t border-slate-200 pt-3">
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
 
         <button
           type="button"
@@ -915,6 +942,16 @@ export default function DispatchCard({
           "both"
             ? "Sending..."
             : "Both"}
+        </button>
+
+        <button
+          type="button"
+          onClick={
+            handleTransferOrder
+          }
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+        >
+          Transfer Order
         </button>
 
       </div>

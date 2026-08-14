@@ -51,8 +51,10 @@ export default function TransferDialog({
   const [saving, setSaving] =
     useState(false);
 
-  const [sendingGuestConfirmation, setSendingGuestConfirmation] =
-    useState(false);
+  const [
+    sendingGuestConfirmation,
+    setSendingGuestConfirmation,
+  ] = useState(false);
 
   const [confirmDelete, setConfirmDelete] =
     useState(false);
