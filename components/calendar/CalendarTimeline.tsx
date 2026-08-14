@@ -5,10 +5,26 @@ import TimelineTransferCard from "./TimelineTransferCard";
 
 interface Props {
   transfers: Transfer[];
+  getDriverPhone?: (
+    driverId?: string | null
+  ) => string;
+  onEdit?: (transfer: Transfer) => void;
+  onAssignDriver?: (
+    transferId: string,
+    driverId: string
+  ) => Promise<void>;
+  onAssignVehicle?: (
+    transferId: string,
+    vehicleId: string
+  ) => Promise<void>;
 }
 
 export default function CalendarTimeline({
   transfers,
+  getDriverPhone,
+  onEdit,
+  onAssignDriver,
+  onAssignVehicle,
 }: Props) {
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -22,7 +38,9 @@ export default function CalendarTimeline({
 
           <p className="mt-1 text-sm text-slate-500">
             {transfers.length} scheduled transfer
-            {transfers.length !== 1 ? "s" : ""}
+            {transfers.length !== 1
+              ? "s"
+              : ""}
           </p>
         </div>
 
@@ -47,12 +65,24 @@ export default function CalendarTimeline({
       ) : (
         <div className="grid gap-5 p-6 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
 
-          {transfers.map((transfer) => (
-            <TimelineTransferCard
-              key={transfer.id}
-              transfer={transfer}
-            />
-          ))}
+          {transfers.map(
+            (transfer) => (
+              <TimelineTransferCard
+                key={transfer.id}
+                transfer={transfer}
+                getDriverPhone={
+                  getDriverPhone
+                }
+                onEdit={onEdit}
+                onAssignDriver={
+                  onAssignDriver
+                }
+                onAssignVehicle={
+                  onAssignVehicle
+                }
+              />
+            )
+          )}
 
         </div>
       )}

@@ -4,46 +4,107 @@ export function mapTransfer(row: any): Transfer {
   return {
     id: row.id,
 
-    transferNumber: row.transfer_number,
+    transferNumber:
+      row.transfer_number,
 
     transferType:
-      row.transfer_type ?? "Arrival",
+      row.transfer_type,
 
-    clientName: row.client_name,
-    phone: row.phone ?? "",
-    email: row.email ?? "",
+    clientName:
+      row.client_name,
 
-    date: row.date,
-    time: row.time,
+    phone:
+      row.phone ?? "",
 
-    pickup: row.pickup,
-    destination: row.destination,
-    flight: row.flight ?? "",
+    email:
+      row.email ?? "",
 
-    adults: row.adults ?? 1,
-    children: row.children ?? 0,
-    childSeats: row.child_seats ?? 0,
-    babySeats: row.baby_seats ?? 0,
-    boosterSeats: row.booster_seats ?? 0,
+    date:
+      row.date,
+
+    time:
+      row.time,
+
+    pickup:
+      row.pickup,
+
+    destination:
+      row.destination,
+
+    flight:
+      row.flight ?? "",
+
+    adults:
+      row.adults ?? 0,
+
+    children:
+      row.children ?? 0,
+
+    childSeats:
+      row.child_seats ?? 0,
+
+    babySeats:
+      row.baby_seats ?? 0,
+
+    boosterSeats:
+      row.booster_seats ?? 0,
 
     // Legacy fields
-    driver: row.driver ?? "",
-    vehicle: row.vehicle ?? "",
-    partner: row.partner ?? "",
+    driver:
+      row.drivers?.name ??
+      row.driver ??
+      "",
+
+    vehicle:
+      row.vehicles?.name ??
+      row.vehicle ??
+      "",
+
+    partner:
+      row.partners?.name ??
+      row.partner ??
+      "",
 
     // Relational fields
-    driverId: row.driver_id ?? "",
-    vehicleId: row.vehicle_id ?? "",
-    partnerId: row.partner_id ?? "",
+    driverId:
+      row.driver_id ?? "",
 
-    price: Number(row.price ?? 0),
+    vehicleId:
+      row.vehicle_id ?? "",
+
+    partnerId:
+      row.partner_id ?? "",
+
+    price:
+      Number(row.price ?? 0),
 
     paymentMethod:
-      row.payment_method ?? "Cash",
+      row.payment_method ??
+      "Cash",
 
-    status: row.status,
+    status:
+      row.status,
 
-    notes: row.notes ?? "",
+    notes:
+      row.notes ?? "",
+
+    // Guest WhatsApp confirmation
+    guestWhatsappSent:
+      row.guest_whatsapp_sent ??
+      false,
+
+    guestWhatsappSentAt:
+      row.guest_whatsapp_sent_at ??
+      null,
+
+    // Guest email confirmation
+    guestEmailSent:
+      row.guest_email_sent ??
+      false,
+
+    guestEmailSentAt:
+      row.guest_email_sent_at ??
+      null,
 
     // Driver completion information
     actualKilometers:
@@ -52,7 +113,8 @@ export function mapTransfer(row: any): Transfer {
         ? Number(row.actual_kilometers)
         : null,
 
-    driverNote: row.driver_note ?? "",
+    driverNote:
+      row.driver_note ?? "",
 
     fuelLiters:
       row.fuel_liters !== null &&
@@ -60,10 +122,10 @@ export function mapTransfer(row: any): Transfer {
         ? Number(row.fuel_liters)
         : null,
 
-        fuelCost:
-  row.fuel_cost !== null &&
-  row.fuel_cost !== undefined
-    ? Number(row.fuel_cost)
-    : null,
+    fuelCost:
+      row.fuel_cost !== null &&
+      row.fuel_cost !== undefined
+        ? Number(row.fuel_cost)
+        : null,
   };
 }

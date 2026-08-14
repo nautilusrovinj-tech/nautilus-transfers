@@ -74,35 +74,17 @@ export default function DispatchPage() {
   const filteredTransfers =
     useMemo(() => {
       return transfers.filter((t) => {
-
         /*
          * NEW PARTNER REQUESTS
-         *
-         * Always allow these through.
-         *
-         * We do NOT want a pending partner
-         * booking to disappear because:
-         *
-         * - Dispatch is showing another date
-         * - Status filter is set to something else
-         *
-         * These requests are handled separately
-         * at the top of DispatchBoard.
          */
         const isNewPartnerRequest =
           t.status === "New" &&
           !!t.partnerId;
 
         if (isNewPartnerRequest) {
-
-          /*
-           * Search still applies so the
-           * search box remains useful.
-           */
           if (search.trim()) {
             const value =
-              search
-                .toLowerCase();
+              search.toLowerCase();
 
             const found = [
               t.transferNumber,
@@ -135,8 +117,6 @@ export default function DispatchPage() {
 
         /*
          * NORMAL TRANSFERS
-         *
-         * Date filter applies normally.
          */
         if (
           (fromDate &&
@@ -147,9 +127,6 @@ export default function DispatchPage() {
           return false;
         }
 
-        /*
-         * Status filter applies normally.
-         */
         if (
           statusFilter !== "All" &&
           t.status !== statusFilter
@@ -157,13 +134,9 @@ export default function DispatchPage() {
           return false;
         }
 
-        /*
-         * Search normal transfers.
-         */
         if (search.trim()) {
           const value =
-            search
-              .toLowerCase();
+            search.toLowerCase();
 
           const found = [
             t.transferNumber,
@@ -264,6 +237,21 @@ export default function DispatchPage() {
     }
   }
 
+  /*
+   * Persistent guest confirmation message.
+   *
+   * This is calculated directly from the
+   * transfers loaded from Supabase.
+   *
+   * Therefore it survives page refresh.
+   */
+  const guestConfirmationTransfers =
+    transfers.filter(
+      (transfer) =>
+        transfer.guestWhatsappSent ||
+        transfer.guestEmailSent
+    );
+
   return (
     <AppLayout>
 
@@ -272,9 +260,14 @@ export default function DispatchPage() {
         <PageHeader
           title="Dispatch"
           subtitle={`${filteredTransfers.length} transfer(s) • ${fromDate} → ${toDate}`}
+          action={
+            <TransferDialog
+              onSave={saveTransfer}
+            />
+          }
         />
 
-        {/* Manual WhatsApp notification button */}
+        {/* Driver notifications */}
 
         <div className="flex items-center gap-3">
 
@@ -300,6 +293,22 @@ export default function DispatchPage() {
           )}
 
         </div>
+
+        {/*
+         * PERSISTENT GUEST CONFIRMATION
+         *
+         * This message is based on data stored
+         * in Supabase and therefore remains after
+         * refreshing the page.
+         */}
+
+        {guestConfirmationTransfers.length >
+          0 && (
+          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+            Guest WhatsApp and email
+            confirmations sent.
+          </div>
+        )}
 
         <DispatchSearch
           value={search}

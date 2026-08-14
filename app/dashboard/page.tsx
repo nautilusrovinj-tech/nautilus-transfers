@@ -6,10 +6,13 @@ import PageHeader from "@/components/ui/PageHeader";
 import OperationsOverview from "@/components/dashboard/OperationsOverview";
 import RecentTransfers from "@/components/dashboard/RecentTransfers";
 import VehicleAlerts from "@/components/dashboard/VehicleAlerts";
+import PriceList from "@/components/dashboard/PriceList";
 
 import DispatchStats from "@/components/dispatch/DispatchStats";
 import NextPickupCard from "@/components/dispatch/NextPickupCard";
 import AttentionPanel from "@/components/dispatch/AttentionPanel";
+
+import TransferDialog from "@/components/transfers/TransferDialog";
 
 import { useTransfers } from "@/hooks/useTransfers";
 
@@ -17,6 +20,7 @@ export default function DashboardPage() {
   const {
     transfers,
     loading,
+    saveTransfer,
   } = useTransfers();
 
   if (loading) {
@@ -61,6 +65,11 @@ export default function DashboardPage() {
         <PageHeader
           title="Dashboard"
           subtitle="Operations overview"
+          action={
+            <TransferDialog
+              onSave={saveTransfer}
+            />
+          }
         />
 
         <OperationsOverview
@@ -88,8 +97,6 @@ export default function DashboardPage() {
           revenue={revenue}
         />
 
-        {/* Vehicle warnings */}
-
         <VehicleAlerts />
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -110,6 +117,8 @@ export default function DashboardPage() {
         <RecentTransfers
           transfers={transfers}
         />
+
+        <PriceList />
 
       </div>
     </AppLayout>

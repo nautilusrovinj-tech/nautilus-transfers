@@ -36,16 +36,21 @@ export interface Transfer {
 
   adults: number;
   children: number;
+
   childSeats: number;
   babySeats: number;
   boosterSeats: number;
 
-  // Legacy fields
+  /*
+   * Legacy fields
+   */
   driver: string;
   vehicle: string;
   partner: string;
 
-  // Relational fields
+  /*
+   * Relational fields
+   */
   driverId: string;
   vehicleId: string;
   partnerId: string;
@@ -58,9 +63,25 @@ export interface Transfer {
 
   notes: string;
 
-  // Driver completion information
+  /*
+   * Driver completion information
+   */
   actualKilometers: number | null;
   driverNote: string;
+
   fuelLiters: number | null;
   fuelCost: number | null;
+
+  /*
+   * Guest communication status
+   *
+   * These fields are stored in Supabase
+   * so the notification status survives
+   * page refreshes and new sessions.
+   */
+  guestWhatsappSent: boolean;
+  guestWhatsappSentAt: string | null;
+
+  guestEmailSent: boolean;
+  guestEmailSentAt: string | null;
 }

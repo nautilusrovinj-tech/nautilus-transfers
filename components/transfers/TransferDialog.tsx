@@ -47,7 +47,13 @@ export default function TransferDialog({
   hideTrigger = false,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [sendingGuestConfirmation, setSendingGuestConfirmation] =
+    useState(false);
+
   const [confirmDelete, setConfirmDelete] =
     useState(false);
 
@@ -61,15 +67,21 @@ export default function TransferDialog({
       setCurrentTransfer(transfer);
       setOpen(true);
     } else {
-      setCurrentTransfer(createEmptyTransfer());
+      setCurrentTransfer(
+        createEmptyTransfer()
+      );
     }
   }, [transfer]);
 
-  function handleOpenChange(value: boolean) {
+  function handleOpenChange(
+    value: boolean
+  ) {
     setOpen(value);
 
     if (!value) {
-      setCurrentTransfer(createEmptyTransfer());
+      setCurrentTransfer(
+        createEmptyTransfer()
+      );
     }
   }
 
@@ -80,33 +92,144 @@ export default function TransferDialog({
       await onSave(currentTransfer);
 
       setOpen(false);
-      setCurrentTransfer(createEmptyTransfer());
+
+      setCurrentTransfer(
+        createEmptyTransfer()
+      );
     } catch (error) {
       console.error(error);
-      alert("Failed to save transfer.");
+
+      alert(
+        "Failed to save transfer."
+      );
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete() {
-    if (!onDelete || !currentTransfer.id) return;
+    if (
+      !onDelete ||
+      !currentTransfer.id
+    ) {
+      return;
+    }
 
-    await onDelete(currentTransfer.id);
+    await onDelete(
+      currentTransfer.id
+    );
 
     setConfirmDelete(false);
     setOpen(false);
 
-    setCurrentTransfer(createEmptyTransfer());
+    setCurrentTransfer(
+      createEmptyTransfer()
+    );
   }
 
   function handleDuplicate() {
     setCurrentTransfer({
       ...currentTransfer,
+
       id: crypto.randomUUID(),
-      transferNumber: generateTransferNumber(),
+
+      transferNumber:
+        generateTransferNumber(),
+
       status: "New",
     });
+  }
+
+  /*
+   * =====================================================
+   * SEND GUEST WHATSAPP CONFIRMATION
+   * =====================================================
+   */
+
+  async function handleSendGuestWhatsApp() {
+    if (!currentTransfer.id) {
+      alert(
+        "Please save the transfer before sending the guest confirmation."
+      );
+
+      return;
+    }
+
+    if (!currentTransfer.phone) {
+      alert(
+        "This guest does not have a phone number."
+      );
+
+      return;
+    }
+
+    try {
+      setSendingGuestConfirmation(
+        true
+      );
+
+      const response =
+        await fetch(
+          "/api/guest-confirmation/whatsapp",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              transferId:
+                currentTransfer.id,
+            }),
+          }
+        );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        console.error(
+          "Guest WhatsApp error:",
+          result
+        );
+
+        const errorMessage =
+          typeof result.error ===
+          "string"
+            ? result.error
+            : "Failed to send guest WhatsApp confirmation.";
+
+        throw new Error(
+          errorMessage
+        );
+      }
+
+      console.log(
+        "Guest WhatsApp confirmation sent:",
+        result
+      );
+
+      alert(
+        "Guest WhatsApp confirmation sent successfully."
+      );
+    } catch (error) {
+      console.error(
+        "Guest WhatsApp confirmation error:",
+        error
+      );
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to send guest WhatsApp confirmation."
+      );
+    } finally {
+      setSendingGuestConfirmation(
+        false
+      );
+    }
   }
 
   return (
@@ -114,7 +237,10 @@ export default function TransferDialog({
       {!hideTrigger && (
         <Button
           onClick={() => {
-            setCurrentTransfer(createEmptyTransfer());
+            setCurrentTransfer(
+              createEmptyTransfer()
+            );
+
             setOpen(true);
           }}
         >
@@ -124,7 +250,9 @@ export default function TransferDialog({
 
       <Dialog
         open={open}
-        onOpenChange={handleOpenChange}
+        onOpenChange={
+          handleOpenChange
+        }
       >
         <DialogContent
           style={{
@@ -153,84 +281,143 @@ export default function TransferDialog({
 
               <AIBookingImport
                 onImport={(booking) =>
-                  setCurrentTransfer((prev) => ({
-                    ...prev,
+                  setCurrentTransfer(
+                    (prev) => ({
+                      ...prev,
 
-                    transferType:
-                      booking.transferType ??
-                      prev.transferType,
+                      transferType:
+                        booking.transferType ??
+                        prev.transferType,
 
-                    date:
-                      booking.date ??
-                      prev.date,
+                      date:
+                        booking.date ??
+                        prev.date,
 
-                    time:
-                      booking.time ??
-                      prev.time,
+                      time:
+                        booking.time ??
+                        prev.time,
 
-                    pickup:
-                      booking.pickup ??
-                      prev.pickup,
+                      pickup:
+                        booking.pickup ??
+                        prev.pickup,
 
-                    destination:
-                      booking.destination ??
-                      prev.destination,
+                      destination:
+                        booking.destination ??
+                        prev.destination,
 
-                    clientName:
-                      booking.clientName ??
-                      prev.clientName,
+                      clientName:
+                        booking.clientName ??
+                        prev.clientName,
 
-                    phone:
-                      booking.phone ??
-                      prev.phone,
+                      phone:
+                        booking.phone ??
+                        prev.phone,
 
-                    email:
-                      booking.email ??
-                      prev.email,
+                      email:
+                        booking.email ??
+                        prev.email,
 
-                    flight:
-                      booking.flight ??
-                      prev.flight,
+                      flight:
+                        booking.flight ??
+                        prev.flight,
 
-                    adults:
-                      booking.adults ??
-                      prev.adults,
+                      adults:
+                        booking.adults ??
+                        prev.adults,
 
-                    children:
-                      booking.children ??
-                      prev.children,
+                      children:
+                        booking.children ??
+                        prev.children,
 
-                    babySeats:
-                      booking.babySeats ??
-                      prev.babySeats,
+                      babySeats:
+                        booking.babySeats ??
+                        prev.babySeats,
 
-                    boosterSeats:
-                      booking.boosterSeats ??
-                      prev.boosterSeats,
+                      boosterSeats:
+                        booking.boosterSeats ??
+                        prev.boosterSeats,
 
-                    vehicle:
-                      booking.vehicle ??
-                      prev.vehicle,
+                      vehicle:
+                        booking.vehicle ??
+                        prev.vehicle,
 
-                    partner:
-                      booking.partner ??
-                      prev.partner,
+                      partner:
+                        booking.partner ??
+                        prev.partner,
 
-                    price:
-                      booking.price ??
-                      prev.price,
+                      price:
+                        booking.price ??
+                        prev.price,
 
-                    notes:
-                      booking.notes ??
-                      prev.notes,
-                  }))
+                      notes:
+                        booking.notes ??
+                        prev.notes,
+                    })
+                  )
                 }
               />
 
               <TransferForm
-                transfer={currentTransfer}
-                setTransfer={setCurrentTransfer}
+                transfer={
+                  currentTransfer
+                }
+                setTransfer={
+                  setCurrentTransfer
+                }
               />
+
+              {editing && (
+                <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+
+                  <div className="mb-4">
+
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      Guest Confirmation
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Manually send the transfer confirmation to the guest.
+                    </p>
+
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={
+                        handleSendGuestWhatsApp
+                      }
+                      disabled={
+                        sendingGuestConfirmation
+                      }
+                    >
+                      {sendingGuestConfirmation
+                        ? "Sending..."
+                        : "Send WhatsApp"}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled
+                    >
+                      Send Email
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled
+                    >
+                      WhatsApp + Email
+                    </Button>
+
+                  </div>
+
+                </div>
+              )}
 
             </div>
 
@@ -242,7 +429,9 @@ export default function TransferDialog({
                   <>
                     <Button
                       variant="secondary"
-                      onClick={handleDuplicate}
+                      onClick={
+                        handleDuplicate
+                      }
                     >
                       Duplicate
                     </Button>
@@ -250,7 +439,9 @@ export default function TransferDialog({
                     <Button
                       variant="destructive"
                       onClick={() =>
-                        setConfirmDelete(true)
+                        setConfirmDelete(
+                          true
+                        )
                       }
                     >
                       Delete
@@ -292,7 +483,9 @@ export default function TransferDialog({
 
       <AlertDialog
         open={confirmDelete}
-        onOpenChange={setConfirmDelete}
+        onOpenChange={
+          setConfirmDelete
+        }
       >
         <AlertDialogContent>
 
@@ -315,7 +508,9 @@ export default function TransferDialog({
             </AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={
+                handleDelete
+              }
             >
               Delete
             </AlertDialogAction>

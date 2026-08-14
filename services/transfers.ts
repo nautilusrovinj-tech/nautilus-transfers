@@ -1,3 +1,5 @@
+// services/transfers.ts
+
 import { createClient } from "@/lib/supabase/client";
 import { Transfer } from "@/types/transfer";
 
@@ -95,7 +97,9 @@ function mapTransfer(row: any): Transfer {
     actualKilometers:
       row.actual_kilometers !== null &&
       row.actual_kilometers !== undefined
-        ? Number(row.actual_kilometers)
+        ? Number(
+            row.actual_kilometers
+          )
         : null,
 
     driverNote:
@@ -104,14 +108,36 @@ function mapTransfer(row: any): Transfer {
     fuelLiters:
       row.fuel_liters !== null &&
       row.fuel_liters !== undefined
-        ? Number(row.fuel_liters)
+        ? Number(
+            row.fuel_liters
+          )
         : null,
 
     fuelCost:
       row.fuel_cost !== null &&
       row.fuel_cost !== undefined
-        ? Number(row.fuel_cost)
+        ? Number(
+            row.fuel_cost
+          )
         : null,
+
+    guestWhatsappSent:
+      Boolean(
+        row.guest_whatsapp_sent
+      ),
+
+    guestWhatsappSentAt:
+      row.guest_whatsapp_sent_at ??
+      null,
+
+    guestEmailSent:
+      Boolean(
+        row.guest_email_sent
+      ),
+
+    guestEmailSentAt:
+      row.guest_email_sent_at ??
+      null,
   };
 }
 
@@ -208,34 +234,33 @@ function mapToDatabase(
   };
 }
 
-/*
- * GET ALL TRANSFERS
- */
 export async function getTransfers(): Promise<
   Transfer[]
 > {
-  const { data, error } =
-    await supabase
-      .from("transfers")
-      .select(`
-        *,
-        drivers:driver_id (
-          name,
-          phone
-        ),
-        vehicles:vehicle_id (
-          name
-        ),
-        partners:partner_id (
-          name
-        )
-      `)
-      .order("date", {
-        ascending: true,
-      })
-      .order("time", {
-        ascending: true,
-      });
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("transfers")
+    .select(`
+      *,
+      drivers:driver_id (
+        name,
+        phone
+      ),
+      vehicles:vehicle_id (
+        name
+      ),
+      partners:partner_id (
+        name
+      )
+    `)
+    .order("date", {
+      ascending: true,
+    })
+    .order("time", {
+      ascending: true,
+    });
 
   if (error) {
     throw error;
@@ -246,94 +271,75 @@ export async function getTransfers(): Promise<
   );
 }
 
-/*
- * CREATE TRANSFER
- */
 export async function createTransfer(
   transfer: Partial<Transfer>
 ) {
   const payload =
     mapToDatabase(transfer);
 
-  console.log(
-    "INSERT PAYLOAD:",
-    payload
-  );
-
-  const { data, error } =
-    await supabase
-      .from("transfers")
-      .insert(payload)
-      .select();
-
-  console.log(
-    "INSERT DATA:",
-    data
-  );
-
-  console.log(
-    "INSERT ERROR:",
-    error
-  );
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("transfers")
+    .insert(payload)
+    .select();
 
   if (error) {
     throw error;
   }
+
+  return data;
 }
 
-/*
- * UPDATE TRANSFER
- */
 export async function updateTransfer(
   id: string,
   transfer: Partial<Transfer>
 ) {
-  const { error } =
-    await supabase
-      .from("transfers")
-      .update(
-        mapToDatabase(transfer)
-      )
-      .eq("id", id);
+  const {
+    error,
+  } = await supabase
+    .from("transfers")
+    .update(
+      mapToDatabase(transfer)
+    )
+    .eq("id", id);
 
   if (error) {
     throw error;
   }
 }
 
-/*
- * DELETE TRANSFER
- */
 export async function deleteTransfer(
   id: string
 ) {
-  const { error } =
-    await supabase
-      .from("transfers")
-      .delete()
-      .eq("id", id);
+  const {
+    error,
+  } = await supabase
+    .from("transfers")
+    .delete()
+    .eq("id", id);
 
   if (error) {
     throw error;
   }
 }
 
-/*
- * ASSIGN DRIVER
- */
 export async function assignDriver(
   transferId: string,
   driverId: string
 ) {
-  const { data, error } =
-    await supabase
-      .from("transfers")
-      .update({
-        driver_id: driverId,
-        status: "Assigned",
-      })
-      .eq("id", transferId)
-      .select();
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("transfers")
+    .update({
+      driver_id: driverId,
+      status: "Assigned",
+    })
+    .eq("id", transferId)
+    .select();
 
   console.log(
     "DRIVER ASSIGN DATA:",
@@ -350,21 +356,20 @@ export async function assignDriver(
   }
 }
 
-/*
- * ASSIGN VEHICLE
- */
 export async function assignVehicle(
   transferId: string,
   vehicleId: string
 ) {
-  const { data, error } =
-    await supabase
-      .from("transfers")
-      .update({
-        vehicle_id: vehicleId,
-      })
-      .eq("id", transferId)
-      .select();
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("transfers")
+    .update({
+      vehicle_id: vehicleId,
+    })
+    .eq("id", transferId)
+    .select();
 
   console.log(
     "VEHICLE DATA:",
@@ -381,32 +386,24 @@ export async function assignVehicle(
   }
 }
 
-/*
- * UPDATE STATUS
- */
 export async function updateTransferStatus(
   id: string,
   status: Transfer["status"]
 ) {
-  const { error } =
-    await supabase
-      .from("transfers")
-      .update({
-        status,
-      })
-      .eq("id", id);
+  const {
+    error,
+  } = await supabase
+    .from("transfers")
+    .update({
+      status,
+    })
+    .eq("id", id);
 
   if (error) {
     throw error;
   }
 }
 
-/*
- * COMPLETE TRANSFER
- *
- * Also writes the driver's final KM and
- * fuel information into the assigned vehicle.
- */
 export async function completeTransfer(
   id: string,
   actualKilometers: number | null,
@@ -414,10 +411,6 @@ export async function completeTransfer(
   fuelLiters: number | null,
   fuelCost: number | null
 ) {
-  /*
-   * First get the transfer so we know which
-   * vehicle was actually assigned.
-   */
   const {
     data: transfer,
     error: transferError,
@@ -445,10 +438,6 @@ export async function completeTransfer(
     );
   }
 
-  /*
-   * Vehicle is required when the driver
-   * provides vehicle-related information.
-   */
   if (
     (actualKilometers !== null ||
       fuelLiters !== null) &&
@@ -459,9 +448,6 @@ export async function completeTransfer(
     );
   }
 
-  /*
-   * Save KM into vehicle history.
-   */
   if (
     actualKilometers !== null &&
     transfer.vehicle_id
@@ -474,17 +460,6 @@ export async function completeTransfer(
     );
   }
 
-  /*
-   * Save fuel into vehicle history.
-   *
-   * The vehicle fuel system expects:
-   * liters
-   * price per liter
-   * total cost
-   * kilometers
-   * station
-   * note
-   */
   if (
     fuelLiters !== null &&
     fuelLiters > 0 &&
@@ -492,7 +467,9 @@ export async function completeTransfer(
   ) {
     const totalCost =
       fuelCost !== null
-        ? Number(fuelCost.toFixed(2))
+        ? Number(
+            fuelCost.toFixed(2)
+          )
         : 0;
 
     const pricePerLiter =
@@ -517,73 +494,70 @@ export async function completeTransfer(
     );
   }
 
-  /*
-   * Finally mark the transfer completed.
-   */
-  const { error } =
-    await supabase
-      .from("transfers")
-      .update({
-        status: "Completed",
+  const {
+    error,
+  } = await supabase
+    .from("transfers")
+    .update({
+      status: "Completed",
 
-        actual_kilometers:
-          actualKilometers,
+      actual_kilometers:
+        actualKilometers,
 
-        driver_note:
-          driverNote,
+      driver_note:
+        driverNote,
 
-        fuel_liters:
-          fuelLiters,
+      fuel_liters:
+        fuelLiters,
 
-        fuel_cost:
-          fuelCost,
-      })
-      .eq("id", id);
+      fuel_cost:
+        fuelCost,
+    })
+    .eq("id", id);
 
   if (error) {
     throw error;
   }
 }
 
-/*
- * GET DRIVER TRANSFERS
- */
 export async function getDriverTransfers(
   driverId: string,
   date: string
 ): Promise<Transfer[]> {
-  const { data, error } =
-    await supabase
-      .from("transfers")
-      .select(`
-        *,
-        drivers:driver_id (
-          name,
-          phone
-        ),
-        vehicles:vehicle_id (
-          name
-        ),
-        partners:partner_id (
-          name
-        )
-      `)
-      .eq(
-        "driver_id",
-        driverId
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("transfers")
+    .select(`
+      *,
+      drivers:driver_id (
+        name,
+        phone
+      ),
+      vehicles:vehicle_id (
+        name
+      ),
+      partners:partner_id (
+        name
       )
-      .eq(
-        "date",
-        date
-      )
-      .in("status", [
-        "Confirmed",
-        "Assigned",
-        "In Progress",
-      ])
-      .order("time", {
-        ascending: true,
-      });
+    `)
+    .eq(
+      "driver_id",
+      driverId
+    )
+    .eq(
+      "date",
+      date
+    )
+    .in("status", [
+      "Confirmed",
+      "Assigned",
+      "In Progress",
+    ])
+    .order("time", {
+      ascending: true,
+    });
 
   if (error) {
     throw error;

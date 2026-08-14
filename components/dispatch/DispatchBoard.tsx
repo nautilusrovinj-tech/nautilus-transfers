@@ -347,7 +347,7 @@ export default function DispatchBoard({
             No confirmed transfers for the selected period.
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-2">
 
             {dispatchTransfers.map(
               (transfer) => (

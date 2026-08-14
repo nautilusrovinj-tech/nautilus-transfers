@@ -214,12 +214,20 @@ export function mapTransfer(
 
     status: "New",
 
-notes: "",
+    notes: "",
 
-// Driver completion information
-actualKilometers: null,
-driverNote: "",
-fuelLiters: null,
-fuelCost: null,
+    // Guest WhatsApp confirmation
+    guestWhatsappSent: false,
+    guestWhatsappSentAt: null,
+
+    // Guest email confirmation
+    guestEmailSent: false,
+    guestEmailSentAt: null,
+
+    // Driver completion information
+    actualKilometers: null,
+    driverNote: "",
+    fuelLiters: null,
+    fuelCost: null,
   };
 }

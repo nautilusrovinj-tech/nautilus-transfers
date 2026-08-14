@@ -1,6 +1,10 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import {
+  Suspense,
+  useMemo,
+  useState,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 import AppLayout from "@/components/layout/AppLayout";
@@ -17,17 +21,34 @@ import DriverLaneView from "@/components/calendar/DriverLaneView";
 import DriverSchedule from "@/components/calendar/DriverSchedule";
 import DriverWorkload from "@/components/calendar/DriverWorkload";
 import UnassignedTransfers from "@/components/calendar/UnassignedTransfers";
+import TransferDialog from "@/components/transfers/TransferDialog";
 
 import { useTransfers } from "@/hooks/useTransfers";
+import { useLookups } from "@/hooks/useLookups";
+
+import { Transfer } from "@/types/transfer";
 
 function CalendarContent() {
-  const { transfers } = useTransfers();
+  const {
+    transfers,
+    saveTransfer,
+    removeTransfer,
+    updateDriver,
+    updateVehicle,
+  } = useTransfers();
 
-  const searchParams = useSearchParams();
+  const {
+    getDriverPhone,
+  } = useLookups();
+
+  const searchParams =
+    useSearchParams();
 
   const initialDate =
     searchParams.get("date") ??
-    new Date().toISOString().split("T")[0];
+    new Date()
+      .toISOString()
+      .split("T")[0];
 
   const [date, setDate] =
     useState(initialDate);
@@ -35,14 +56,22 @@ function CalendarContent() {
   const [status, setStatus] =
     useState("All");
 
-  const [view, setView] = useState<
-    "cards" | "timeline"
-  >("cards");
+  const [view, setView] =
+    useState<"cards" | "timeline">(
+      "cards"
+    );
+
+  const [
+    editingTransfer,
+    setEditingTransfer,
+  ] = useState<Transfer | null>(null);
 
   const dayTransfers = useMemo(() => {
     return transfers
       .filter((t) => {
-        if (t.date !== date) return false;
+        if (t.date !== date) {
+          return false;
+        }
 
         if (
           status !== "All" &&
@@ -56,26 +85,38 @@ function CalendarContent() {
       .sort((a, b) =>
         a.time.localeCompare(b.time)
       );
-  }, [transfers, date, status]);
+  }, [
+    transfers,
+    date,
+    status,
+  ]);
 
   const stats = useMemo(() => {
     return {
-      transfers: dayTransfers.length,
+      transfers:
+        dayTransfers.length,
 
-      arrivals: dayTransfers.filter(
-        (t) =>
-          t.transferType === "Arrival"
-      ).length,
+      arrivals:
+        dayTransfers.filter(
+          (t) =>
+            t.transferType ===
+            "Arrival"
+        ).length,
 
-      departures: dayTransfers.filter(
-        (t) =>
-          t.transferType === "Departure"
-      ).length,
+      departures:
+        dayTransfers.filter(
+          (t) =>
+            t.transferType ===
+            "Departure"
+        ).length,
 
-      revenue: dayTransfers.reduce(
-        (sum, t) => sum + t.price,
-        0,
-      ),
+      revenue:
+        dayTransfers.reduce(
+          (sum, t) =>
+            sum +
+            Number(t.price ?? 0),
+          0
+        ),
     };
   }, [dayTransfers]);
 
@@ -86,6 +127,11 @@ function CalendarContent() {
         <PageHeader
           title="Daily Planner"
           subtitle="Daily planning and driver allocation"
+          action={
+            <TransferDialog
+              onSave={saveTransfer}
+            />
+          }
         />
 
         <CalendarToolbar
@@ -127,6 +173,20 @@ function CalendarContent() {
         ) : (
           <CalendarTimeline
             transfers={dayTransfers}
+            getDriverPhone={(driverId) =>
+              getDriverPhone(
+                driverId ?? undefined
+              )
+            }
+            onEdit={
+              setEditingTransfer
+            }
+            onAssignDriver={
+              updateDriver
+            }
+            onAssignVehicle={
+              updateVehicle
+            }
           />
         )}
 
@@ -144,6 +204,15 @@ function CalendarContent() {
 
         <UnassignedTransfers
           transfers={dayTransfers}
+        />
+
+        <TransferDialog
+          transfer={
+            editingTransfer
+          }
+          onSave={saveTransfer}
+          onDelete={removeTransfer}
+          hideTrigger
         />
 
       </div>
