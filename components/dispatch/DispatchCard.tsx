@@ -14,6 +14,7 @@ import VehicleSelect from "./VehicleSelect";
 import { Transfer } from "@/types/transfer";
 
 import { generateTransferOrderPDF } from "@/components/transfers/TransferOrderPDF";
+import { generatePaymentReceiptPDF } from "@/components/transfers/PaymentReceiptPDF";
 
 interface Props {
   transfer: Transfer;
@@ -47,12 +48,6 @@ export default function DispatchCard({
     setSendingGuestConfirmation,
   ] = useState<ConfirmationMethod>(null);
 
-  /*
-   * These states are initialized from the database.
-   *
-   * Therefore they survive a page refresh because
-   * the transfer object is loaded again from Supabase.
-   */
   const [
     whatsappSent,
     setWhatsappSent,
@@ -117,12 +112,6 @@ export default function DispatchCard({
     }
   }
 
-  /*
-   * =====================================================
-   * SEND GUEST WHATSAPP
-   * =====================================================
-   */
-
   async function sendGuestWhatsApp() {
     if (!transfer.phone) {
       setGuestConfirmationResult(
@@ -146,20 +135,16 @@ export default function DispatchCard({
         "/api/guest-confirmation/whatsapp",
         {
           method: "POST",
-
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             transferId: transfer.id,
           }),
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (
         !response.ok ||
@@ -171,20 +156,12 @@ export default function DispatchCard({
             : data.error?.message
               ? data.error.message
               : data.error
-                ? JSON.stringify(
-                    data.error
-                  )
+                ? JSON.stringify(data.error)
                 : "Failed to send WhatsApp confirmation.";
 
         throw new Error(errorMessage);
       }
 
-      /*
-       * WhatsApp API succeeded.
-       *
-       * The API route also saves the status
-       * into Supabase.
-       */
       setWhatsappSent(true);
 
       setGuestConfirmationResult(
@@ -205,12 +182,6 @@ export default function DispatchCard({
       setSendingGuestConfirmation(null);
     }
   }
-
-  /*
-   * =====================================================
-   * SEND GUEST EMAIL
-   * =====================================================
-   */
 
   async function sendGuestEmail() {
     if (!transfer.email) {
@@ -235,20 +206,16 @@ export default function DispatchCard({
         "/api/guest-confirmation/email",
         {
           method: "POST",
-
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             transferId: transfer.id,
           }),
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (
         !response.ok ||
@@ -260,20 +227,12 @@ export default function DispatchCard({
             : data.error?.message
               ? data.error.message
               : data.error
-                ? JSON.stringify(
-                    data.error
-                  )
+                ? JSON.stringify(data.error)
                 : "Failed to send email confirmation.";
 
         throw new Error(errorMessage);
       }
 
-      /*
-       * Email API succeeded.
-       *
-       * The API route must also save
-       * guest_email_sent = true.
-       */
       setEmailSent(true);
 
       setGuestConfirmationResult(
@@ -294,12 +253,6 @@ export default function DispatchCard({
       setSendingGuestConfirmation(null);
     }
   }
-
-  /*
-   * =====================================================
-   * SEND BOTH
-   * =====================================================
-   */
 
   async function sendGuestBoth() {
     if (!transfer.phone) {
@@ -327,23 +280,14 @@ export default function DispatchCard({
       setSendingGuestConfirmation("both");
       setGuestConfirmationResult(null);
 
-      /*
-       * -----------------------------------------------
-       * WHATSAPP
-       * -----------------------------------------------
-       */
-
       const whatsappResponse =
         await fetch(
           "/api/guest-confirmation/whatsapp",
           {
             method: "POST",
-
             headers: {
-              "Content-Type":
-                "application/json",
+              "Content-Type": "application/json",
             },
-
             body: JSON.stringify({
               transferId: transfer.id,
             }),
@@ -359,8 +303,7 @@ export default function DispatchCard({
 
       if (!whatsappSuccess) {
         const errorMessage =
-          typeof whatsappData.error ===
-          "string"
+          typeof whatsappData.error === "string"
             ? whatsappData.error
             : whatsappData.error?.message
               ? whatsappData.error.message
@@ -370,33 +313,19 @@ export default function DispatchCard({
                   )
                 : "Failed to send WhatsApp confirmation.";
 
-        throw new Error(
-          errorMessage
-        );
+        throw new Error(errorMessage);
       }
 
-      /*
-       * WhatsApp succeeded.
-       */
       setWhatsappSent(true);
-
-      /*
-       * -----------------------------------------------
-       * EMAIL
-       * -----------------------------------------------
-       */
 
       const emailResponse =
         await fetch(
           "/api/guest-confirmation/email",
           {
             method: "POST",
-
             headers: {
-              "Content-Type":
-                "application/json",
+              "Content-Type": "application/json",
             },
-
             body: JSON.stringify({
               transferId: transfer.id,
             }),
@@ -412,8 +341,7 @@ export default function DispatchCard({
 
       if (!emailSuccess) {
         const errorMessage =
-          typeof emailData.error ===
-          "string"
+          typeof emailData.error === "string"
             ? emailData.error
             : emailData.error?.message
               ? emailData.error.message
@@ -428,14 +356,8 @@ export default function DispatchCard({
         );
       }
 
-      /*
-       * Email succeeded.
-       */
       setEmailSent(true);
 
-      /*
-       * Both succeeded.
-       */
       setGuestConfirmationResult(
         "Guest WhatsApp and email confirmations sent."
       );
@@ -455,17 +377,9 @@ export default function DispatchCard({
     }
   }
 
-  /*
-   * =====================================================
-   * GENERATE TRANSFER ORDER
-   * =====================================================
-   */
-
   function handleTransferOrder() {
     try {
-      generateTransferOrderPDF(
-        transfer
-      );
+      generateTransferOrderPDF(transfer);
     } catch (error) {
       console.error(
         "Transfer Order PDF error:",
@@ -474,6 +388,21 @@ export default function DispatchCard({
 
       setGuestConfirmationResult(
         "Failed to generate Transfer Order."
+      );
+    }
+  }
+
+  function handlePaymentReceipt() {
+    try {
+      generatePaymentReceiptPDF(transfer);
+    } catch (error) {
+      console.error(
+        "Payment Receipt PDF error:",
+        error
+      );
+
+      setGuestConfirmationResult(
+        "Failed to generate Payment Receipt."
       );
     }
   }
@@ -492,8 +421,7 @@ export default function DispatchCard({
 
   const childSeats =
     Number(
-      (transfer as any)
-        .childSeats ?? 0
+      (transfer as any).childSeats ?? 0
     );
 
   const passengerCount =
@@ -502,14 +430,9 @@ export default function DispatchCard({
   const price =
     Number(transfer.price ?? 0);
 
-  /*
-   * =====================================================
-   * PERSISTENT CONFIRMATION MESSAGE
-   * =====================================================
-   */
-
   let persistentConfirmationMessage:
-    string | null = null;
+    | string
+    | null = null;
 
   if (
     whatsappSent &&
@@ -607,11 +530,8 @@ export default function DispatchCard({
           </div>
 
           <div className="mt-1 text-xs text-slate-500">
-
             {adults} adult
-            {adults !== 1
-              ? "s"
-              : ""}
+            {adults !== 1 ? "s" : ""}
 
             {children > 0 &&
               `, ${children} child${
@@ -619,7 +539,6 @@ export default function DispatchCard({
                   ? "ren"
                   : ""
               }`}
-
           </div>
 
         </div>
@@ -892,6 +811,7 @@ export default function DispatchCard({
           }
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-green-300 bg-green-50 px-3 text-sm font-medium text-green-700 transition hover:bg-green-100 disabled:opacity-50"
         >
+
           <span className="text-sm">
             ◯
           </span>
@@ -900,6 +820,7 @@ export default function DispatchCard({
           "whatsapp"
             ? "Sending..."
             : "WhatsApp"}
+
         </button>
 
         <button
@@ -913,6 +834,7 @@ export default function DispatchCard({
           }
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-3 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
         >
+
           <span className="text-sm">
             ✉
           </span>
@@ -921,6 +843,7 @@ export default function DispatchCard({
           "email"
             ? "Sending..."
             : "Email"}
+
         </button>
 
         <button
@@ -934,6 +857,7 @@ export default function DispatchCard({
           }
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
         >
+
           <span className="text-sm">
             ➤
           </span>
@@ -942,7 +866,10 @@ export default function DispatchCard({
           "both"
             ? "Sending..."
             : "Both"}
+
         </button>
+
+        {/* TRANSFER ORDER */}
 
         <button
           type="button"
@@ -952,6 +879,18 @@ export default function DispatchCard({
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
         >
           Transfer Order
+        </button>
+
+        {/* PAYMENT RECEIPT */}
+
+        <button
+          type="button"
+          onClick={
+            handlePaymentReceipt
+          }
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-green-700 bg-green-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800"
+        >
+          Payment Receipt
         </button>
 
       </div>

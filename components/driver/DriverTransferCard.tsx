@@ -5,12 +5,14 @@ import { useMemo, useState } from "react";
 import { Transfer } from "@/types/transfer";
 import { googleMapsUrl } from "@/lib/helpers/maps";
 import { guestWhatsAppUrl } from "@/lib/helpers/whatsapp";
+
 import {
   completeTransfer,
   updateTransferStatus,
 } from "@/services/transfers";
 
 import { generateTransferOrderPDF } from "@/components/transfers/TransferOrderPDF";
+import { generatePaymentReceiptPDF } from "@/components/transfers/PaymentReceiptPDF";
 
 interface Props {
   transfer: Transfer;
@@ -24,14 +26,20 @@ export default function DriverTransferCard({
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const [showCompletionForm, setShowCompletionForm] =
-    useState(false);
+  const [
+    showCompletionForm,
+    setShowCompletionForm,
+  ] = useState(false);
 
-  const [actualKilometers, setActualKilometers] =
-    useState("");
+  const [
+    actualKilometers,
+    setActualKilometers,
+  ] = useState("");
 
-  const [fuelLiters, setFuelLiters] =
-    useState("");
+  const [
+    fuelLiters,
+    setFuelLiters,
+  ] = useState("");
 
   const [driverNote, setDriverNote] =
     useState("");
@@ -106,6 +114,7 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid kilometer value."
         );
+
         setSaving(false);
         return;
       }
@@ -118,6 +127,7 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid fuel amount."
         );
+
         setSaving(false);
         return;
       }
@@ -155,6 +165,21 @@ export default function DriverTransferCard({
 
       alert(
         "Failed to generate Transfer Order."
+      );
+    }
+  }
+
+  function handlePaymentReceipt() {
+    try {
+      generatePaymentReceiptPDF(transfer);
+    } catch (error) {
+      console.error(
+        "Payment Receipt PDF error:",
+        error
+      );
+
+      alert(
+        "Failed to generate Payment Receipt."
       );
     }
   }
@@ -420,6 +445,16 @@ export default function DriverTransferCard({
             Transfer Order
           </button>
 
+          {/* Payment Receipt */}
+
+          <button
+            type="button"
+            onClick={handlePaymentReceipt}
+            className="w-full rounded-2xl border-2 border-green-700 bg-green-700 py-4 text-lg font-bold text-white shadow-sm transition hover:bg-green-800 active:scale-[0.99]"
+          >
+            Payment Receipt
+          </button>
+
           {/* More Details */}
 
           <button
@@ -429,7 +464,6 @@ export default function DriverTransferCard({
             }
             className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-slate-100"
           >
-
             <span className="font-semibold text-slate-900">
               {expanded
                 ? "Hide Details"
@@ -439,7 +473,6 @@ export default function DriverTransferCard({
             <span className="text-xl text-slate-500">
               {expanded ? "−" : "+"}
             </span>
-
           </button>
 
         </div>
@@ -658,7 +691,9 @@ export default function DriverTransferCard({
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={cancelCompletion}
+                  onClick={
+                    cancelCompletion
+                  }
                   className="rounded-2xl border border-slate-300 bg-white py-4 text-lg font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
