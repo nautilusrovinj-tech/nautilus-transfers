@@ -5,11 +5,12 @@ import { useMemo, useState } from "react";
 import { Transfer } from "@/types/transfer";
 import { googleMapsUrl } from "@/lib/helpers/maps";
 import { guestWhatsAppUrl } from "@/lib/helpers/whatsapp";
-
 import {
   completeTransfer,
   updateTransferStatus,
 } from "@/services/transfers";
+
+import { generateTransferOrderPDF } from "@/components/transfers/TransferOrderPDF";
 
 interface Props {
   transfer: Transfer;
@@ -30,9 +31,6 @@ export default function DriverTransferCard({
     useState("");
 
   const [fuelLiters, setFuelLiters] =
-    useState("");
-
-  const [fuelCost, setFuelCost] =
     useState("");
 
   const [driverNote, setDriverNote] =
@@ -100,11 +98,6 @@ export default function DriverTransferCard({
           ? null
           : Number(fuelLiters);
 
-      const cost =
-        fuelCost.trim() === ""
-          ? null
-          : Number(fuelCost);
-
       if (
         kilometers !== null &&
         (!Number.isFinite(kilometers) ||
@@ -113,7 +106,6 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid kilometer value."
         );
-
         setSaving(false);
         return;
       }
@@ -126,20 +118,6 @@ export default function DriverTransferCard({
         alert(
           "Please enter a valid fuel amount."
         );
-
-        setSaving(false);
-        return;
-      }
-
-      if (
-        cost !== null &&
-        (!Number.isFinite(cost) ||
-          cost < 0)
-      ) {
-        alert(
-          "Please enter a valid fuel cost."
-        );
-
         setSaving(false);
         return;
       }
@@ -149,26 +127,35 @@ export default function DriverTransferCard({
         kilometers,
         driverNote.trim(),
         fuel,
-        cost
+        null
       );
 
       setShowCompletionForm(false);
       setActualKilometers("");
       setFuelLiters("");
-      setFuelCost("");
       setDriverNote("");
 
       onComplete?.();
     } catch (err) {
       console.error(err);
-
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Failed to complete transfer."
-      );
+      alert("Failed to complete transfer.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function handleTransferOrder() {
+    try {
+      generateTransferOrderPDF(transfer);
+    } catch (error) {
+      console.error(
+        "Transfer Order PDF error:",
+        error
+      );
+
+      alert(
+        "Failed to generate Transfer Order."
+      );
     }
   }
 
@@ -311,8 +298,6 @@ export default function DriverTransferCard({
 
           <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
 
-            {/* Vehicle */}
-
             <div>
 
               <p className="text-xs uppercase tracking-wide text-slate-500">
@@ -324,8 +309,6 @@ export default function DriverTransferCard({
               </p>
 
             </div>
-
-            {/* Partner */}
 
             <div>
 
@@ -339,8 +322,6 @@ export default function DriverTransferCard({
 
             </div>
 
-            {/* Price */}
-
             <div>
 
               <p className="text-xs uppercase tracking-wide text-slate-500">
@@ -352,8 +333,6 @@ export default function DriverTransferCard({
               </p>
 
             </div>
-
-            {/* Payment */}
 
             <div>
 
@@ -431,7 +410,17 @@ export default function DriverTransferCard({
             Start Navigation
           </button>
 
-          {/* Expand Button */}
+          {/* Transfer Order */}
+
+          <button
+            type="button"
+            onClick={handleTransferOrder}
+            className="w-full rounded-2xl border-2 border-slate-800 bg-slate-900 py-4 text-lg font-bold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.99]"
+          >
+            Transfer Order
+          </button>
+
+          {/* More Details */}
 
           <button
             type="button"
@@ -440,6 +429,7 @@ export default function DriverTransferCard({
             }
             className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:bg-slate-100"
           >
+
             <span className="font-semibold text-slate-900">
               {expanded
                 ? "Hide Details"
@@ -449,6 +439,7 @@ export default function DriverTransferCard({
             <span className="text-xl text-slate-500">
               {expanded ? "−" : "+"}
             </span>
+
           </button>
 
         </div>
@@ -613,7 +604,7 @@ export default function DriverTransferCard({
 
               </div>
 
-              {/* Fuel Liters */}
+              {/* Fuel */}
 
               <div className="space-y-2">
 
@@ -630,31 +621,6 @@ export default function DriverTransferCard({
                   value={fuelLiters}
                   onChange={(e) =>
                     setFuelLiters(
-                      e.target.value
-                    )
-                  }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
-                />
-
-              </div>
-
-              {/* Fuel Cost */}
-
-              <div className="space-y-2">
-
-                <label className="text-sm font-semibold text-slate-700">
-                  Fuel Cost (€)
-                </label>
-
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  inputMode="decimal"
-                  placeholder="e.g. 68.50"
-                  value={fuelCost}
-                  onChange={(e) =>
-                    setFuelCost(
                       e.target.value
                     )
                   }
